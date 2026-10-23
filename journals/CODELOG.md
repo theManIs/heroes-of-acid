@@ -364,3 +364,15 @@ godot --headless --path game --export-release "Windows Desktop" ../builds/window
 - `game/scenes/creature.gd`: `_pin_hip()` держит таз над точкой существа, пока оно мертво (`fall` без «на месте» уносил тело на 1,6 м); замер после смерти — 0,00.
 - Пиктограмма вампира: повторный импорт после `icon_shot` (игра показывала заглушку).
 - `pipelines/creature/ARTIFACTS.md` п.41, `README.md`.
+
+### 2026-10-23 16:20 — git и GitHub
+
+```bash
+brew install git-lfs
+git init -b main && git lfs install --local && git lfs track "*.glb" "*.png" "*.jpg" "*.avi"
+git commit -m "Heroes of Acid: концепция, пайплайн существ и арена в Godot"
+gh repo create theManIs/heroes-of-acid --public --source . --remote origin --push   # SSH не прошёл
+git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh auth setup-git && git push -u origin main
+```
+
+- Коммит `8deea01`, 147 файлов, 52 объекта LFS (263 МБ). В `.gitignore`: `.env`, `.venv/`, `screens/`, `builds/`, `.godot/`.
