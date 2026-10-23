@@ -1,0 +1,6 @@
+.env
+.venv/
+screens/
+builds/
+.DS_Store
+__pycache__/

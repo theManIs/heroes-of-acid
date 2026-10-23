@@ -1,0 +1,23 @@
+{
+  "rig_version": "v1.0-20240301",
+  "animation_batches": [
+    [
+      "preset:biped:idle",
+      "preset:biped:hit_to_body_01",
+      "preset:biped:fall"
+    ],
+    [
+      "preset:biped:walk"
+    ],
+    [
+      "preset:biped:box_01",
+      "preset:biped:hit_to_head"
+    ],
+    [
+      "preset:biped:cross_body_crunch"
+    ],
+    [
+      "preset:biped:scared_01"
+    ]
+  ]
+}

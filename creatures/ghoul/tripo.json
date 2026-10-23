@@ -1,0 +1,28 @@
+{
+  "rig_version": "v1.0-20240301",
+  "animation_batches": [
+    [
+      "preset:biped:idle",
+      "preset:biped:walk",
+      "preset:biped:fall",
+      "preset:biped:hit_to_body_01",
+      "preset:biped:chop"
+    ],
+    [
+      "preset:biped:box_01",
+      "preset:biped:slash"
+    ],
+    [
+      "preset:biped:pitch_baseball"
+    ],
+    [
+      "preset:biped:look_around"
+    ],
+    [
+      "preset:biped:look_around"
+    ],
+    [
+      "preset:biped:afraid"
+    ]
+  ]
+}

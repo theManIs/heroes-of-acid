@@ -1,0 +1,26 @@
+{
+  "model": {
+    "task_id": "e6fc9808-63be-4e63-8faa-0d3dcb0796b0",
+    "seconds": 166
+  },
+  "rig": {
+    "task_id": "945b74d2-281a-4c49-97d7-80dce1413928",
+    "seconds": 68
+  },
+  "animations": {
+    "task_id": "075fd943-be31-47fe-b036-53cfca37a22f",
+    "seconds": 38
+  },
+  "animations2": {
+    "task_id": "18466334-92b2-4294-ad1c-eef6ce6fcbd4",
+    "seconds": 3
+  },
+  "animations3": {
+    "task_id": "8e664d3e-c178-460a-83d3-757692149eae",
+    "seconds": 6
+  },
+  "animations4": {
+    "task_id": "e23c3f21-dcca-400d-a32d-ba9e94dd651c",
+    "seconds": 6
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "model": {
+    "task_id": "e6fc9808-63be-4e63-8faa-0d3dcb0796b0",
+    "seconds": 166
+  },
+  "rig": {
+    "task_id": "02145517-bb68-4679-b5c1-01d53aa6981e",
+    "seconds": 140
+  },
+  "animations": {
+    "task_id": "3caf0e0f-ca17-46b5-a0e6-ccd5b9a86e1c",
+    "seconds": 43
+  },
+  "animations2": {
+    "task_id": "bff91078-de00-411f-9f20-6581431da0c0",
+    "seconds": 6
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "model": {
+    "task_id": "7b8f53d9-6dc2-446a-965a-3b44fce6d944",
+    "seconds": 135
+  },
+  "rig": {
+    "task_id": "52217c71-9d45-4e6e-839a-10fb34f0d41e",
+    "seconds": 37
+  },
+  "animations": {
+    "task_id": "8190f62a-9632-4b62-9143-f9ece9f662b2",
+    "seconds": 20
+  },
+  "animations2": {
+    "task_id": "6558b0e1-30a7-42f1-8adf-ad848b3e891f",
+    "seconds": 3
+  },
+  "animations3": {
+    "task_id": "70f08087-b222-41ca-8ba7-816060762295",
+    "seconds": 6
+  }
+}

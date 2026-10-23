@@ -1,0 +1,30 @@
+{
+  "model": {
+    "task_id": "43b8b1a4-325f-430f-ad12-69ba0cdf26a8",
+    "seconds": 165
+  },
+  "rig": {
+    "task_id": "b7f8eb96-acf3-4b81-a6d7-27a11f28de79",
+    "seconds": 12
+  },
+  "animations": {
+    "task_id": "8852a2f9-4ee5-4db5-a7df-e3edb53d7f25",
+    "seconds": 20
+  },
+  "animations2": {
+    "task_id": "96d2411a-fd81-4579-bda5-d903e06951f4",
+    "seconds": 6
+  },
+  "animations3": {
+    "task_id": "7469c038-452f-48e3-87e3-5dfe5ce5d6eb",
+    "seconds": 6
+  },
+  "animations4": {
+    "task_id": "750989e1-192d-462c-9cf9-e9a9f41fa86c",
+    "seconds": 6
+  },
+  "animations5": {
+    "task_id": "398c4d61-1beb-4ea0-b68a-72b8ed5608f7",
+    "seconds": 11
+  }
+}
