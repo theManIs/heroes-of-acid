@@ -107,6 +107,10 @@ Rules:
 - **ассеты** — files used by the product. Put them in the project’s real asset location, not a dump folder.
 - If the type is not obvious: interactive questionnaire (скрин / референс / ассет). Do not guess.
 
+### Asset generation in external chats
+
+- When an asset is generated in an external chat (ChatGPT etc.) through the browser, archive every chat opened for that generation once the result is saved.
+
 ### Pipelines
 
 - A project may keep step-by-step recipes for recurring jobs in `pipelines/<name>/` (`README.md` + the scripts it uses).
