@@ -289,21 +289,16 @@ func _build_hud() -> void:
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	bar.add_theme_constant_override("separation", 18)
 	hud.add_child(bar)
-	for item in [["Ждать", _wait, ACTION_ICON.Kind.WAIT], ["Защита", _defend, ACTION_ICON.Kind.DEFEND], ["Заново", _reset, ACTION_ICON.Kind.RESTART]]:
-		var button := Button.new()
-		button.tooltip_text = item[0]
-		button.custom_minimum_size = Vector2(84, 84)
-		for state in ["normal", "hover", "pressed", "disabled", "focus"]:
-			button.add_theme_stylebox_override(state, StyleBoxEmpty.new())  # подложка — клякса в иконке
-		button.pressed.connect(item[1])
-		var icon := Control.new()
-		icon.set_script(ACTION_ICON)
-		icon.kind = item[2]
-		icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		button.add_child(icon)
-		bar.add_child(button)
-	wait_button = bar.get_child(0)
+	wait_button = _action_button("Ждать", _wait, ACTION_ICON.Kind.WAIT)
+	bar.add_child(wait_button)
+	bar.add_child(_action_button("Защита", _defend, ACTION_ICON.Kind.DEFEND))
+	var restart := _action_button("Заново", _reset, ACTION_ICON.Kind.RESTART)  # отдельно, в углу: не боевое действие
+	restart.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	restart.offset_left = 24
+	restart.offset_right = 108
+	restart.offset_top = -100
+	restart.offset_bottom = -16
+	hud.add_child(restart)
 
 	queue_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	queue_bar.offset_top = 40
@@ -311,6 +306,22 @@ func _build_hud() -> void:
 	queue_bar.add_theme_constant_override("separation", 6)
 	queue_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(queue_bar)
+
+
+func _action_button(title: String, action: Callable, kind: int) -> Button:
+	var button := Button.new()
+	button.tooltip_text = title
+	button.custom_minimum_size = Vector2(84, 84)
+	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
+		button.add_theme_stylebox_override(state, StyleBoxEmpty.new())  # подложка — клякса в иконке
+	button.pressed.connect(action)
+	var icon := Control.new()
+	icon.set_script(ACTION_ICON)
+	icon.kind = kind
+	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(icon)
+	return button
 
 
 ## Шкала инициативы: кто ходит сейчас, остаток этого хода, потом порядок следующего.
