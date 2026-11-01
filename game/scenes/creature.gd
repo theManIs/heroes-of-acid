@@ -28,6 +28,7 @@ var skeleton: Skeleton3D
 var anim: AnimationPlayer
 var dead := false
 var walking := false
+var walk_rate := 1.0  # ускорение ходьбы: анимация и движение вместе, чтобы ноги не скользили
 var impact := 0.5  # момент попадания, доля проигрываемой части удара
 var _strike_id := 0
 var reach := 1.0  # вынос кулака вперёд в момент попадания, метров
@@ -473,7 +474,7 @@ func revive() -> void:
 
 func _play(anim_name: String) -> void:
 	if anim.current_animation != anim_name:
-		anim.play(anim_name, BLEND)
+		anim.play(anim_name, BLEND, walk_rate if anim_name == "walk" else 1.0)
 
 
 func _on_animation_finished(anim_name: StringName) -> void:
@@ -535,5 +536,5 @@ func _physics_process(delta: float) -> void:
 		_play("idle")
 		arrived.emit()
 		return
-	position += to.normalized() * minf(WALK_SPEED * delta, to.length())
+	position += to.normalized() * minf(WALK_SPEED * walk_rate * delta, to.length())
 	face(_target)

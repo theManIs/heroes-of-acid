@@ -9,7 +9,8 @@ const SWORD := preload("res://scenes/sword_cursor.gd")
 const COLS := 15
 const ROWS := 11
 const START_ROWS: Array[int] = [1, 3, 5, 7, 9]  # ряды, где стоят существа в начале боя
-const MOVE := 3  # гексов за ход
+const MOVE := 6  # гексов за ход
+const WALK_RATE := 2.0  # ходьба быстрее, чем в арене: 6 гексов за то же время, что там 3
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
 const TILE_HEIGHT := 0.12
 const TILE_GAP := 0.94  # доля радиуса: щель между плитками
@@ -86,6 +87,7 @@ func _make(id: String) -> Creature:
 	c.defend_lead = cfg.defend_lead
 	c.hurt_len = cfg.hurt_len
 	c.defend_pin = cfg.get("defend_pin", true)
+	c.walk_rate = WALK_RATE
 	c.set_meta("title", cfg.name)
 	if cfg.get("smoke", false):
 		c.add_smoke()
