@@ -418,3 +418,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-02 — камера сцены боя 45° (задача 27)
 
 - `battle_test.gd`: `CAMERA_DIR` (0, 0.866, 0.5) → (0, 1, 1).
+
+### 2026-11-02 — камера сцены боя ближе (задача 28)
+
+- `battle_test.gd`: новая `CAMERA_CLOSE := 0.8`, дистанция после подбора умножается на неё.

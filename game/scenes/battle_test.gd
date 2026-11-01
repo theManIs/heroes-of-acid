@@ -20,6 +20,7 @@ const ENEMY_TURN := Color(1.0, 0.25, 0.2)
 const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсором — можно ударить
 const NO_HEX := Vector2i(999, 999)
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
+const CAMERA_CLOSE := 0.8  # ближе, чем нужно для всего поля: крайние гексы могут не влезать
 const ZOOM_NEAR := 0.2  # насколько сокращается дистанция при полном приближении
 const ZOOM_PINCH := 0.5  # чувствительность щипка
 const ZOOM_WHEEL := 0.12  # шаг колеса мыши
@@ -97,7 +98,7 @@ func _make(id: String) -> Creature:
 
 # --- Камера ---
 
-## Камера отъезжает, пока в кадр не войдёт всё поле с головами в дальнем ряду; запас снизу — под кнопки.
+## Камера отъезжает, пока в кадр не войдёт всё поле с головами в дальнем ряду, затем подъезжает на CAMERA_CLOSE.
 func _place_camera() -> void:
 	var off := _board_offset()
 	var points: Array[Vector3] = [
@@ -113,6 +114,7 @@ func _place_camera() -> void:
 		if points.all(func(p: Vector3) -> bool: return camera.is_position_in_frustum(p)):
 			break
 		dist += 0.25
+	_cam_base = _cam_look + dir * dist * CAMERA_CLOSE
 	_apply_zoom()
 
 
