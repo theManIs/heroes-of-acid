@@ -308,15 +308,18 @@ func _show_queue() -> void:
 	for child in queue_bar.get_children():
 		queue_bar.remove_child(child)
 		child.queue_free()
+	if turn == Turn.OVER:
+		return
 	queue_bar.add_child(_queue_label("Ход %d" % round_no))
 	queue_bar.add_child(_queue_slot(active, true))
 	for c: Creature in _queue:
 		if c.can_be_hit():
 			queue_bar.add_child(_queue_slot(c, false))
-	if not _waiting.is_empty():
+	if _waiting.any(func(c: Creature) -> bool: return c.can_be_hit()):
 		queue_bar.add_child(_queue_label("Ждут"))
 		for i in range(_waiting.size() - 1, -1, -1):
-			queue_bar.add_child(_queue_slot(_waiting[i], false))
+			if _waiting[i].can_be_hit():
+				queue_bar.add_child(_queue_slot(_waiting[i], false))
 	queue_bar.add_child(_queue_label("Ход %d" % (round_no + 1)))
 	for c in _round_order():
 		queue_bar.add_child(_queue_slot(c, false))
@@ -459,7 +462,9 @@ func _act(who: Creature, target: Creature, path: Array[Vector2i]) -> void:
 		await who.arrived
 	if target and _hex_distance(cells[who], cells[target]) == 1:
 		who.strike(target, _hex_spacing(), OVERLAP)
-		await get_tree().create_timer(who.hit_delay() + 1.5).timeout  # попадание + реакция цели
+		await get_tree().create_timer(who.hit_delay()).timeout
+		_show_queue()  # убитый уходит из шкалы в момент попадания
+		await get_tree().create_timer(1.5).timeout  # реакция цели
 	elif target:
 		who.face(target.position)
 	_next_turn()
@@ -468,6 +473,7 @@ func _act(who: Creature, target: Creature, path: Array[Vector2i]) -> void:
 func _game_over() -> void:
 	turn = Turn.OVER
 	reachable.clear()
+	_show_queue()
 	_paint()
 	if _auto:
 		print("Бой окончен. Слева живых: %d, справа: %d" % [_living(0).size(), _living(1).size()])
