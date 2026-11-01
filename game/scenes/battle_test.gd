@@ -284,15 +284,15 @@ func _build_hud() -> void:
 
 	var bar := HBoxContainer.new()
 	bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bar.offset_top = -80
+	bar.offset_top = -100
 	bar.offset_bottom = -16
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
-	bar.add_theme_constant_override("separation", 14)
+	bar.add_theme_constant_override("separation", 18)
 	hud.add_child(bar)
 	for item in [["Ждать", _wait, ACTION_ICON.Kind.WAIT], ["Защита", _defend, ACTION_ICON.Kind.DEFEND], ["Заново", _reset, ACTION_ICON.Kind.RESTART]]:
 		var button := Button.new()
 		button.tooltip_text = item[0]
-		button.custom_minimum_size = Vector2(64, 64)
+		button.custom_minimum_size = Vector2(84, 84)
 		for state in ["normal", "hover", "pressed", "disabled", "focus"]:
 			button.add_theme_stylebox_override(state, StyleBoxEmpty.new())  # подложка — клякса в иконке
 		button.pressed.connect(item[1])

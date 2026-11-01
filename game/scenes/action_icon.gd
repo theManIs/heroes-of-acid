@@ -7,6 +7,7 @@ const INK := Color(0.86, 0.73, 0.47)  # светлая бронза
 const DARK := Color(0.04, 0.035, 0.03)  # клякса и вырезы в иконке
 const HOVER := Color(0.2, 0.15, 0.09)  # клякса под курсором
 const BLOT_POINTS := 40
+const BLOT_SCALE := 1.3  # клякса крупнее иконки: виден неровный край
 
 var kind := Kind.WAIT
 
@@ -38,14 +39,14 @@ func _blot(c: Vector2, color: Color) -> void:
 	var phase := rng.randf() * TAU
 	for i in BLOT_POINTS:
 		var a := TAU * i / BLOT_POINTS
-		var r := 28.0 + 2.5 * sin(a * 3.0 + phase) + rng.randf_range(-3.0, 3.5)
+		var r := (28.0 + 2.5 * sin(a * 3.0 + phase) + rng.randf_range(-3.0, 3.5)) * BLOT_SCALE
 		if rng.randf() < 0.12:
-			r += rng.randf_range(2.0, 6.0)  # потёк
+			r += rng.randf_range(2.0, 6.0) * BLOT_SCALE  # потёк
 		points.append(c + Vector2(r, 0).rotated(a))
 	draw_colored_polygon(points, color)
 	for i in 5:
-		var spot := c + Vector2(rng.randf_range(33.0, 39.0), 0).rotated(rng.randf() * TAU)
-		draw_circle(spot, rng.randf_range(0.9, 2.2), color)
+		var spot := c + Vector2(rng.randf_range(33.0, 39.0) * BLOT_SCALE, 0).rotated(rng.randf() * TAU)
+		draw_circle(spot, rng.randf_range(0.9, 2.2) * BLOT_SCALE, color)
 
 
 func _hourglass(c: Vector2) -> void:
