@@ -26,7 +26,7 @@ def read_glb(path: Path) -> tuple[dict, bytes]:
     return doc, data[start:start + struct.unpack("<I", data[20 + size:24 + size])[0]]
 
 
-def write_one(doc: dict, binary: bytes, anim: dict, target: Path) -> None:
+def write_one(doc: dict, binary: bytes, anims: list, target: Path) -> None:
     out = {k: json.loads(json.dumps(doc[k])) for k in KEEP if k in doc}
     for node in out["nodes"]:
         node.pop("mesh", None)
@@ -55,13 +55,14 @@ def write_one(doc: dict, binary: bytes, anim: dict, target: Path) -> None:
     for skin in out.get("skins", []):
         if "inverseBindMatrices" in skin:
             skin["inverseBindMatrices"] = copy(skin["inverseBindMatrices"])
-    new = json.loads(json.dumps(anim))
-    for sampler in new["samplers"]:
-        sampler["input"] = copy(sampler["input"])
-        sampler["output"] = copy(sampler["output"])
+    new = json.loads(json.dumps(anims))
+    for anim in new:
+        for sampler in anim["samplers"]:
+            sampler["input"] = copy(sampler["input"])
+            sampler["output"] = copy(sampler["output"])
     while len(blob) % 4:
         blob.append(0)
-    out.update(animations=[new], accessors=accessors, bufferViews=views, buffers=[{"byteLength": len(blob)}])
+    out.update(animations=new, accessors=accessors, bufferViews=views, buffers=[{"byteLength": len(blob)}])
     text = json.dumps(out, separators=(",", ":"), ensure_ascii=False).encode()
     text += b" " * (-len(text) % 4)
     total = 12 + 8 + len(text) + 8 + len(blob)
@@ -82,7 +83,7 @@ def main() -> None:
                 name = anim.get("name")
                 if name and name not in taken:
                     taken[name] = creature
-                    write_one(doc, binary, anim, OUT / f"{name}.glb")
+                    write_one(doc, binary, [anim], OUT / f"{name}.glb")
     lines = ["# Библиотека анимаций", "",
              "Пресеты Tripo (`preset:biped:*`), скелет 41 кость (риг `v1.0-20240301`, `spec: tripo`). Подходят к любому такому ригу: `creature.gd` пересчитывает их на его позу покоя.",
              "Папку можно передавать отдельно: в файлах только скелет и движение, геометрии и текстур нет.", "",

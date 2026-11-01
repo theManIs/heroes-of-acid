@@ -487,3 +487,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-02 — рамка в шкале инициативы (задача 45)
 
 - `battle_test.gd`: `_queue_slot` без белой рамки.
+
+### 2026-11-02 — голем 20 тысяч (задача 44)
+
+- `pipelines/creature/decimate.py`: упрощение в Blender. `flesh-golem.glb` 1 436 104 → 19 997 треугольников, анимации вынесены в `flesh-golem-anims1.glb`, запись `flesh-golem` дополнена. Исходник с высокой детализацией в `creatures/flesh-golem/tripo/flesh-golem.glb`.
+- `build_animation_library.py`: `write_one` принимает список анимаций.

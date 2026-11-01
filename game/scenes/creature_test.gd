@@ -48,7 +48,7 @@ const CREATURES := {
 	"flesh-golem": {
 		"name": "Голем", "icon": "res://assets/creatures/flesh-golem/icon.png",
 		"scene": "res://assets/creatures/flesh-golem/flesh-golem.glb",
-		"extra": ["res://assets/creatures/flesh-golem/flesh-golem-anims2.glb", "res://assets/creatures/flesh-golem/flesh-golem-anims4.glb"],
+		"extra": ["res://assets/creatures/flesh-golem/flesh-golem-anims1.glb", "res://assets/creatures/flesh-golem/flesh-golem-anims2.glb", "res://assets/creatures/flesh-golem/flesh-golem-anims4.glb"],
 		"attack": "slash", "attack_from": 0.0,
 		"hurt": "hit_to_body_01", "hurt_len": 0.65, "idle": "idle", "defend": "fold_arms", "defend_from": 0.102, "defend_len": 1.6, "defend_lead": 1.0, "size": 2.0,  # кусок 1,75–3,35 с: руки скрещиваются
 	},
