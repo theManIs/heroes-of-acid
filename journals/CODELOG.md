@@ -492,3 +492,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `pipelines/creature/decimate.py`: упрощение в Blender. `flesh-golem.glb` 1 436 104 → 19 997 треугольников, анимации вынесены в `flesh-golem-anims1.glb`, запись `flesh-golem` дополнена. Исходник с высокой детализацией в `creatures/flesh-golem/tripo/flesh-golem.glb`.
 - `build_animation_library.py`: `write_one` принимает список анимаций.
+
+### 2026-11-02 — сцена витрины (задача 46)
+
+- `game/scenes/showcase.{gd,tscn}`, `game/assets/showcase/` (12 уровней без текстур, 68 МБ, материал берётся у основной модели), `pipelines/creature/build_showcase.sh`, `decimate.py` с параметром `noimages`. `SCENES.md` дополнен.
