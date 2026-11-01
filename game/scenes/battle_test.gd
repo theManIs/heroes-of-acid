@@ -1,5 +1,6 @@
 extends Node3D
-## Тест боя: поле 15×11 как в Героях 3, все существа слева против всех справа, стороны ходят по очереди.
+## Тест боя: поле 15×11 как в Героях 3, все существа слева против всех справа.
+## Игровой ход: каждое существо ходит один раз, порядок — по инициативе, он показан в шкале сверху.
 ## Твоя сторона — левая: клик по подсвеченному гексу — идти (дальность своя у каждого, MOVES), клик по противнику — подойти и ударить.
 ## Запуск: godot --path game res://scenes/battle_test.tscn
 ## Отладка: -- --auto — обе стороны играют сами, ускоренно; -- --shot=<префикс> — кадры <префикс>-start.png, -end.png.
@@ -19,6 +20,7 @@ const PLAYER_TURN := Color(0.25, 0.55, 1.0)
 const ENEMY_TURN := Color(1.0, 0.25, 0.2)
 const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсором — можно ударить
 const NO_HEX := Vector2i(999, 999)
+const QUEUE_ICON := 44.0  # размер пиктограммы в шкале инициативы
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
 const CAMERA_CLOSE := 0.8  # ближе, чем нужно для всего поля: крайние гексы могут не влезать
 const ZOOM_NEAR := 0.2  # насколько сокращается дистанция при полном приближении
@@ -41,8 +43,9 @@ var tiles := {}  # Vector2i (осевые координаты) -> MeshInstance3
 var turn := Turn.PLAYER
 var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущего хода игрока
 var sword: Control
-var _side := 0  # чья очередь
-var _next: Array[int] = [0, 0]  # с какого существа стороны искать следующего
+var queue_bar := HBoxContainer.new()  # шкала инициативы
+var round_no := 0  # номер игрового хода
+var _queue: Array[Creature] = []  # кто ещё не ходил в этом игровом ходу
 var _hovered := NO_HEX
 var _attack_from := NO_HEX  # гекс, с которого будет удар
 var _targeted: Creature  # противник с зелёной обводкой
@@ -94,6 +97,7 @@ func _make(id: String) -> Creature:
 	c.walk_rate = WALK_RATE
 	c.set_meta("move", MOVES[id])
 	c.set_meta("title", cfg.name)
+	c.set_meta("icon", cfg.icon)
 	if cfg.get("smoke", false):
 		c.add_smoke()
 	return c
@@ -287,6 +291,55 @@ func _build_hud() -> void:
 		button.pressed.connect(item[1])
 		bar.add_child(button)
 
+	queue_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	queue_bar.offset_top = 40
+	queue_bar.alignment = BoxContainer.ALIGNMENT_CENTER
+	queue_bar.add_theme_constant_override("separation", 6)
+	queue_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(queue_bar)
+
+
+## Шкала инициативы: кто ходит сейчас, остаток этого хода, потом порядок следующего.
+func _show_queue() -> void:
+	for child in queue_bar.get_children():
+		queue_bar.remove_child(child)
+		child.queue_free()
+	queue_bar.add_child(_queue_label("Ход %d" % round_no))
+	queue_bar.add_child(_queue_slot(active, true))
+	for c: Creature in _queue:
+		if c.can_be_hit():
+			queue_bar.add_child(_queue_slot(c, false))
+	queue_bar.add_child(_queue_label("Ход %d" % (round_no + 1)))
+	for c in _round_order():
+		queue_bar.add_child(_queue_slot(c, false))
+
+
+func _queue_label(text: String) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return label
+
+
+## Пиктограмма в шкале: рамка цвета стороны, у того, кто ходит сейчас, — крупнее и белая.
+func _queue_slot(c: Creature, current: bool) -> Control:
+	var frame := PanelContainer.new()
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color(0.1, 0.1, 0.12, 0.85)
+	box.border_color = Color.WHITE if current else (PLAYER_TURN if sides[0].has(c) else ENEMY_TURN)
+	box.set_border_width_all(3)
+	box.set_content_margin_all(3)
+	frame.add_theme_stylebox_override("panel", box)
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var icon := TextureRect.new()
+	icon.texture = load(c.get_meta("icon"))
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.custom_minimum_size = Vector2.ONE * (QUEUE_ICON * 1.3 if current else QUEUE_ICON)
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(icon)
+	return frame
+
 
 # --- Ход боя ---
 
@@ -303,8 +356,8 @@ func _reset() -> void:
 			cells[c] = _cell(0 if s == 0 else COLS - 1, START_ROWS[i])
 			c.position = _hex_center(cells[c])
 			c.face(c.position + (Vector3.RIGHT if s == 0 else Vector3.LEFT))
-	_side = 0
-	_next = [0, 0]
+	round_no = 0
+	_queue.clear()
 	_next_turn()
 
 
@@ -316,33 +369,44 @@ func _living(side: int) -> Array[Creature]:
 	return out
 
 
-## Стороны ходят по очереди, внутри стороны — существа по порядку; мёртвых пропускаем.
+## Игровой ход: очередь из всех живых по инициативе, каждое существо ходит один раз. Очередь кончилась — новый ход.
 func _next_turn() -> void:
 	if _living(0).is_empty() or _living(1).is_empty():
 		_game_over()
 		return
-	var side := _side
-	_side = 1 - side
-	var count: int = sides[side].size()
-	for i in count:
-		var c: Creature = sides[side][(_next[side] + i) % count]
-		if c.can_be_hit():
-			active = c
-			_next[side] = (_next[side] + i + 1) % count
+	while true:
+		if _queue.is_empty():
+			round_no += 1
+			_queue = _round_order()
+		active = _queue.pop_front()
+		if active.can_be_hit():
 			break
 	active.defending = false
 	reachable.clear()
-	if side == 0 and not _auto:
+	_show_queue()
+	var left: bool = sides[0].has(active)
+	if left and not _auto:
 		turn = Turn.PLAYER
 		active.set_outline(PLAYER_TURN)
 		reachable = _range_of(active)
 		_paint()
 		return
 	turn = Turn.ENEMY
-	active.set_outline(ENEMY_TURN if side == 1 else PLAYER_TURN)
+	active.set_outline(PLAYER_TURN if left else ENEMY_TURN)
 	_paint()
 	await get_tree().create_timer(0.6).timeout
-	_ai_move(1 - side)
+	_ai_move(1 if left else 0)
+
+
+## Порядок игрового хода: инициатива равна дальности хода, быстрые первыми; при равенстве — левая сторона.
+func _round_order() -> Array[Creature]:
+	var out := _living(0)
+	out.append_array(_living(1))
+	out.sort_custom(func(a: Creature, b: Creature) -> bool:
+		if a.get_meta("move") != b.get_meta("move"):
+			return a.get_meta("move") > b.get_meta("move")
+		return sides[0].has(a) and not sides[0].has(b))
+	return out
 
 
 ## Ходит сам: рядом есть враг — бьёт, иначе идёт к ближайшему и бьёт, если дошёл.
