@@ -496,3 +496,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-02 — сцена витрины (задача 46)
 
 - `game/scenes/showcase.{gd,tscn}`, `game/assets/showcase/` (12 уровней без текстур, 68 МБ, материал берётся у основной модели), `pipelines/creature/build_showcase.sh`, `decimate.py` с параметром `noimages`. `SCENES.md` дополнен.
+
+### 2026-11-02 — иконки действий в бою (задача 47)
+
+- `game/scenes/action_icon.gd`: иконки рисуются кодом. `battle_test.gd`: кнопки-иконки, `_skip` убран.

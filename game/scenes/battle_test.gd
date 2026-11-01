@@ -7,6 +7,7 @@ extends Node3D
 
 const ARENA := preload("res://scenes/creature_test.gd")  # записи существ — там
 const SWORD := preload("res://scenes/sword_cursor.gd")
+const ACTION_ICON := preload("res://scenes/action_icon.gd")
 const COLS := 15
 const ROWS := 11
 const START_ROWS: Array[int] = [1, 3, 5, 7, 9]  # ряды, где стоят существа в начале боя
@@ -283,16 +284,22 @@ func _build_hud() -> void:
 
 	var bar := HBoxContainer.new()
 	bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bar.offset_top = -64
+	bar.offset_top = -80
 	bar.offset_bottom = -16
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	bar.add_theme_constant_override("separation", 10)
 	hud.add_child(bar)
-	for item in [["Ждать", _wait], ["Защита", _defend], ["Пропустить ход", _skip], ["Заново", _reset]]:
+	for item in [["Ждать", _wait, ACTION_ICON.Kind.WAIT], ["Защита", _defend, ACTION_ICON.Kind.DEFEND], ["Заново", _reset, ACTION_ICON.Kind.RESTART]]:
 		var button := Button.new()
-		button.text = item[0]
-		button.custom_minimum_size = Vector2(160, 48)
+		button.tooltip_text = item[0]
+		button.custom_minimum_size = Vector2(64, 64)
 		button.pressed.connect(item[1])
+		var icon := Control.new()
+		icon.set_script(ACTION_ICON)
+		icon.kind = item[2]
+		icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		button.add_child(icon)
 		bar.add_child(button)
 	wait_button = bar.get_child(0)
 
@@ -499,12 +506,6 @@ func _defend() -> void:
 	if turn != Turn.PLAYER:
 		return
 	active.defending = true
-	_skip()
-
-
-func _skip() -> void:
-	if turn != Turn.PLAYER:
-		return
 	active.set_outline(null)
 	_set_target(null)
 	_next_turn()
@@ -642,6 +643,7 @@ func _paint() -> void:
 
 func _process(delta: float) -> void:
 	wait_button.disabled = turn != Turn.PLAYER or _wait_phase
+	wait_button.modulate.a = 0.4 if wait_button.disabled else 1.0
 	_zoom_idle += delta
 	if _zoom_idle > ZOOM_HOLD:
 		_zoom_target = 0.0
