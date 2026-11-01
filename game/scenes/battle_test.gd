@@ -25,6 +25,7 @@ const ZOOM_NEAR := 0.2  # насколько сокращается дистан
 const ZOOM_PINCH := 0.5  # чувствительность щипка
 const ZOOM_WHEEL := 0.12  # шаг колеса мыши
 const ZOOM_HOLD := 0.5  # жест молчит столько секунд — считаем, что пальцы отпущены
+const GAME_SPEED := 2.0  # вся игра быстрее: анимации, ходьба и паузы
 const AUTO_SPEED := 5.0  # ускорение при --auto
 const DIRS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)]
 
@@ -56,6 +57,7 @@ var _zoom_idle := INF  # секунд с последнего движения �
 
 
 func _ready() -> void:
+	Engine.time_scale = GAME_SPEED
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--auto":
 			_auto = true

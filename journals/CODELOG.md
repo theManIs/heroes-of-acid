@@ -422,3 +422,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-02 — камера сцены боя ближе (задача 28)
 
 - `battle_test.gd`: новая `CAMERA_CLOSE := 0.8`, дистанция после подбора умножается на неё.
+
+### 2026-11-02 — ускорение сцены боя (задача 29)
+
+- `battle_test.gd`: новая `GAME_SPEED := 2.0`, ставится в `Engine.time_scale` при запуске сцены.
