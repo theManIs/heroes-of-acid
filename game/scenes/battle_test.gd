@@ -44,8 +44,11 @@ var turn := Turn.PLAYER
 var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущего хода игрока
 var sword: Control
 var queue_bar := HBoxContainer.new()  # шкала инициативы
+var wait_button: Button
 var round_no := 0  # номер игрового хода
 var _queue: Array[Creature] = []  # кто ещё не ходил в этом игровом ходу
+var _waiting: Array[Creature] = []  # нажали «Ждать»: сходят в конце игрового хода
+var _wait_phase := false  # очередь ожидавших: ждать второй раз нельзя
 var _hovered := NO_HEX
 var _attack_from := NO_HEX  # гекс, с которого будет удар
 var _targeted: Creature  # противник с зелёной обводкой
@@ -284,12 +287,13 @@ func _build_hud() -> void:
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	bar.add_theme_constant_override("separation", 10)
 	hud.add_child(bar)
-	for item in [["Защита", _defend], ["Пропустить ход", _skip], ["Заново", _reset]]:
+	for item in [["Ждать", _wait], ["Защита", _defend], ["Пропустить ход", _skip], ["Заново", _reset]]:
 		var button := Button.new()
 		button.text = item[0]
 		button.custom_minimum_size = Vector2(160, 48)
 		button.pressed.connect(item[1])
 		bar.add_child(button)
+	wait_button = bar.get_child(0)
 
 	queue_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	queue_bar.offset_top = 40
@@ -309,6 +313,10 @@ func _show_queue() -> void:
 	for c: Creature in _queue:
 		if c.can_be_hit():
 			queue_bar.add_child(_queue_slot(c, false))
+	if not _waiting.is_empty():
+		queue_bar.add_child(_queue_label("Ждут"))
+		for i in range(_waiting.size() - 1, -1, -1):
+			queue_bar.add_child(_queue_slot(_waiting[i], false))
 	queue_bar.add_child(_queue_label("Ход %d" % (round_no + 1)))
 	for c in _round_order():
 		queue_bar.add_child(_queue_slot(c, false))
@@ -358,6 +366,8 @@ func _reset() -> void:
 			c.face(c.position + (Vector3.RIGHT if s == 0 else Vector3.LEFT))
 	round_no = 0
 	_queue.clear()
+	_waiting.clear()
+	_wait_phase = false
 	_next_turn()
 
 
@@ -375,9 +385,15 @@ func _next_turn() -> void:
 		_game_over()
 		return
 	while true:
-		if _queue.is_empty():
+		if _queue.is_empty() and not _waiting.is_empty():
+			_waiting.reverse()  # как в Героях: из ожидавших первыми ходят медленные
+			_queue.assign(_waiting)
+			_waiting.clear()
+			_wait_phase = true
+		elif _queue.is_empty():
 			round_no += 1
 			_queue = _round_order()
+			_wait_phase = false
 		active = _queue.pop_front()
 		if active.can_be_hit():
 			break
@@ -459,6 +475,16 @@ func _game_over() -> void:
 		if _shot != "":
 			get_viewport().get_texture().get_image().save_png(_shot + "-end.png")
 		get_tree().quit()
+
+
+## Ждать, как в Героях: существо сходит в конце этого игрового хода, один раз за ход.
+func _wait() -> void:
+	if turn != Turn.PLAYER or _wait_phase:
+		return
+	_waiting.append(active)
+	active.set_outline(null)
+	_set_target(null)
+	_next_turn()
 
 
 ## Защита, как в Героях: ход заканчивается, до своего следующего хода удары не засчитываются.
@@ -605,6 +631,7 @@ func _paint() -> void:
 
 
 func _process(delta: float) -> void:
+	wait_button.disabled = turn != Turn.PLAYER or _wait_phase
 	_zoom_idle += delta
 	if _zoom_idle > ZOOM_HOLD:
 		_zoom_target = 0.0
