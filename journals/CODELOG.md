@@ -510,3 +510,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `battle_test.gd`, `_build_world`: `ProceduralSkyMaterial` как источник рассеянного света и отражений, солнце тёплое, энергия 1,5. Фон пока прежний.
 
 - `battle_test.gd`, `_paint`: подсветка гексов через свечение, чтобы тёплое солнце не съедало синий; рассеянный свет 1,5, солнце 1,4.
+
+### 2026-11-02 — земля и дымка в бою (задача 51)
+
+- `battle_test.gd`: фон — небо, туман; плоскость земли; `_soil_texture`, `_apply_soil`: шумовая почва в мировых координатах.
