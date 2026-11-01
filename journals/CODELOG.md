@@ -406,3 +406,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `battle_test.gd`: `MOVE` 3 → 6, новая `WALK_RATE := 2.0`.
 - `creature.gd`: новое поле `walk_rate` (по умолчанию 1.0), умножает скорость анимации walk и скорость движения; арена не меняется.
+
+### 2026-11-02 — дальность хода по массивности (задача 25)
+
+- `battle_test.gd`: `MOVE` заменён на словарь `MOVES`: упырь 8, вампир 7, ополченец 6, котельщик 5, голем 4.

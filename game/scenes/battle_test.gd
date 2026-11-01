@@ -1,6 +1,6 @@
 extends Node3D
 ## Тест боя: поле 15×11 как в Героях 3, все существа слева против всех справа, стороны ходят по очереди.
-## Твоя сторона — левая: клик по подсвеченному гексу — идти (до MOVE гексов), клик по противнику — подойти и ударить.
+## Твоя сторона — левая: клик по подсвеченному гексу — идти (дальность своя у каждого, MOVES), клик по противнику — подойти и ударить.
 ## Запуск: godot --path game res://scenes/battle_test.tscn
 ## Отладка: -- --auto — обе стороны играют сами, ускоренно; -- --shot=<префикс> — кадры <префикс>-start.png, -end.png.
 
@@ -9,8 +9,8 @@ const SWORD := preload("res://scenes/sword_cursor.gd")
 const COLS := 15
 const ROWS := 11
 const START_ROWS: Array[int] = [1, 3, 5, 7, 9]  # ряды, где стоят существа в начале боя
-const MOVE := 6  # гексов за ход
-const WALK_RATE := 2.0  # ходьба быстрее, чем в арене: 6 гексов за то же время, что там 3
+const MOVES := {"ghoul": 8, "vampire": 7, "militiaman": 6, "boilerman": 5, "flesh-golem": 4}  # гексов за ход: чем массивнее, тем меньше
+const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
 const TILE_HEIGHT := 0.12
 const TILE_GAP := 0.94  # доля радиуса: щель между плитками
@@ -88,6 +88,7 @@ func _make(id: String) -> Creature:
 	c.hurt_len = cfg.hurt_len
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.walk_rate = WALK_RATE
+	c.set_meta("move", MOVES[id])
 	c.set_meta("title", cfg.name)
 	if cfg.get("smoke", false):
 		c.add_smoke()
@@ -331,7 +332,7 @@ func _next_turn() -> void:
 		active.set_outline(PLAYER_TURN)
 		var paths := _paths_from(cells[active])
 		for h: Vector2i in paths:
-			if paths[h].size() <= MOVE:
+			if paths[h].size() <= active.get_meta("move"):
 				reachable[h] = paths[h]
 		_paint()
 		return
@@ -357,7 +358,7 @@ func _ai_move(enemy_side: int) -> void:
 			if _hex_distance(h, cells[e]) == 1 and (target == null or paths[h].size() < best.size()):
 				best = paths[h]
 				target = e
-	_act(active, target, best.slice(0, MOVE))
+	_act(active, target, best.slice(0, active.get_meta("move")))
 
 
 ## Пройти путь; если есть цель и стоим рядом с ней — ударить. Потом следующий ход.
@@ -545,7 +546,7 @@ func _status_text(unit: Creature, from: Vector2i) -> String:
 		return text
 	match turn:
 		Turn.PLAYER:
-			return "Твой ход, %s: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % [active.get_meta("title"), MOVE]
+			return "Твой ход, %s: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % [active.get_meta("title"), active.get_meta("move")]
 		Turn.OVER:
 			return "Победа!" if not _living(0).is_empty() else "Поражение."
 	return "Ходит: %s" % active.get_meta("title")
