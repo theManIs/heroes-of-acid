@@ -475,3 +475,11 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `creature_test.gd`: `defend_hold_from` 0,5 → 0,25.
 
 - `creature.gd`: `hold_bones` заменён на `scale_bones`: обрезка по времени почти не меняла движение (53° в первой четверти), теперь масштабируется размах. Запись `militiaman`: `defend_calm`, `defend_calm_by` 0.25.
+
+### 2026-11-02 — структура папок и библиотека анимаций (задача 41)
+
+- `creatures/<id>/`: `concept/`, `references/`, `tripo/`; `references/` в корне — только список. Старый риг ополченца: `creatures/militiaman/tripo/v1/`.
+- `game/assets/animations/`: 18 пресетов, 2,5 МБ, `README.md`; сборка `pipelines/creature/build_animation_library.py`.
+- `game/assets/creatures/militiaman/`: только новая модель и текстуры; анимации из библиотеки. Старые файлы удалены из игры, источники в `tripo/v1/`.
+- `stage2_tripo.py`, `stage2_multiview.py`: новые пути.
+- Проверка: арена без ошибок, автобой доигран, 0 ERROR.

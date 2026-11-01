@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://b8gbx5uciwxyf"
-path="res://.godot/imported/militiaman-anims2.glb-b5029c7b939aac0ae7fdf21da12e96a6.scn"
+uid="uid://0pf6e2lsko56"
+path="res://.godot/imported/fall.glb-a7ab6fb51eb723db31e8558ff4906efc.scn"
 
 [deps]
 
-source_file="res://assets/creatures/militiaman/militiaman-anims2.glb"
-dest_files=["res://.godot/imported/militiaman-anims2.glb-b5029c7b939aac0ae7fdf21da12e96a6.scn"]
+source_file="res://assets/animations/fall.glb"
+dest_files=["res://.godot/imported/fall.glb-a7ab6fb51eb723db31e8558ff4906efc.scn"]
 
 [params]
 

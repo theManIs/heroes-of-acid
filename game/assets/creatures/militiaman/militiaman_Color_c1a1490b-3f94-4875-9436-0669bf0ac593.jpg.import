@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dewvi7bdoq1kg"
-path.s3tc="res://.godot/imported/militiaman_NormalGL_207351f0-b1aa-4763-bb5d-ceda0e1901d7.png-2c0e955070aee7221d3680a1643b70df.s3tc.ctex"
+uid="uid://dx8bv6cd381tw"
+path.s3tc="res://.godot/imported/militiaman_Color_c1a1490b-3f94-4875-9436-0669bf0ac593.jpg-7096117b789aabfc764c1d117de3e09d.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "673af46b2dbd58cad2ffdb9205d15f3e"
+"md5": "88ab262f80672ce4744b8a73667c4c0c"
 }
 
 [deps]
 
-source_file="res://assets/creatures/militiaman/militiaman_NormalGL_207351f0-b1aa-4763-bb5d-ceda0e1901d7.png"
-dest_files=["res://.godot/imported/militiaman_NormalGL_207351f0-b1aa-4763-bb5d-ceda0e1901d7.png-2c0e955070aee7221d3680a1643b70df.s3tc.ctex"]
+source_file="res://assets/creatures/militiaman/militiaman_Color_c1a1490b-3f94-4875-9436-0669bf0ac593.jpg"
+dest_files=["res://.godot/imported/militiaman_Color_c1a1490b-3f94-4875-9436-0669bf0ac593.jpg-7096117b789aabfc764c1d117de3e09d.s3tc.ctex"]
 
 [params]
 

@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://tku46bdnokwu"
-path="res://.godot/imported/militiaman-v2.glb-99f4d425faa7a88cac9b3fdd76faa7ba.scn"
+uid="uid://c2hsa25jajb68"
+path="res://.godot/imported/hit_to_head.glb-13f19ce01332edaf86a88be1a1ada8e0.scn"
 
 [deps]
 
-source_file="res://assets/creatures/militiaman-v2/militiaman-v2.glb"
-dest_files=["res://.godot/imported/militiaman-v2.glb-99f4d425faa7a88cac9b3fdd76faa7ba.scn"]
+source_file="res://assets/animations/hit_to_head.glb"
+dest_files=["res://.godot/imported/hit_to_head.glb-13f19ce01332edaf86a88be1a1ada8e0.scn"]
 
 [params]
 

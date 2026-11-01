@@ -2,8 +2,8 @@
 
 Запуск: .venv/bin/python pipelines/creature/stage2_multiview.py <creature_id>
 
-Виды лежат в creatures/<id>/views/: front.png (обязателен), left.png, back.png, right.png.
-Результат: creatures/<id>/multiview/model.glb. Готовая задача запоминается в state.json:
+Виды лежат в creatures/<id>/concept/views/: front.png (обязателен), left.png, back.png, right.png.
+Результат: creatures/<id>/tripo/multiview/model.glb. Готовая задача запоминается в state.json:
 повторный запуск не платит второй раз.
 """
 
@@ -20,9 +20,9 @@ from stage2_tripo import FACE_LIMIT, MODEL_VERSION, ROOT, load_key, pad_concept
 
 
 async def main(creature_id: str) -> None:
-    views = ROOT / "creatures" / creature_id / "views"
-    out = ROOT / "creatures" / creature_id / "multiview"
-    out.mkdir(exist_ok=True)
+    views = ROOT / "creatures" / creature_id / "concept" / "views"
+    out = ROOT / "creatures" / creature_id / "tripo" / "multiview"
+    out.mkdir(parents=True, exist_ok=True)
     state_path = out / "state.json"
     state = json.loads(state_path.read_text()) if state_path.exists() else {}
 

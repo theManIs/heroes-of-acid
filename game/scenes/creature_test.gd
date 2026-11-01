@@ -36,8 +36,9 @@ const CREATURES := {
 	},
 	"militiaman": {
 		"name": "Ополченец", "icon": "res://assets/creatures/militiaman/icon.png",
-		"scene": "res://assets/creatures/militiaman-v2/militiaman-v2.glb",  # риг без анимаций; анимации — со старого рига
-		"extra": ["res://assets/creatures/militiaman/militiaman.glb", "res://assets/creatures/militiaman/militiaman-anims2.glb", "res://assets/creatures/militiaman/militiaman-anims3.glb", "res://assets/creatures/vampire/vampire-anims3.glb"],
+		"scene": "res://assets/creatures/militiaman/militiaman.glb",  # риг без анимаций: все анимации из общей библиотеки
+		"extra": ["res://assets/animations/idle.glb", "res://assets/animations/walk.glb", "res://assets/animations/fall.glb",
+			"res://assets/animations/chop.glb", "res://assets/animations/hit_to_head.glb", "res://assets/animations/hit_to_side.glb"],
 		"attack": "chop", "attack_from": 0.0,  # замах и рубящий удар топором сверху
 		"hurt": "hit_to_head", "hurt_len": 0.0, "idle": "idle",
 		"defend": "hit_to_side", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.4, "defend_pin": false,  # уклон вбок, анимация с файла вампира

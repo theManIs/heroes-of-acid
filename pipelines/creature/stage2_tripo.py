@@ -2,7 +2,7 @@
 
 Запуск: .venv/bin/python pipelines/creature/stage2_tripo.py <creature_id>
 
-Готовые шаги запоминаются в creatures/<id>/tripo_state.json: повторный запуск
+Готовые шаги запоминаются в creatures/<id>/tripo/tripo_state.json: повторный запуск
 продолжает с упавшего шага и не платит второй раз за уже сделанное.
 """
 
@@ -65,7 +65,7 @@ async def run_step(client, state, name, start, report):
 
 
 def load_config(out: Path) -> None:
-    """creatures/<id>/tripo.json переопределяет риг и анимации существа:
+    """creatures/<id>/tripo/tripo.json переопределяет риг и анимации существа:
     {"rig_version": "...", "animation_batches": [[...], [...]]}."""
     global RIG_VERSION, ANIMATION_BATCHES
     path = out / "tripo.json"
@@ -76,15 +76,17 @@ def load_config(out: Path) -> None:
 
 
 async def main(creature_id: str) -> None:
-    out = ROOT / "creatures" / creature_id
+    concept = ROOT / "creatures" / creature_id / "concept"
+    out = ROOT / "creatures" / creature_id / "tripo"
+    out.mkdir(exist_ok=True)
     load_config(out)
     state_path = out / "tripo_state.json"
     state = json.loads(state_path.read_text()) if state_path.exists() else {}
     report = []
 
-    padded = out / "concept-padded.png"
+    padded = concept / "concept-padded.png"
     if not padded.exists():
-        pad_concept(out / "concept.png", padded)
+        pad_concept(concept / "concept.png", padded)
 
     async with TripoClient(api_key=load_key()) as client:
         balance_before = (await client.get_balance()).balance
