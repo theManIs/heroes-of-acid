@@ -221,12 +221,23 @@ func _build_world() -> void:
 	env.environment = Environment.new()
 	env.environment.background_mode = Environment.BG_COLOR
 	env.environment.background_color = Color(0.12, 0.12, 0.14)
-	env.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.environment.ambient_light_color = Color(0.55, 0.55, 0.6)
+	# Темно, но с цветом: небо не видно на фоне, но даёт холодные тени и отражения металлу.
+	var sky := ProceduralSkyMaterial.new()
+	sky.sky_top_color = Color(0.14, 0.17, 0.32)
+	sky.sky_horizon_color = Color(0.6, 0.27, 0.17)
+	sky.ground_horizon_color = Color(0.26, 0.14, 0.1)
+	sky.ground_bottom_color = Color(0.06, 0.05, 0.06)
+	env.environment.sky = Sky.new()
+	env.environment.sky.sky_material = sky
+	env.environment.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+	env.environment.ambient_light_energy = 1.5
+	env.environment.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	add_child(env)
 
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-50, 30, 0)
+	sun.rotation_degrees = Vector3(-42, 30, 0)
+	sun.light_color = Color(1.0, 0.84, 0.66)  # тёплое низкое солнце
+	sun.light_energy = 1.4
 	sun.shadow_enabled = true
 	add_child(sun)
 
@@ -645,13 +656,19 @@ func _paint() -> void:
 	for h: Vector2i in tiles:
 		var mat: StandardMaterial3D = tiles[h].material_override
 		var color: Color = tiles[h].get_meta("base")
+		var glow := Color.BLACK  # свечение: подсветка не должна зависеть от цвета солнца
 		if shown.has(h) and h != center:
 			color = color.lerp(tint, 0.25)
+			glow = tint * 0.16
 			if h == _hovered:
 				color = color.lerp(tint, 0.35)
+				glow = tint * 0.32
 		if h == _attack_from:
 			color = color.lerp(TARGET, 0.55)
+			glow = TARGET * 0.32
 		mat.albedo_color = color
+		mat.emission_enabled = glow != Color.BLACK
+		mat.emission = glow
 
 
 func _process(delta: float) -> void:

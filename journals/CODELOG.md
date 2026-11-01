@@ -504,3 +504,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `action_icon.gd`: иконки в один цвет (бронза); `battle_test.gd`: `_action_style`, кнопки тёмного дерева с бронзовой рамкой.
 
 - `action_icon.gd`: `_blot` — клякса-подложка, подсветка под курсором; `battle_test.gd`: стиль кнопок пустой (задача 48).
+
+### 2026-11-02 — свет в сцене боя (задача 50)
+
+- `battle_test.gd`, `_build_world`: `ProceduralSkyMaterial` как источник рассеянного света и отражений, солнце тёплое, энергия 1,5. Фон пока прежний.
+
+- `battle_test.gd`, `_paint`: подсветка гексов через свечение, чтобы тёплое солнце не съедало синий; рассеянный свет 1,5, солнце 1,4.
