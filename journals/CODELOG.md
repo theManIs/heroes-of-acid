@@ -526,3 +526,5 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `battle_test.gd`: солнце выше (-62°) и слабее, встречный холодный `fill` без теней.
 
 - `battle_test.gd`: заполняющий свет перенесён к камере (-28°, -25°), плитки темнее (0,62), чтобы поле не пересвечивалось.
+
+- `battle_test.gd`: `TILE_COLOR` 0,62 → 0,78.
