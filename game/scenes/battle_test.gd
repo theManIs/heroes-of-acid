@@ -219,8 +219,9 @@ func _unit_on(h: Vector2i) -> Creature:
 func _build_world() -> void:
 	var env := WorldEnvironment.new()
 	env.environment = Environment.new()
-	env.environment.background_mode = Environment.BG_SKY
-	# Темно, но с цветом: небо даёт холодные тени и отражения металлу, дымка вдали — цвет заката.
+	env.environment.background_mode = Environment.BG_COLOR
+	env.environment.background_color = Color(0.12, 0.12, 0.14)
+	# Темно, но с цветом: небо не видно на фоне, но даёт холодные тени и отражения металлу.
 	var sky := ProceduralSkyMaterial.new()
 	sky.sky_top_color = Color(0.14, 0.17, 0.32)
 	sky.sky_horizon_color = Color(0.6, 0.27, 0.17)
@@ -231,12 +232,6 @@ func _build_world() -> void:
 	env.environment.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
 	env.environment.ambient_light_energy = 1.5
 	env.environment.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
-	env.environment.fog_enabled = true
-	env.environment.fog_mode = Environment.FOG_MODE_DEPTH  # только за полем: существа не выцветают
-	env.environment.fog_light_color = Color(0.42, 0.17, 0.11)
-	env.environment.fog_depth_begin = 20.0
-	env.environment.fog_depth_end = 45.0
-	env.environment.fog_sky_affect = 0.0
 	add_child(env)
 
 	var sun := DirectionalLight3D.new()
@@ -253,7 +248,6 @@ func _build_world() -> void:
 func _build_board() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
-	var soil := _soil_texture()
 	var mesh := CylinderMesh.new()
 	mesh.top_radius = RADIUS * TILE_GAP
 	mesh.bottom_radius = RADIUS * TILE_GAP
@@ -266,9 +260,9 @@ func _build_board() -> void:
 			var tile := MeshInstance3D.new()
 			tile.mesh = mesh
 			var mat := StandardMaterial3D.new()
-			var v := rng.randf_range(0.82, 1.0)  # плитки чуть различаются, рисунок почвы общий
-			mat.albedo_color = Color(v, v, v)
-			_apply_soil(mat, soil)
+			var v := rng.randf_range(-0.03, 0.03)
+			mat.albedo_color = Color(0.33 + v, 0.33 + v, 0.31 + v)
+			mat.roughness = 0.9
 			tile.material_override = mat
 			tile.set_meta("base", mat.albedo_color)
 			tile.position = _hex_center(h) - Vector3(0, TILE_HEIGHT * 0.5, 0)
@@ -282,49 +276,10 @@ func _build_board() -> void:
 	box.size = Vector3(off.x * 2.0 + RADIUS * 2.4, 0.25, off.z * 2.0 + RADIUS * 2.6)
 	base.mesh = box
 	var base_mat := StandardMaterial3D.new()
-	base_mat.albedo_color = Color(0.05, 0.04, 0.035)
+	base_mat.albedo_color = Color(0.09, 0.09, 0.1)
 	base.material_override = base_mat
 	base.position = Vector3(0, -TILE_HEIGHT - 0.125 + 0.02, 0)
 	board.add_child(base)
-
-	# Земля вокруг поля до горизонта: темнее плиток, чтобы поле читалось.
-	var ground := MeshInstance3D.new()
-	var plane := PlaneMesh.new()
-	plane.size = Vector2(400, 400)
-	ground.mesh = plane
-	var ground_mat := StandardMaterial3D.new()
-	ground_mat.albedo_color = Color(0.5, 0.45, 0.42)
-	_apply_soil(ground_mat, soil)
-	ground.material_override = ground_mat
-	ground.position = Vector3(0, -TILE_HEIGHT - 0.02, 0)
-	board.add_child(ground)
-
-
-## Пятнистая почва: бурая земля с тёмными и ржавыми пятнами.
-func _soil_texture() -> NoiseTexture2D:
-	var noise := FastNoiseLite.new()
-	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
-	noise.frequency = 0.012
-	noise.fractal_octaves = 5
-	var ramp := Gradient.new()
-	ramp.offsets = PackedFloat32Array([0.2, 0.45, 0.65, 0.85])
-	ramp.colors = PackedColorArray([Color(0.14, 0.11, 0.09), Color(0.29, 0.21, 0.15), Color(0.38, 0.25, 0.16), Color(0.27, 0.27, 0.17)])
-	var texture := NoiseTexture2D.new()
-	texture.noise = noise
-	texture.color_ramp = ramp
-	texture.seamless = true
-	texture.width = 1024
-	texture.height = 1024
-	return texture
-
-
-## Рисунок лежит в мировых координатах и проходит через плитки единым полем.
-func _apply_soil(mat: StandardMaterial3D, soil: Texture2D) -> void:
-	mat.albedo_texture = soil
-	mat.uv1_triplanar = true
-	mat.uv1_world_triplanar = true
-	mat.uv1_scale = Vector3.ONE * 0.09
-	mat.roughness = 0.95
 
 
 func _build_hud() -> void:
