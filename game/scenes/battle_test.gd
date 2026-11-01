@@ -293,6 +293,8 @@ func _build_hud() -> void:
 		var button := Button.new()
 		button.tooltip_text = item[0]
 		button.custom_minimum_size = Vector2(64, 64)
+		for state in ["normal", "hover", "pressed", "disabled", "focus"]:
+			button.add_theme_stylebox_override(state, _action_style(state))
 		button.pressed.connect(item[1])
 		var icon := Control.new()
 		icon.set_script(ACTION_ICON)
@@ -309,6 +311,19 @@ func _build_hud() -> void:
 	queue_bar.add_theme_constant_override("separation", 6)
 	queue_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(queue_bar)
+
+
+## Кнопка действия: тёмное дерево с бронзовой рамкой, как в Героях 3.
+func _action_style(state: String) -> StyleBox:
+	if state == "focus":
+		return StyleBoxEmpty.new()
+	var box := StyleBoxFlat.new()
+	box.bg_color = ACTION_ICON.DARK
+	box.border_color = Color(0.86, 0.73, 0.47) if state == "hover" else Color(0.42, 0.31, 0.17)
+	box.set_border_width_all(2)
+	if state == "pressed":
+		box.bg_color = Color(0.2, 0.14, 0.08)
+	return box
 
 
 ## Шкала инициативы: кто ходит сейчас, остаток этого хода, потом порядок следующего.
