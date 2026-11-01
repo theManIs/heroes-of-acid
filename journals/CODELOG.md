@@ -426,3 +426,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-02 — ускорение сцены боя (задача 29)
 
 - `battle_test.gd`: новая `GAME_SPEED := 2.0`, ставится в `Engine.time_scale` при запуске сцены.
+
+### 2026-11-02 — дальность хода при наведении (задача 30)
+
+- `battle_test.gd`: `_inspected`, `_ally_under`, `_range_of`; `_paint` показывает дальность существа под курсором: противник красным, своё синим, пока курсор на нём.

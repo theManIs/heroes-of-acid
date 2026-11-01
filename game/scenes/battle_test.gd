@@ -46,6 +46,7 @@ var _next: Array[int] = [0, 0]  # с какого существа сторон�
 var _hovered := NO_HEX
 var _attack_from := NO_HEX  # гекс, с которого будет удар
 var _targeted: Creature  # противник с зелёной обводкой
+var _inspected: Creature  # существо под курсором: показываем его дальность хода
 var _auto := false
 var _shot := ""
 var _cam_base := Vector3.ZERO  # камера общего плана
@@ -334,10 +335,7 @@ func _next_turn() -> void:
 	if side == 0 and not _auto:
 		turn = Turn.PLAYER
 		active.set_outline(PLAYER_TURN)
-		var paths := _paths_from(cells[active])
-		for h: Vector2i in paths:
-			if paths[h].size() <= active.get_meta("move"):
-				reachable[h] = paths[h]
+		reachable = _range_of(active)
 		_paint()
 		return
 	turn = Turn.ENEMY
@@ -483,6 +481,16 @@ func _enemy_under(screen: Vector2) -> Creature:
 	return best
 
 
+## Своё существо под курсором: на его гексе или в экранной рамке по костям.
+func _ally_under(screen: Vector2) -> Creature:
+	var hex := _hex_under(screen)
+	var best: Creature
+	for c in _living(0):
+		if (cells[c] == hex or _over_body(c, screen)) and (best == null or c.position.z > best.position.z):
+			best = c
+	return best
+
+
 func _over_body(c: Creature, screen: Vector2) -> bool:
 	var box := Rect2(camera.unproject_position(c.bone_world(0)), Vector2.ZERO)
 	for i in c.skeleton.get_bone_count():
@@ -502,14 +510,31 @@ func _set_target(c: Creature) -> void:
 
 # --- Отрисовка состояния ---
 
+## Куда существо может дойти за свой ход.
+func _range_of(c: Creature) -> Dictionary:
+	var out := {}
+	var paths := _paths_from(cells[c])
+	for h: Vector2i in paths:
+		if paths[h].size() <= c.get_meta("move"):
+			out[h] = paths[h]
+	return out
+
+
 func _paint() -> void:
+	var shown := reachable
+	var tint := PLAYER_TURN
+	var center: Variant = cells[active] if active else null
+	if _inspected:
+		shown = _range_of(_inspected)
+		tint = ENEMY_TURN if sides[1].has(_inspected) else PLAYER_TURN
+		center = cells[_inspected]
 	for h: Vector2i in tiles:
 		var mat: StandardMaterial3D = tiles[h].material_override
 		var color: Color = tiles[h].get_meta("base")
-		if reachable.has(h) and h != cells[active]:
-			color = color.lerp(PLAYER_TURN, 0.25)
+		if shown.has(h) and h != center:
+			color = color.lerp(tint, 0.25)
 			if h == _hovered:
-				color = color.lerp(PLAYER_TURN, 0.35)
+				color = color.lerp(tint, 0.35)
 		if h == _attack_from:
 			color = color.lerp(TARGET, 0.55)
 		mat.albedo_color = color
@@ -528,9 +553,11 @@ func _process(delta: float) -> void:
 	_set_target(targeted)
 	var h := NO_HEX if enemy else _hex_under(mouse)  # противник заслоняет гексы за собой
 	var from := _attack_hex(mouse, targeted) if targeted else NO_HEX
-	if h != _hovered or from != _attack_from:
+	var inspected := enemy if enemy else _ally_under(mouse)
+	if h != _hovered or from != _attack_from or inspected != _inspected:
 		_hovered = h
 		_attack_from = from
+		_inspected = inspected
 		_paint()
 	sword.visible = from != NO_HEX
 	if sword.visible:
@@ -539,7 +566,7 @@ func _process(delta: float) -> void:
 		var b := camera.unproject_position(_hex_center(cells[targeted]))
 		sword.position = mouse
 		sword.rotation = (b - a).angle()
-	status.text = _status_text(enemy if enemy else _unit_on(h), from)
+	status.text = _status_text(inspected, from)
 
 
 func _status_text(unit: Creature, from: Vector2i) -> String:
