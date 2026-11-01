@@ -391,3 +391,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-01 21:30 — зум слабее
 
 - `game/scenes/creature_test.gd`: `ZOOM_NEAR` 0,55 → 0,35, `ZOOM_PINCH` 1,5 → 0,8.
+
+### 2026-11-01 21:35 — зум ещё слабее
+
+- `game/scenes/creature_test.gd`: `ZOOM_NEAR` 0,35 → 0,2, `ZOOM_PINCH` 0,8 → 0,5.
