@@ -387,3 +387,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-01 21:20 — щипок и колесо: приближение с возвратом
 
 - `game/scenes/creature_test.gd`: `InputEventMagnifyGesture` и колесо мыши двигают камеру к существу под курсором или точке на земле; `ZOOM_NEAR` 0,55; `ZOOM_HOLD` 0,5 с без событий жеста — плавный возврат на общий план. Проверено синтетическими событиями щипка: приблизилось, через 1,5 с после последнего события камера на базовой позиции.
+
+### 2026-11-01 21:30 — зум слабее
+
+- `game/scenes/creature_test.gd`: `ZOOM_NEAR` 0,55 → 0,35, `ZOOM_PINCH` 1,5 → 0,8.
