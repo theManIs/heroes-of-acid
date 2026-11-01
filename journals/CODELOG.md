@@ -483,3 +483,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/assets/creatures/militiaman/`: только новая модель и текстуры; анимации из библиотеки. Старые файлы удалены из игры, источники в `tripo/v1/`.
 - `stage2_tripo.py`, `stage2_multiview.py`: новые пути.
 - Проверка: арена без ошибок, автобой доигран, 0 ERROR.
+
+### 2026-11-02 — рамка в шкале инициативы (задача 45)
+
+- `battle_test.gd`: `_queue_slot` без белой рамки.

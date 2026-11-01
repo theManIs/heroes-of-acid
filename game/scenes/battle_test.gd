@@ -333,12 +333,12 @@ func _queue_label(text: String) -> Label:
 	return label
 
 
-## Пиктограмма в шкале: рамка цвета стороны, у того, кто ходит сейчас, — крупнее и белая.
+## Пиктограмма в шкале: рамка цвета стороны, у того, кто ходит сейчас, — крупнее.
 func _queue_slot(c: Creature, current: bool) -> Control:
 	var frame := PanelContainer.new()
 	var box := StyleBoxFlat.new()
 	box.bg_color = Color(0.1, 0.1, 0.12, 0.85)
-	box.border_color = Color.WHITE if current else (PLAYER_TURN if sides[0].has(c) else ENEMY_TURN)
+	box.border_color = PLAYER_TURN if sides[0].has(c) else ENEMY_TURN
 	box.set_border_width_all(3)
 	box.set_content_margin_all(3)
 	frame.add_theme_stylebox_override("panel", box)
