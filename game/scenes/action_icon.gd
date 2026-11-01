@@ -1,16 +1,26 @@
 extends Control
-## Иконка действия на кнопке боя: один цвет, как в Героях 3. Рисуется кодом.
+## Иконка действия на кнопке боя: один цвет на чёрной кляксе. Рисуется кодом.
 
 enum Kind { WAIT, DEFEND, RESTART }
 
 const INK := Color(0.86, 0.73, 0.47)  # светлая бронза
-const DARK := Color(0.12, 0.08, 0.05)  # цвет кнопки: вырезы в иконке
+const DARK := Color(0.04, 0.035, 0.03)  # клякса и вырезы в иконке
+const HOVER := Color(0.2, 0.15, 0.09)  # клякса под курсором
+const BLOT_POINTS := 40
 
 var kind := Kind.WAIT
 
 
+func _ready() -> void:
+	var button := get_parent() as Button
+	button.mouse_entered.connect(queue_redraw)
+	button.mouse_exited.connect(queue_redraw)
+
+
 func _draw() -> void:
 	var c := size * 0.5
+	var color := HOVER if (get_parent() as Button).is_hovered() else DARK
+	_blot(c, color)
 	match kind:
 		Kind.WAIT:
 			_hourglass(c)
@@ -18,6 +28,24 @@ func _draw() -> void:
 			_shield(c)
 		Kind.RESTART:
 			_restart(c)
+
+
+## Клякса: круг с неровным краем и брызги рядом; форма своя у каждого вида иконки и не меняется.
+func _blot(c: Vector2, color: Color) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11 + kind * 7
+	var points := PackedVector2Array()
+	var phase := rng.randf() * TAU
+	for i in BLOT_POINTS:
+		var a := TAU * i / BLOT_POINTS
+		var r := 28.0 + 2.5 * sin(a * 3.0 + phase) + rng.randf_range(-3.0, 3.5)
+		if rng.randf() < 0.12:
+			r += rng.randf_range(2.0, 6.0)  # потёк
+		points.append(c + Vector2(r, 0).rotated(a))
+	draw_colored_polygon(points, color)
+	for i in 5:
+		var spot := c + Vector2(rng.randf_range(33.0, 39.0), 0).rotated(rng.randf() * TAU)
+		draw_circle(spot, rng.randf_range(0.9, 2.2), color)
 
 
 func _hourglass(c: Vector2) -> void:

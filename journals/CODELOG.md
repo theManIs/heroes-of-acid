@@ -502,3 +502,5 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/scenes/action_icon.gd`: иконки рисуются кодом. `battle_test.gd`: кнопки-иконки, `_skip` убран.
 
 - `action_icon.gd`: иконки в один цвет (бронза); `battle_test.gd`: `_action_style`, кнопки тёмного дерева с бронзовой рамкой.
+
+- `action_icon.gd`: `_blot` — клякса-подложка, подсветка под курсором; `battle_test.gd`: стиль кнопок пустой (задача 48).

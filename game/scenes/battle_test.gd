@@ -287,14 +287,14 @@ func _build_hud() -> void:
 	bar.offset_top = -80
 	bar.offset_bottom = -16
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
-	bar.add_theme_constant_override("separation", 10)
+	bar.add_theme_constant_override("separation", 14)
 	hud.add_child(bar)
 	for item in [["Ждать", _wait, ACTION_ICON.Kind.WAIT], ["Защита", _defend, ACTION_ICON.Kind.DEFEND], ["Заново", _reset, ACTION_ICON.Kind.RESTART]]:
 		var button := Button.new()
 		button.tooltip_text = item[0]
 		button.custom_minimum_size = Vector2(64, 64)
 		for state in ["normal", "hover", "pressed", "disabled", "focus"]:
-			button.add_theme_stylebox_override(state, _action_style(state))
+			button.add_theme_stylebox_override(state, StyleBoxEmpty.new())  # подложка — клякса в иконке
 		button.pressed.connect(item[1])
 		var icon := Control.new()
 		icon.set_script(ACTION_ICON)
@@ -311,19 +311,6 @@ func _build_hud() -> void:
 	queue_bar.add_theme_constant_override("separation", 6)
 	queue_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(queue_bar)
-
-
-## Кнопка действия: тёмное дерево с бронзовой рамкой, как в Героях 3.
-func _action_style(state: String) -> StyleBox:
-	if state == "focus":
-		return StyleBoxEmpty.new()
-	var box := StyleBoxFlat.new()
-	box.bg_color = ACTION_ICON.DARK
-	box.border_color = Color(0.86, 0.73, 0.47) if state == "hover" else Color(0.42, 0.31, 0.17)
-	box.set_border_width_all(2)
-	if state == "pressed":
-		box.bg_color = Color(0.2, 0.14, 0.08)
-	return box
 
 
 ## Шкала инициативы: кто ходит сейчас, остаток этого хода, потом порядок следующего.
