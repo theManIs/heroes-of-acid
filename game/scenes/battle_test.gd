@@ -17,7 +17,7 @@ const OVERLAP := 0.1  # кулак входит в тело врага, метр
 const TILE_HEIGHT := 0.12
 const TILE_GAP := 0.94  # доля радиуса: щель между плитками
 const RADIUS := 0.6
-const TILE_COLOR := Color(0.92, 0.92, 0.92)  # белое матовое поле: существа читаются лучше всего
+const TILE_COLOR := Color(0.62, 0.62, 0.62)  # белое матовое поле: существа читаются лучше всего
 const PLAYER_TURN := Color(0.25, 0.55, 1.0)
 const ENEMY_TURN := Color(1.0, 0.25, 0.2)
 const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсором — можно ударить
@@ -238,15 +238,15 @@ func _build_world() -> void:
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-62, 20, 0)  # высокое солнце: короткие тени, свет на обе стороны фигур
 	sun.light_color = Color(1.0, 0.88, 0.74)
-	sun.light_energy = 1.05
+	sun.light_energy = 0.95
 	sun.shadow_enabled = true
 	add_child(sun)
 
-	# Встречный заполняющий свет: теневая сторона фигур не проваливается в черноту.
+	# Заполняющий свет: теневая сторона фигур не проваливается в черноту.
 	var fill := DirectionalLight3D.new()
-	fill.rotation_degrees = Vector3(-30, -150, 0)
-	fill.light_color = Color(0.68, 0.76, 1.0)
-	fill.light_energy = 0.55
+	fill.rotation_degrees = Vector3(-28, -25, 0)  # со стороны камеры
+	fill.light_color = Color(0.72, 0.79, 1.0)
+	fill.light_energy = 0.75
 	add_child(fill)
 
 	camera.fov = 55.0
