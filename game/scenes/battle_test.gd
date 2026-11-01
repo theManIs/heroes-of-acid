@@ -17,6 +17,7 @@ const OVERLAP := 0.1  # кулак входит в тело врага, метр
 const TILE_HEIGHT := 0.12
 const TILE_GAP := 0.94  # доля радиуса: щель между плитками
 const RADIUS := 0.6
+const TILE_COLOR := Color(0.92, 0.92, 0.92)  # белое матовое поле: существа читаются лучше всего
 const PLAYER_TURN := Color(0.25, 0.55, 1.0)
 const ENEMY_TURN := Color(1.0, 0.25, 0.2)
 const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсором — можно ударить
@@ -260,8 +261,8 @@ func _build_board() -> void:
 			var tile := MeshInstance3D.new()
 			tile.mesh = mesh
 			var mat := StandardMaterial3D.new()
-			var v := rng.randf_range(-0.03, 0.03)
-			mat.albedo_color = Color(0.33 + v, 0.33 + v, 0.31 + v)
+			mat.albedo_color = TILE_COLOR * rng.randf_range(0.98, 1.02)
+			mat.albedo_color.a = 1.0
 			mat.roughness = 0.9
 			tile.material_override = mat
 			tile.set_meta("base", mat.albedo_color)
@@ -658,11 +659,11 @@ func _paint() -> void:
 		var color: Color = tiles[h].get_meta("base")
 		var glow := Color.BLACK  # свечение: подсветка не должна зависеть от цвета солнца
 		if shown.has(h) and h != center:
-			color = color.lerp(tint, 0.25)
-			glow = tint * 0.16
+			color = color.lerp(tint, 0.65)
+			glow = tint * 0.14
 			if h == _hovered:
-				color = color.lerp(tint, 0.35)
-				glow = tint * 0.32
+				color = color.lerp(tint, 0.5)
+				glow = tint * 0.3
 		if h == _attack_from:
 			color = color.lerp(TARGET, 0.55)
 			glow = TARGET * 0.32

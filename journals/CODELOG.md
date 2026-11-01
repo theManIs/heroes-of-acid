@@ -516,3 +516,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `battle_test.gd`: фон — небо, туман; плоскость земли; `_soil_texture`, `_apply_soil`: шумовая почва в мировых координатах.
 
 - Откат задачи 51: `battle_test.gd` вернулся к состоянию до земли, почвы и дымки.
+
+### 2026-11-02 — белое поле (задача 52)
+
+- `battle_test.gd`: `TILE_COLOR` белый, матовый; отражения убраны; подсветка насыщеннее.
