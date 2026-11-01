@@ -65,6 +65,10 @@ const NO_HEX := Vector2i(999, 999)
 const CAMERA_REF_RADIUS := 0.445  # радиус гекса, под который выставлялась камера (кадр упыря)
 const HEX_RADIUS := 0.6  # поле одно для всех существ; дальность удара добирается выпадом
 const CAMERA_ZOOM := 0.75  # меньше — камера ближе
+const ZOOM_NEAR := 0.55  # насколько сокращается дистанция при полном приближении
+const ZOOM_PINCH := 1.5  # чувствительность щипка
+const ZOOM_WHEEL := 0.12  # шаг колеса мыши
+const ZOOM_HOLD := 0.5  # жест молчит столько секунд — считаем, что пальцы отпущены
 const DIRS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)]
 
 enum Turn { PLAYER, ENEMY, BUSY, OVER }
@@ -85,6 +89,12 @@ var _hovered := Vector2i(999, 999)
 var _targeted := false  # на противнике зелёная обводка
 var _attack_from := Vector2i(999, 999)  # гекс, с которого будет удар (выбран сектором под курсором)
 var sword: Control
+var _cam_base := Vector3.ZERO  # камера общего плана
+var _cam_look := Vector3.ZERO
+var _zoom := 0.0  # 0 — общий план, 1 — вплотную
+var _zoom_target := 0.0
+var _zoom_focus := Vector3.ZERO  # на что смотрим при приближении
+var _zoom_idle := INF  # секунд с последнего движения жеста
 
 
 func _ready() -> void:
@@ -141,8 +151,33 @@ func _fit_radius() -> void:
 ## чтобы поле в кадре выглядело одинаково для любого существа.
 func _place_camera() -> void:
 	var k := radius / CAMERA_REF_RADIUS * CAMERA_ZOOM
-	camera.position = Vector3(0, 2.6, 3.6) * k
-	camera.look_at(Vector3(0, 0.5, 0) * k)
+	_cam_base = Vector3(0, 2.6, 3.6) * k
+	_cam_look = Vector3(0, 0.5, 0) * k
+	_apply_zoom()
+
+
+## Щипок и колесо: камера едет к точке под курсором; отпустил пальцы — вернулась на общий план.
+func _apply_zoom() -> void:
+	var look := _cam_look.lerp(_zoom_focus, _zoom)
+	camera.position = look + (_cam_base - _cam_look) * (1.0 - _zoom * ZOOM_NEAR)
+	camera.look_at(look)
+
+
+func _zoom_by(amount: float, screen: Vector2) -> void:
+	if _zoom_target <= 0.001:  # начало жеста: выбрать, куда приближаемся
+		_zoom_focus = _focus_under(screen)
+	_zoom_target = clampf(_zoom_target + amount, 0.0, 1.0)
+	_zoom_idle = 0.0
+
+
+## Существо под курсором — середина его тела, иначе точка на земле.
+func _focus_under(screen: Vector2) -> Vector3:
+	var hex := _hex_at(_ground_point(screen))
+	if _on_enemy(screen) or hex == _hex_of(enemy):
+		return enemy.position + Vector3.UP * enemy.height * 0.6
+	if hex == _hex_of(player):
+		return player.position + Vector3.UP * player.height * 0.6
+	return _ground_point(screen)
 
 
 func _hex_spacing() -> float:
@@ -445,6 +480,14 @@ func _move_and_maybe_strike(who: Creature, target: Creature, path: Array[Vector2
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	var pinch := event as InputEventMagnifyGesture
+	if pinch:
+		_zoom_by((pinch.factor - 1.0) * ZOOM_PINCH, pinch.position)
+		return
+	var wheel := event as InputEventMouseButton
+	if wheel and wheel.pressed and wheel.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		_zoom_by(ZOOM_WHEEL if wheel.button_index == MOUSE_BUTTON_WHEEL_UP else -ZOOM_WHEEL, wheel.position)
+		return
 	var click := event as InputEventMouseButton
 	if turn != Turn.PLAYER or click == null or not click.pressed or click.button_index != MOUSE_BUTTON_LEFT:
 		return
@@ -525,7 +568,13 @@ func _paint() -> void:
 		mat.albedo_color = color
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_zoom_idle += delta
+	if _zoom_idle > ZOOM_HOLD:
+		_zoom_target = 0.0
+	if absf(_zoom - _zoom_target) > 0.001:
+		_zoom = lerpf(_zoom, _zoom_target, 1.0 - exp(-10.0 * delta))
+		_apply_zoom()
 	var mouse := get_viewport().get_mouse_position()
 	var over_enemy := not player.dead and (_on_enemy(mouse) or _hex_at(_ground_point(mouse)) == _hex_of(enemy))
 	var targeted := turn == Turn.PLAYER and over_enemy and enemy.can_be_hit()

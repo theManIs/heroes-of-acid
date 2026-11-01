@@ -383,3 +383,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/assets/creatures/militiaman/`: glb, anims2, anims3, icon.png; текстуры 2048 + VRAM-сжатие.
 - `game/scenes/creature_test.gd`: запись `militiaman`; `TESTED = "militiaman"`.
 - `pipelines/creature/README.md`: столбец ополченца, старт с готовой T-позы.
+
+### 2026-11-01 21:20 — щипок и колесо: приближение с возвратом
+
+- `game/scenes/creature_test.gd`: `InputEventMagnifyGesture` и колесо мыши двигают камеру к существу под курсором или точке на земле; `ZOOM_NEAR` 0,55; `ZOOM_HOLD` 0,5 с без событий жеста — плавный возврат на общий план. Проверено синтетическими событиями щипка: приблизилось, через 1,5 с после последнего события камера на базовой позиции.
