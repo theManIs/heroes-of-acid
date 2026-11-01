@@ -395,3 +395,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-01 21:35 — зум ещё слабее
 
 - `game/scenes/creature_test.gd`: `ZOOM_NEAR` 0,35 → 0,2, `ZOOM_PINCH` 0,8 → 0,5.
+
+### 2026-11-02 — сцена боя 15×11 (задача 23)
+
+- Новые файлы: `game/scenes/battle_test.gd`, `game/scenes/battle_test.tscn`. Записи существ берутся из `creature_test.gd`, арена не менялась.
+- Поле 15×11, по 5 существ слева (игрок) и справа (ИИ), стороны ходят по очереди, мёртвые не занимают гекс.
+- Проверка: `godot --path game res://scenes/battle_test.tscn -- --auto --shot=<префикс>` (автобой доиграл до конца, слева живых 1, справа 0); клики, защита и пропуск проверены временным скриптом, он удалён.
