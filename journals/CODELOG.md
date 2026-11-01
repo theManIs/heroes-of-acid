@@ -520,3 +520,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-02 — белое поле (задача 52)
 
 - `battle_test.gd`: `TILE_COLOR` белый, матовый; отражения убраны; подсветка насыщеннее.
+
+### 2026-11-02 — свет с двух сторон (задача 53)
+
+- `battle_test.gd`: солнце выше (-62°) и слабее, встречный холодный `fill` без теней.

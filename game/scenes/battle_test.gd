@@ -236,11 +236,18 @@ func _build_world() -> void:
 	add_child(env)
 
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-42, 30, 0)
-	sun.light_color = Color(1.0, 0.84, 0.66)  # тёплое низкое солнце
-	sun.light_energy = 1.4
+	sun.rotation_degrees = Vector3(-62, 20, 0)  # высокое солнце: короткие тени, свет на обе стороны фигур
+	sun.light_color = Color(1.0, 0.88, 0.74)
+	sun.light_energy = 1.05
 	sun.shadow_enabled = true
 	add_child(sun)
+
+	# Встречный заполняющий свет: теневая сторона фигур не проваливается в черноту.
+	var fill := DirectionalLight3D.new()
+	fill.rotation_degrees = Vector3(-30, -150, 0)
+	fill.light_color = Color(0.68, 0.76, 1.0)
+	fill.light_energy = 0.55
+	add_child(fill)
 
 	camera.fov = 55.0
 	add_child(camera)
