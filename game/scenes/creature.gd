@@ -68,6 +68,11 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	_fit()
 	skeleton = model.find_children("*", "Skeleton3D", true, false)[0]
 	anim = model.find_child("AnimationPlayer", true, false)
+	if anim == null:  # файл рига без анимаций: всё подмешается из extra_anims
+		anim = AnimationPlayer.new()
+		model.add_child(anim)
+		anim.root_node = anim.get_path_to(model)
+		anim.add_animation_library(&"", AnimationLibrary.new())
 	for path: String in extra_anims:
 		_merge_extra_animations(path)
 	if idle != "idle" and anim.has_animation(idle):
@@ -111,6 +116,7 @@ func _merge_extra_animations(path: String) -> void:
 	var library := anim.get_animation_library(&"")
 	# Пути треков во втором файле другие: переводим их на скелет основной модели.
 	var skeleton_path := anim.get_node(anim.root_node).get_path_to(skeleton)
+	var source_skeleton: Skeleton3D = extra.find_children("*", "Skeleton3D", true, false)[0]
 	for anim_name in source.get_animation_list():
 		if library.has_animation(anim_name):
 			continue
@@ -118,8 +124,26 @@ func _merge_extra_animations(path: String) -> void:
 		for t in a.get_track_count():
 			var bone := a.track_get_path(t).get_concatenated_subnames()
 			a.track_set_path(t, NodePath("%s:%s" % [skeleton_path, bone]))
+			_adapt_track(a, t, source_skeleton, bone)
 		library.add_animation(anim_name, a)
 	extra.free()
+
+
+## Анимация из другого рига: поза покоя у него своя (кисти отличаются до 30°). Ключи хранят позу
+## целиком, поэтому переносим отклонение от покоя: иначе оружие в руке поворачивается.
+func _adapt_track(a: Animation, t: int, source: Skeleton3D, bone: String) -> void:
+	var from := source.find_bone(bone)
+	var to := skeleton.find_bone(bone)
+	if from < 0 or to < 0:
+		return
+	if a.track_get_type(t) == Animation.TYPE_ROTATION_3D:
+		var delta := skeleton.get_bone_rest(to).basis.get_rotation_quaternion() * source.get_bone_rest(from).basis.get_rotation_quaternion().inverse()
+		for k in a.track_get_key_count(t):
+			a.track_set_key_value(t, k, (delta * a.track_get_key_value(t, k)).normalized())
+	elif a.track_get_type(t) == Animation.TYPE_POSITION_3D:
+		var shift := skeleton.get_bone_rest(to).origin - source.get_bone_rest(from).origin
+		for k in a.track_get_key_count(t):
+			a.track_set_key_value(t, k, a.track_get_key_value(t, k) + shift)
 
 
 ## У Tripo таз в анимациях смещён относительно idle (в run было больше метра в мире): при переходах
@@ -430,6 +454,25 @@ func take_hit(delay: float) -> void:
 		get_tree().create_timer(delay).timeout.connect(play_once.bind(hurt_anim))
 	else:
 		flinch(delay)
+
+
+## Ослабить движение костей: только доля amount пути от позы стойки, тело играет полностью.
+## Обрезать по времени нельзя: пресеты делают основной размах в первой четверти длины.
+func scale_bones(anim_name: String, bones: Array, amount: float) -> void:
+	if bones.is_empty() or not anim.has_animation(anim_name):
+		return
+	var a := anim.get_animation(anim_name)
+	var idle := anim.get_animation("idle")
+	var root_path := anim.get_node(anim.root_node).get_path_to(skeleton)
+	for bone: String in bones:
+		var path := NodePath("%s:%s" % [root_path, bone])
+		var t := a.find_track(path, Animation.TYPE_ROTATION_3D)
+		var from := idle.find_track(path, Animation.TYPE_ROTATION_3D)
+		if t < 0 or from < 0:
+			continue
+		var rest: Quaternion = idle.track_get_key_value(from, 0)
+		for k in a.track_get_key_count(t):
+			a.track_set_key_value(t, k, rest.slerp(a.track_get_key_value(t, k), amount))
 
 
 ## Сменить анимацию удара: заново ищем момент попадания и дальность.

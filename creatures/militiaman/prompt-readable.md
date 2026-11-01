@@ -15,3 +15,28 @@ Keep this exact image and the shield unchanged. Fix only the axe grip: about a t
 
 --- итерация 6: рука в горизонталь, без грязи (решение пользователя: грязь — шум, в игре её не видно) ---
 Keep the same man, clothing, helmet, axe grip at the very end of the haft, and the shield flat on the left forearm. Fix two things. ARM: raise the right arm so it is fully horizontal at shoulder height, straight out to the side, exactly level with the left arm. DIRT: remove all dirt, mud, grime, rust, blood stains, scratches, frayed edges and fine surface noise from the whole figure. Clean realistic materials with calm surfaces: clean quilted cloth with larger simple quilting, smooth clean leather boots, clean steel on the helmet and axe blade, clean linen with a simple straight hem, a clean red sash with no tatters. Still realistic, not stylized.
+
+--- итерация 7: T-поза по листу пользователя concept-sheet-v7.jpg ---
+Generate an image. Square 1:1. Use the attached character sheet as the only reference for this man: same face, helmet, green hood, quilted brown coat, belt, boots, axe and shield painting. Ignore all earlier images in this chat. Draw one single full-body figure from the front, no back view, no small figures, no close-ups, no palette, no text. Strict symmetrical T-pose: both arms fully horizontal at shoulder height, straight out to the sides, palms down, legs apart with a clear gap, feet flat. Right hand grips the axe at the very end of the haft, the whole haft extends upward from the fist with the axe head at the top. Shield: strapped flat on the outer side of the horizontal left forearm, lying on top of the arm, its plane parallel to the ground and to the arm, its long axis along the forearm, seen from the front foreshortened as a narrow sliver. It does not face the viewer and does not touch the torso. Clean materials, no dirt, no scratches. The whole figure fits inside the frame with an empty margin. Plain light-grey background, soft even studio lighting, no cast shadows, no ground.
+
+--- итерация 8: четыре вида для multiview, файлы в views/ (front, left, back, right) ---
+Порядок: профиль с щитом-каплей (остриё назад, за спину) → спереди → справа → сзади; в каждом промпте указано, куда смотрит лезвие и где щит, чтобы виды совпадали. Лезвие наружу от тела: в профиле со стороны щита и справа топор виден с ребра.
+
+--- итерация 9: пятка топора ---
+Спереди и сзади добавлена. Вид справа: ChatGPT дважды отклонил правку по своим правилам (без объяснения причины), файл right.png без пятки.
+
+--- итерация 10: без утолщения на рукояти, топор крупнее, бородатое лезвие (решение пользователя) ---
+Remove the wooden knob. Make the whole axe much bigger. The lower corner of the blade extends down into a long curved hook along the haft: a bearded axe, the beard shields the hand. The figure may be slightly smaller to keep the axe inside the frame.
+
+--- итерация 11: топор по референсу пользователя references/militiaman-axe.webp ---
+Форма головы, изогнутая рукоять, обмотка и крюк на конце с референса, без гравировки. Кулак на обмотке прямо над крюком. Рука в горизонталь, ткань гладкая.
+
+--- итерация 12: топор с фото без изменений, без бороды (решение пользователя) ---
+
+--- итерация 13: заново только с листа concept-sheet-v7.jpg, топор и щит с листа, стёганка возвращена ---
+
+--- итерация 14: виды left, back, right по утверждённому виду спереди (к каждому запросу прикреплён front.png); сзади правка щита ---
+
+--- итерация 15: вариант 1, щит с наклоном, чтобы роспись была видна; единый наклон на всех видах (ближний конец -20°, внешний край -15°). Виды с плоским щитом сохранены в views-flat/ ---
+
+--- итерация 15 отменена пользователем: наклон щита мог испортить модель. Возврат к итерации 14 (щит плашмя) ---

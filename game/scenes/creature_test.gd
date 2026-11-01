@@ -36,11 +36,12 @@ const CREATURES := {
 	},
 	"militiaman": {
 		"name": "Ополченец", "icon": "res://assets/creatures/militiaman/icon.png",
-		"scene": "res://assets/creatures/militiaman/militiaman.glb",
-		"extra": ["res://assets/creatures/militiaman/militiaman-anims2.glb", "res://assets/creatures/militiaman/militiaman-anims3.glb"],
+		"scene": "res://assets/creatures/militiaman-v2/militiaman-v2.glb",  # риг без анимаций; анимации — со старого рига
+		"extra": ["res://assets/creatures/militiaman/militiaman.glb", "res://assets/creatures/militiaman/militiaman-anims2.glb", "res://assets/creatures/militiaman/militiaman-anims3.glb", "res://assets/creatures/vampire/vampire-anims3.glb"],
 		"attack": "chop", "attack_from": 0.0,  # замах и рубящий удар топором сверху
 		"hurt": "hit_to_head", "hurt_len": 0.0, "idle": "idle",
-		"defend": "scared_01", "defend_from": 0.0, "defend_len": 1.3, "defend_lead": 0.3,  # руки со щитом подняты перед лицом
+		"defend": "hit_to_side", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.4, "defend_pin": false,  # уклон вбок, анимация с файла вампира
+		"defend_calm": ["L_Clavicle", "L_Upperarm", "L_UpperarmTwist01", "L_UpperarmTwist02", "L_Forearm", "L_ForearmTwist01", "L_ForearmTwist02", "L_Hand"], "defend_calm_by": 0.25,  # левая рука со щитом: четверть размаха
 		"size": 1.85,
 	},
 	"flesh-golem": {
@@ -126,6 +127,7 @@ func _make() -> Creature:
 	c.defend_lead = cfg.defend_lead
 	c.hurt_len = cfg.hurt_len
 	c.defend_pin = cfg.get("defend_pin", true)
+	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	if cfg.get("smoke", false):
 		c.add_smoke()
 	return c
@@ -494,8 +496,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _on_enemy(click.position) or _hex_at(_ground_point(click.position)) == _hex_of(enemy):
 		var from := _attack_hex(click.position)
 		if from != NO_HEX and enemy.can_be_hit():
-			var path: Array[Vector2i] = [] if from == _hex_of(player) else reachable[from]
-			_move_and_maybe_strike(player, enemy, path, _start_enemy_turn)
+			_move_and_maybe_strike(player, enemy, reachable[from], _start_enemy_turn)  # свой гекс — пустой путь
 		return
 	var h := _hex_under(click.position)
 	if reachable.has(h) and h != _hex_of(player):
@@ -505,10 +506,12 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Гекс атаки — от гекса, а не от модели: 6 треугольников гекса противника, продлённых за его
 ## края; в какой клин на земле попадает точка под курсором, с того соседнего гекса и бьём.
 ## Тело существа только перекрывает эти клинья на экране. Сторона занята, за краем поля
-## или вне хода — ближайшая по углу доступная.
+## или вне хода — ближайшая по углу доступная. Если уже стоим рядом с противником, не двигаемся.
 func _attack_hex(screen: Vector2) -> Vector2i:
 	var target := _hex_of(enemy)
 	var mine := _hex_of(player)
+	if _hex_distance(mine, target) == 1:
+		return mine  # уже рядом: бьём с места
 	var center := _hex_center(target)
 	var ground := _ground_point(screen)
 	var pointer := Vector2(ground.x - center.x, ground.z - center.z)

@@ -97,6 +97,7 @@ func _make(id: String) -> Creature:
 	c.defend_lead = cfg.defend_lead
 	c.hurt_len = cfg.hurt_len
 	c.defend_pin = cfg.get("defend_pin", true)
+	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	c.walk_rate = WALK_RATE
 	c.set_meta("move", MOVES[id])
 	c.set_meta("title", cfg.name)
@@ -535,8 +536,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Гекс атаки — как в арене: в какой клин вокруг гекса противника попадает точка под курсором,
 ## с того соседнего гекса и бьём. Сторона занята или вне хода — ближайшая по углу доступная.
+## Если уже стоим рядом с противником, не двигаемся.
 func _attack_hex(screen: Vector2, enemy: Creature) -> Vector2i:
 	var target: Vector2i = cells[enemy]
+	if _hex_distance(cells[active], target) == 1:
+		return cells[active]  # уже рядом: бьём с места
 	var center := _hex_center(target)
 	var ground := _ground_point(screen)
 	var pointer := Vector2(ground.x - center.x, ground.z - center.z)

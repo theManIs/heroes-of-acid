@@ -444,3 +444,34 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-02 — шкала после смерти и конца боя (задача 33)
 
 - `battle_test.gd`: `_act` обновляет шкалу в момент попадания; `_game_over` очищает шкалу; мёртвые не показываются в блоке «Ждут».
+
+### 2026-11-02 — новый ополченец: multiview, риг, старые анимации (задачи 35, 36)
+
+- `pipelines/creature/stage2_multiview.py`: модель по нескольким видам. Заказ: модель 40, риг 25, баланс 115 → 50.
+- `creature.gd`: пустой `AnimationPlayer` для рига без анимаций, `_adapt_track` — перенос анимаций на другую позу покоя.
+- `creature_test.gd`: запись `militiaman` — новая модель, анимации со старых файлов.
+- Команды: `godot --path game res://scenes/battle_test.tscn -- --auto`, импорт с `compress/mode=2`, `size_limit=2048`.
+
+### 2026-11-02 — заморозка руки в реакции (задача 37)
+
+- `creature.gd`: `freeze_bones`; `creature_test.gd`, `battle_test.gd`: вызов из `_make`; запись `militiaman`: `hurt_still`. Пиктограмма ополченца переснята.
+
+- Заморозка распространена на защиту: `hurt_still` → `still`, применяется к `hurt` и `defend`.
+
+### 2026-11-02 — удар без перемещения (задача 38)
+
+- `battle_test.gd`, `creature_test.gd`: `_attack_hex` возвращает свой гекс, если противник уже рядом.
+
+- `creature_test.gd`: клик по соседнему противнику падал с ошибкой типов (`[]` без типа в `Array[Vector2i]`), удар с места никогда не срабатывал. Теперь путь берётся из `reachable`.
+
+### 2026-11-02 — защита ополченца с файла вампира (задача 39)
+
+- `creature_test.gd`: запись `militiaman`: `defend` → `hit_to_side`, `defend_lead` 0.4, `defend_pin` false, в `extra` добавлен `vampire-anims3.glb`, `still` убран. Механизм `freeze_bones` оставлен, сейчас никем не используется.
+
+### 2026-11-02 — половина движения левой руки в защите (задача 40)
+
+- `creature.gd`: `freeze_bones` заменён на `hold_bones`; `_make` в обеих сценах; запись `militiaman`: `defend_hold`.
+
+- `creature_test.gd`: `defend_hold_from` 0,5 → 0,25.
+
+- `creature.gd`: `hold_bones` заменён на `scale_bones`: обрезка по времени почти не меняла движение (53° в первой четверти), теперь масштабируется размах. Запись `militiaman`: `defend_calm`, `defend_calm_by` 0.25.
