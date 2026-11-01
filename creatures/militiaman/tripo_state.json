@@ -1,0 +1,22 @@
+{
+  "model": {
+    "task_id": "207351f0-b1aa-4763-bb5d-ceda0e1901d7",
+    "seconds": 135
+  },
+  "rig": {
+    "task_id": "9556fffb-f8fa-4a6d-b35e-0ee1bf7e9478",
+    "seconds": 11
+  },
+  "animations": {
+    "task_id": "df519e76-79fe-43b0-82f4-b7ac443d972c",
+    "seconds": 11
+  },
+  "animations2": {
+    "task_id": "cd5cafaf-c3fd-4355-9688-4beeb2c53dd0",
+    "seconds": 3
+  },
+  "animations3": {
+    "task_id": "eb376edc-75f9-4513-9a33-bcf653ed612c",
+    "seconds": 3
+  }
+}

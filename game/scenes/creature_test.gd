@@ -5,7 +5,7 @@ extends Node3D
 ## Отладка: godot --path game -- --shot=<префикс> — кадр арены <префикс>-arena.png.
 
 # Проверяемое существо: оба бойца — оно. Новое существо — добавить запись в CREATURES; выбор — пиктограммы слева.
-const TESTED := "vampire"  # с кого начинать
+const TESTED := "militiaman"  # с кого начинать
 const CREATURES := {
 	"ghoul": {
 		"name": "Упырь", "icon": "res://assets/creatures/ghoul/icon.png",
@@ -33,6 +33,15 @@ const CREATURES := {
 		"hurt": "hit_to_head", "hurt_len": 0.0, "idle": "standing_relax",
 		"defend": "hit_to_side", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.4, "defend_pin": false,  # уклон вбок
 		"size": 1.95,
+	},
+	"militiaman": {
+		"name": "Ополченец", "icon": "res://assets/creatures/militiaman/icon.png",
+		"scene": "res://assets/creatures/militiaman/militiaman.glb",
+		"extra": ["res://assets/creatures/militiaman/militiaman-anims2.glb", "res://assets/creatures/militiaman/militiaman-anims3.glb"],
+		"attack": "chop", "attack_from": 0.0,  # замах и рубящий удар топором сверху
+		"hurt": "hit_to_head", "hurt_len": 0.0, "idle": "idle",
+		"defend": "scared_01", "defend_from": 0.0, "defend_len": 1.3, "defend_lead": 0.3,  # руки со щитом подняты перед лицом
+		"size": 1.85,
 	},
 	"flesh-golem": {
 		"name": "Голем", "icon": "res://assets/creatures/flesh-golem/icon.png",

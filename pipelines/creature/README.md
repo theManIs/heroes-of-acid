@@ -23,6 +23,8 @@ Plain neutral light-grey background, soft even studio lighting, no cast shadows,
 
 ## Этап 2 — 3D (платно, Tripo API)
 
+Если у пользователя уже есть картинка в T-позе — этап 1 не нужен: сохранить её как `creatures/<id>/concept.png`. Оружие в руках (топор, щит у ополченца) становится частью сетки и двигается вместе с кистями.
+
 Ключ — `TRIPO_API_KEY` в `.env`. Скрипт сам показывает баланс до и после.
 
 Запуск: `.venv/bin/python pipelines/creature/stage2_tripo.py <id>`. Готовые шаги помнятся в `creatures/<id>/tripo_state.json` — повторный запуск не платит за сделанное и заказывает только новые партии.
@@ -54,14 +56,14 @@ Plain neutral light-grey background, soft even studio lighting, no cast shadows,
 
 ### Что выбрано
 
-| | Голем (`flesh-golem`) | Упырь (`ghoul`) | Котельщик (`boilerman`) | Вампир (`vampire`) |
-|---|---|---|---|---|
-| Удар | `slash` | `pitch_baseball` с 33 % | `box_01` (один прямой выпад) | `slash` (наотмашь с выпадом корпусом) |
-| Стойка | `idle` (без «на месте») | `look_around` (без «на месте») | `idle` | `standing_relax` |
-| Реакция | `hit_to_body_01` (первые 0,65 с) | `hit_to_body_01` | `hit_to_head` (лучшая реакция) | `hit_to_head` |
-| Защита | `fold_arms`, кусок 1,75–3,35 с, опережение 1 с | `afraid`, опережение 0,3 с | `scared_01`, кусок 0,9–2,3 с (руки у лица, отшатнулся), опережение 0,3 с | `hit_to_side` — уклон вбок, опережение 0,4 с, **без удержания таза** (`defend_pin: false`) |
-| Отвергнуты | `football_save` (прыжок — уносит тело), `box_02` (не блок) | `box_01`, `chop`, `slash` (удары), `look_around` «на месте» (скольжение) | `cross_body_crunch` (упражнение лёжа) | — |
-| Рост | 2,0 м | 1,6 м | 1,9 м | 1,95 м |
+| | Голем (`flesh-golem`) | Упырь (`ghoul`) | Котельщик (`boilerman`) | Вампир (`vampire`) | Ополченец (`militiaman`) |
+|---|---|---|---|---|---|
+| Удар | `slash` | `pitch_baseball` с 33 % | `box_01` (один прямой выпад) | `slash` (наотмашь с выпадом корпусом) | `chop` (топором сверху) |
+| Стойка | `idle` (без «на месте») | `look_around` (без «на месте») | `idle` | `standing_relax` | `idle` |
+| Реакция | `hit_to_body_01` (первые 0,65 с) | `hit_to_body_01` | `hit_to_head` (лучшая реакция) | `hit_to_head` | `hit_to_head` |
+| Защита | `fold_arms`, кусок 1,75–3,35 с, опережение 1 с | `afraid`, опережение 0,3 с | `scared_01`, кусок 0,9–2,3 с (руки у лица, отшатнулся), опережение 0,3 с | `hit_to_side` — уклон вбок, опережение 0,4 с, **без удержания таза** (`defend_pin: false`) | `scared_01`, кусок 0–1,3 с (руки со щитом перед лицом), опережение 0,3 с |
+| Отвергнуты | `football_save` (прыжок — уносит тело), `box_02` (не блок) | `box_01`, `chop`, `slash` (удары), `look_around` «на месте» (скольжение) | `cross_body_crunch` (упражнение лёжа) | — | — |
+| Рост | 2,0 м | 1,6 м | 1,9 м | 1,95 м | 1,85 м |
 
 ## Этап 3 — проверка в арене (Godot)
 

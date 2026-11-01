@@ -376,3 +376,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ```
 
 - Коммит `8deea01`, 147 файлов, 52 объекта LFS (263 МБ). В `.gitignore`: `.env`, `.venv/`, `screens/`, `builds/`, `.godot/`.
+
+### 2026-11-01 20:45 — ополченец в арене
+
+- `creatures/militiaman/`: концепт — T-поза пользователя; модель, риг v1.0, idle/hit_to_body_01/fall + walk, затем chop, scared_01, hit_to_head; 135 кредитов (баланс 115).
+- `game/assets/creatures/militiaman/`: glb, anims2, anims3, icon.png; текстуры 2048 + VRAM-сжатие.
+- `game/scenes/creature_test.gd`: запись `militiaman`; `TESTED = "militiaman"`.
+- `pipelines/creature/README.md`: столбец ополченца, старт с готовой T-позы.
