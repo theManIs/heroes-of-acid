@@ -371,7 +371,15 @@ func _build_grass() -> void:
 func _build_hud() -> void:
 	var hud := CanvasLayer.new()
 	add_child(hud)
-	status.position = Vector2(16, 12)
+	status.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	status.offset_left = -600
+	status.offset_right = -24
+	status.offset_top = -60
+	status.offset_bottom = -24
+	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	status.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	status.add_theme_constant_override("outline_size", 6)  # читается и на траве, и поверх существ
+	status.add_theme_color_override("font_outline_color", Color.BLACK)
 	hud.add_child(status)
 	sword = Control.new()
 	sword.set_script(SWORD)
@@ -405,7 +413,7 @@ func _build_hud() -> void:
 	hud.add_child(restart)
 
 	queue_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	queue_bar.offset_top = 40
+	queue_bar.offset_top = 8
 	queue_bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	queue_bar.add_theme_constant_override("separation", 6)
 	queue_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -863,13 +871,13 @@ func _status_text(unit: Creature, from: Vector2i) -> String:
 	if unit:
 		var text := "%s: удары %d/%d" % [unit.get_meta("title"), unit.hits, Creature.HITS_TO_KILL]
 		if unit == _targeted and from == NO_HEX and not active.ranged():
-			text += ". Не дотянуться: нет свободной стороны в пределах хода"
+			text += ", не дотянуться"
 		return text
 	match turn:
 		Turn.PLAYER:
 			if active.ranged():
-				return "Твой ход, %s: гекс — идти (до %d), противник — стрелять (%s), иконка — сменить режим огня" % [active.get_meta("title"), active.get_meta("move"), active.shots[active.shot_mode].title]
-			return "Твой ход, %s: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % [active.get_meta("title"), active.get_meta("move")]
+				return "%s: ход %d, %s" % [active.get_meta("title"), active.get_meta("move"), active.shots[active.shot_mode].title]
+			return "%s: ход %d" % [active.get_meta("title"), active.get_meta("move")]
 		Turn.OVER:
 			return "Победа!" if not _living(0).is_empty() else "Поражение."
 	return "Ходит: %s" % active.get_meta("title")

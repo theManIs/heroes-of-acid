@@ -715,3 +715,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 95: поле по центру и крупнее
 
 - `game/scenes/battle_test.gd`: `CAMERA_SHIFT_X` 0.26, `CAMERA_CLOSE` 0.853 (около 25 м).
+
+### 2026-11-04 Задача 93: строка состояния
+
+- `game/scenes/battle_test.gd`: `status` в правом нижнем углу с обводкой, `_status_text()` короче, `queue_bar.offset_top` 8.
