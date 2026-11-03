@@ -15,6 +15,8 @@ const CREATURES := {
 			"res://assets/creatures/lantern-archer/anims/shoot.glb", "res://assets/creatures/lantern-archer/anims/throw.glb"],
 		"attack": "shoot", "attack_from": 0.0,
 		"hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "defend": "hurt", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.3,
+		"hurt_calm": ["mixamorig_LeftShoulder", "mixamorig_LeftArm", "mixamorig_LeftForeArm", "mixamorig_LeftHand",
+			"mixamorig_RightShoulder", "mixamorig_RightArm", "mixamorig_RightForeArm", "mixamorig_RightHand"], "hurt_calm_by": 0.0,  # руки замёрзли в стойке: клип поднимает их перед собой
 		"size": 1.8, "walk_speed": 1.7,  # по замеру стопы в pose_sheet
 		# Дальний бой: стреляет с места. kind — снаряд, hand — откуда летит, release — доля клипа в момент выпуска,
 		# rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, м.
@@ -150,6 +152,7 @@ func _make() -> Creature:
 	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED)
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
+	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
 	if cfg.get("smoke", false):
 		c.add_smoke()
 	return c

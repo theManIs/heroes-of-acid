@@ -33,6 +33,7 @@ func _ready() -> void:
 	var c := Creature.new()
 	add_child(c)
 	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
+	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
 	c.set_process(false)
 	c.set_physics_process(false)
 	# Длина шага: размах стопы вперёд-назад, за половину цикла стопа на земле проходит его целиком.

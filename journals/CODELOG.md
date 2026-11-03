@@ -542,3 +542,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/bow_cursor.gd`: новый, по образцу `sword_cursor.gd`.
 - `game/scenes/creature_test.gd`: `bow`, показывается над целью у стрелка; кадр `-cursor` в `_shoot_ranged`.
+
+### 2026-11-03 Задача 57: руки при получении удара
+
+- `game/scenes/creature_test.gd`: `hurt_calm`, `hurt_calm_by` в записи существа, вызов `scale_bones` для клипа реакции.
+- `game/tools/pose_sheet.gd`: то же при съёмке листа.
