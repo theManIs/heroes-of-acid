@@ -711,3 +711,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 94: ровные контуры
 
 - `game/scenes/battle_test.gd`: `_build_lines()` рисует каждое ребро один раз по середине границы; `LINE_WIDTH` в метрах, 0.03.
+
+### 2026-11-04 Задача 95: поле по центру и крупнее
+
+- `game/scenes/battle_test.gd`: `CAMERA_SHIFT_X` 0.26, `CAMERA_CLOSE` 0.853 (около 25 м).
