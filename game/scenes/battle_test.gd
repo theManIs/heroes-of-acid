@@ -25,7 +25,7 @@ const GROUND_SIZE := 80.0  # шире любого кадра, с прокрут
 const PLAYER_TURN := Color(0.25, 0.55, 1.0)
 const ENEMY_TURN := Color(1.0, 0.25, 0.2)
 const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсором — можно ударить
-const INSPECT_RANGE := 0.18  # насколько окрашены гексы хода существа под курсором, кроме текущего
+const RANGE_ALPHA := 0.18  # заливка гексов хода: трава видна сквозь неё
 const NO_HEX := Vector2i(999, 999)
 const QUEUE_ICON := 44.0  # размер пиктограммы в шкале инициативы
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
@@ -790,20 +790,17 @@ func _range_of(c: Creature) -> Dictionary:
 func _paint() -> void:
 	var shown := reachable
 	var tint := PLAYER_TURN
-	var strength := 0.65
 	var center: Variant = cells[active] if active else null
 	if _inspected:
 		shown = _range_of(_inspected)
 		tint = ENEMY_TURN if sides[1].has(_inspected) else PLAYER_TURN
-		if _inspected != active:
-			strength = INSPECT_RANGE  # чужой ход — справка, ярко только у текущего
 		center = cells[_inspected]
 	for h: Vector2i in tiles:
 		var color := Color(tint, 0.0)
 		if shown.has(h) and h != center:
-			color.a = strength
+			color.a = RANGE_ALPHA
 			if h == _hovered:
-				color.a = lerpf(strength, 1.0, 0.5)
+				color.a = lerpf(RANGE_ALPHA, 1.0, 0.5)
 		if h == _attack_from:
 			color = Color(TARGET, 0.8)
 		tiles[h].visible = color.a > 0.0

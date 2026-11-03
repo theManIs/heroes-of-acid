@@ -699,3 +699,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 90: контуры в тени
 
 - `game/scenes/battle_test.gd`, `_build_lines()`: материал освещаемый, нормаль вверх, порядок вершин лицом к камере, без `CULL_DISABLED`.
+
+### 2026-11-04 Задача 91: одна заливка хода
+
+- `game/scenes/battle_test.gd`: `INSPECT_RANGE` → `RANGE_ALPHA` 0.18; `strength` убран из `_paint()`.
