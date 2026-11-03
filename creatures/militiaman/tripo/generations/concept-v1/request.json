@@ -1,0 +1,12 @@
+{
+  "source_model_task": "c1a1490b-3f94-4875-9436-0669bf0ac593",
+  "views_from": "creatures/militiaman/concept/views-concept",
+  "texture_version": "v3.0-20250812",
+  "texture_quality": "detailed",
+  "texture_alignment": "geometry",
+  "views": [
+    "front",
+    "back"
+  ],
+  "pad": 0.15
+}

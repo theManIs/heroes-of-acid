@@ -1,6 +1,8 @@
 """Новая текстура на готовой модели Tripo по 4 видам. Геометрия та же.
 
-Запуск: .venv/bin/python pipelines/creature-recolor/retexture.py <creature_id> <папка_видов> <имя_генерации>
+Запуск: .venv/bin/python pipelines/creature-recolor/retexture.py <creature_id> <папка_видов> <имя_генерации> [original_image|geometry]
+
+Виды: front обязателен, ещё хотя бы один из left, back, right. geometry — если поза на картинках не совпадает с моделью.
 
 Всё по генерации лежит в creatures/<id>/tripo/generations/<имя>/: входные виды, какими их отправили,
 request.json (параметры), state.json (задача, цена), model.glb, рендер Tripo. Строка добавляется в
@@ -10,6 +12,8 @@ creatures/<id>/tripo/generations/README.md. Готовая задача помн
 import asyncio
 import json
 import shutil
+import struct
+import subprocess
 import sys
 import time
 from datetime import datetime
@@ -41,21 +45,42 @@ def pad_view(src: Path, dst: Path) -> None:
     canvas.save(dst)
 
 
-async def main(creature_id: str, views_dir: str, name: str) -> None:
+def source_model(tripo: Path) -> str:
+    """Задача модели: tripo_state.json (модель и риг одним скриптом) или multiview/state.json."""
+    state = tripo / "tripo_state.json"
+    if state.exists():
+        return json.loads(state.read_text())["model"]["task_id"]
+    return json.loads((tripo / "multiview" / "state.json").read_text())["task_id"]
+
+
+def fetch(url: str, target: Path) -> None:
+    """Докачка с повторами: на медленной связи загрузка обрывается. Длину сверяем с заголовком GLB."""
+    part = target.with_suffix(".part")
+    for _ in range(30):
+        subprocess.run(["curl", "-s", "-L", "-C", "-", "--connect-timeout", "30", "-m", "90", "-o", str(part), url])
+        head = part.read_bytes()[:12] if part.exists() else b""
+        if len(head) == 12 and struct.unpack("<I", head[8:12])[0] == part.stat().st_size:
+            part.rename(target)
+            return
+    sys.exit("Модель не докачалась, запусти ещё раз: задача оплачена, второй раз не платим")
+
+
+async def main(creature_id: str, views_dir: str, name: str, alignment: str = "original_image") -> None:
     tripo = ROOT / "creatures" / creature_id / "tripo"
     out = tripo / "generations" / name
     out.mkdir(parents=True, exist_ok=True)
     state_path = out / "state.json"
     state = json.loads(state_path.read_text()) if state_path.exists() else {}
-    source_task = json.loads((tripo / "tripo_state.json").read_text())["model"]["task_id"]
+    source_task = source_model(tripo)
 
     padded = []
-    for view in VIEWS:
+    views = [view for view in VIEWS if (ROOT / views_dir / f"{view}.png").exists()]
+    for view in views:
         shutil.copy(ROOT / views_dir / f"{view}.png", out / f"input-{view}.png")
         pad_view(out / f"input-{view}.png", out / f"sent-{view}.png")
         padded.append(out / f"sent-{view}.png")
     request = {"source_model_task": source_task, "views_from": views_dir, "texture_version": TEXTURE_VERSION,
-               "texture_quality": QUALITY, "texture_alignment": "original_image", "pad": PAD}
+               "texture_quality": QUALITY, "texture_alignment": alignment, "views": views, "pad": PAD}
     (out / "request.json").write_text(json.dumps(request, indent=2, ensure_ascii=False))
 
     async with TripoClient(api_key=load_key()) as client:
@@ -63,11 +88,11 @@ async def main(creature_id: str, views_dir: str, name: str) -> None:
         print(f"Баланс: {before}")
         if "task_id" not in state:
             images = []
-            for view, path in zip(VIEWS, padded):
+            for view, path in zip(views, padded):
                 images.append({view: await client._resolve_input(str(path))})
                 print(f"Загружен вид: {view}", flush=True)
             state["task_id"] = await client.texture_model(
-                source_task, model_version=TEXTURE_VERSION, texture_quality=QUALITY, texture_prompt={"images": images})
+                source_task, model_version=TEXTURE_VERSION, texture_quality=QUALITY, texture_alignment=alignment, texture_prompt={"images": images})
             state["started"] = datetime.now().isoformat(timespec="seconds")
             state_path.write_text(json.dumps(state, indent=2))
             print(f"Задача: {state['task_id']}", flush=True)
@@ -77,9 +102,12 @@ async def main(creature_id: str, views_dir: str, name: str) -> None:
             sys.exit(f"Текстура: {task.status.value} {task.error_msg or ''}")
         state.setdefault("seconds", round(time.monotonic() - t0))
         files = await client.download_task_models(await client.get_task(state["task_id"]), str(out))
-        # В ответе может быть и рендер: модель выбираем по расширению, рендер сохраняем отдельно.
-        for path in filter(None, files.values()):
-            Path(path).rename(out / ("model.glb" if str(path).endswith(".glb") else "render.webp"))
+        output = (await client.get_task(state["task_id"])).output
+        if not (out / "model.glb").exists():
+            fetch(getattr(output, "pbr_model", None) or output.model, out / "model.glb")
+        render = getattr(output, "rendered_image", None)
+        if render and not (out / "render.webp").exists():
+            subprocess.run(["curl", "-s", "-L", "-m", "90", "-o", str(out / "render.webp"), render])
         after = (await client.get_balance()).balance
     if "credits" not in state:
         state["credits"] = before - after
@@ -94,9 +122,9 @@ async def main(creature_id: str, views_dir: str, name: str) -> None:
         if name in log.read_text():
             print("Строка уже в журнале")
             return
-        f.write(f"| `{name}` | `{views_dir}` (копии в папке генерации) | `{source_task}` | `{state['task_id']}` | текстура {TEXTURE_VERSION}, {QUALITY} | {state['credits']} |\n")
+        f.write(f"| `{name}` | `{views_dir}` (копии в папке генерации) | `{source_task}` | `{state['task_id']}` | текстура {TEXTURE_VERSION}, {QUALITY}, {alignment} | {state['credits']} |\n")
     print(f"Готово за {state['seconds']} с, кредиты: {before} → {after}")
 
 
 if __name__ == "__main__":
-    asyncio.run(main(*sys.argv[1:4]))
+    asyncio.run(main(*sys.argv[1:5]))
