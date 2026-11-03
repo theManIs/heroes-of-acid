@@ -587,3 +587,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/creature_test.gd`: `arc` — доля расстояния: стрела 0.12, фонарь 0.14.
 - `game/scenes/creature.gd`: `fire_shot` умножает `arc` на расстояние.
+
+### 2026-11-04 Задачи 67, 68: защита-уклон, без «Пропустить ход»
+
+- `pipelines/creature-tripo-mixamo/build_clips.py`: `hip_scale`, доля смещения таза по земле.
+- `creatures/lantern-archer/mixamo/`: `Standing Dodge Right.fbx`, `Standing Dodge Backward.fbx`, записи в `clips.json`.
+- `game/scenes/creature_test.gd`: `defend` → `dodge_right`, `defend_len` 0.5, `defend_pin` false; убраны кнопка и `_skip()`.
+- Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py lantern-archer`, `godot --headless --path game --import`.

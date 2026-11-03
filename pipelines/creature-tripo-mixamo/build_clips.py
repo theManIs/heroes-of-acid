@@ -8,6 +8,7 @@
 Имена костей совпадают, но оси и позы покоя у рига Tripo и клипа Mixamo разные, поэтому повороты
 переносятся не локально, а как отклонение кости от покоя в мировых осях.
 Кости левой кисти и пальцев: кисть модели уже сжата на луке, клип сжимает её второй раз, поэтому пальцы не трогаем.
+"hip_scale" у клипа в clips.json — доля смещения таза по земле.
 "_arm_out" в clips.json — постоянно отвести правую руку от тела, градусы: {"arm": плечо, "fore": предплечье и кисть сверх плеча}.
 """
 
@@ -185,6 +186,8 @@ def retarget(rig_doc, rig, clip_path, name, cfg):
             out[bone].append(qnorm(qmul(qinv(parent_world), world)))
         hip_now = src.world(src.by_name[PREFIX + "Hips"], pose)[1]
         move = qrot(align, tuple((a - b) * height for a, b in zip(hip_now, src_hip[1])))
+        keep = cfg.get("hip_scale", 1.0)  # уклоны Mixamo уносят тело на метры: ужать смещение по земле
+        move = (move[0] * keep, move[1], move[2] * keep)
         i_hip = rig.by_name[PREFIX + "Hips"]
         pr, _, ps = rig.world(rig.parent[i_hip], {}) if i_hip in rig.parent else ((0, 0, 0, 1), None, 1.0)
         back = qrot(qinv(pr), tuple(c / ps for c in move))

@@ -13,9 +13,10 @@ const CREATURES := {
 		"scene": "res://assets/creatures/lantern-archer/lantern-archer.glb",  # риг Tripo со spec: mixamo, анимации Mixamo (пайплайн creature-tripo-mixamo)
 		"extra": ["res://assets/creatures/lantern-archer/anims/idle.glb", "res://assets/creatures/lantern-archer/anims/walk.glb",
 			"res://assets/creatures/lantern-archer/anims/fall.glb", "res://assets/creatures/lantern-archer/anims/hurt.glb",
-			"res://assets/creatures/lantern-archer/anims/shoot.glb", "res://assets/creatures/lantern-archer/anims/throw.glb"],
+			"res://assets/creatures/lantern-archer/anims/shoot.glb", "res://assets/creatures/lantern-archer/anims/throw.glb",
+			"res://assets/creatures/lantern-archer/anims/dodge_right.glb", "res://assets/creatures/lantern-archer/anims/dodge_back.glb"],
 		"attack": "shoot", "attack_from": 0.0,
-		"hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "defend": "hurt", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.3,
+		"hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "defend": "dodge_right", "defend_from": 0.0, "defend_len": 0.5, "defend_lead": 0.3, "defend_pin": false,  # уклон: начало клипа, дальше плавно в стойку
 		"hurt_calm": ["mixamorig_LeftShoulder", "mixamorig_LeftArm", "mixamorig_LeftForeArm", "mixamorig_LeftHand",
 			"mixamorig_RightShoulder", "mixamorig_RightArm", "mixamorig_RightForeArm", "mixamorig_RightHand"], "hurt_calm_by": 0.25,  # руки: четверть размаха, клип поднимает их перед собой
 		"size": 1.8, "walk_speed": 1.7,  # по замеру стопы в pose_sheet
@@ -408,7 +409,7 @@ func _build_hud() -> void:
 	_mode_button.pressed.connect(_switch_mode)
 	bar.add_child(_mode_button)
 	_show_mode()
-	for item in [["Защита", _defend], ["Пропустить ход", _skip], ["Заново", _reset]]:
+	for item in [["Защита", _defend], ["Заново", _reset]]:
 		var button := Button.new()
 		button.text = item[0]
 		button.custom_minimum_size = Vector2(160, 48)
@@ -500,11 +501,6 @@ func _defend() -> void:
 	player.defending = true
 	player.set_outline(null)
 	_start_enemy_turn()
-
-
-func _skip() -> void:
-	if turn == Turn.PLAYER:
-		_start_enemy_turn()
 
 
 ## Выстрел текущим режимом огня с места; когда цель отреагирует — next.

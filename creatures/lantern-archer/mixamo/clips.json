@@ -5,5 +5,7 @@
   "Standing Aim Recoil.fbx": {"name": "shoot"},
   "Throw.fbx": {"name": "throw"},
   "Hit Reaction.fbx": {"name": "hurt"},
-  "Dying.fbx": {"name": "fall"}
+  "Dying.fbx": {"name": "fall"},
+  "Standing Dodge Right.fbx": {"name": "dodge_right", "hip_scale": 0.35},
+  "Standing Dodge Backward.fbx": {"name": "dodge_back", "hip_scale": 0.35}
 }
