@@ -22,7 +22,7 @@ const TILE_COLOR := Color(0.78, 0.78, 0.78)  # белое матовое пол�
 const PLAYER_TURN := Color(0.25, 0.55, 1.0)
 const ENEMY_TURN := Color(1.0, 0.25, 0.2)
 const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсором — можно ударить
-const ENEMY_RANGE := 0.18  # насколько гексы хода противника окрашены в красный
+const INSPECT_RANGE := 0.18  # насколько окрашены гексы хода существа под курсором, кроме текущего
 const NO_HEX := Vector2i(999, 999)
 const QUEUE_ICON := 44.0  # размер пиктограммы в шкале инициативы
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
@@ -747,8 +747,8 @@ func _paint() -> void:
 	if _inspected:
 		shown = _range_of(_inspected)
 		tint = ENEMY_TURN if sides[1].has(_inspected) else PLAYER_TURN
-		if sides[1].has(_inspected):
-			strength = ENEMY_RANGE  # ход противника — справка, тусклее своего
+		if _inspected != active:
+			strength = INSPECT_RANGE  # чужой ход — справка, ярко только у текущего
 		center = cells[_inspected]
 	for h: Vector2i in tiles:
 		var mat: StandardMaterial3D = tiles[h].material_override

@@ -671,3 +671,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/battle_test.gd`: `ROWS` 11, `START_ROWS` `[0, 2, 4, 6, 8, 10]`, `CAMERA_CLOSE` 0.664: расстояние камеры то же, что при 7 рядах (при окне 16:9).
 - Команды: `godot --path game res://scenes/battle_test.tscn -- --auto --shot=<путь>`.
+
+### 2026-11-04 Задача 84: подсветка союзника
+
+- `game/scenes/battle_test.gd`: `ENEMY_RANGE` → `INSPECT_RANGE`; в `_paint()` тусклая подсветка у всех, кроме текущего существа.
