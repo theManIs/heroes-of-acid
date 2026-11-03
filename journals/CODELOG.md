@@ -639,3 +639,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/assets/creatures/lantern-archer/generations/final-v1/`: `albedo.jpg`, `normal.jpg`, `orm.png`.
 - `game/scenes/creature_test.gd`: `variants`, последняя — по умолчанию; `battle_test.gd`, `tools/icon_shot.gd`: финальная генерация.
 - Команды: `.venv/bin/python pipelines/creature-recolor/retexture.py lantern-archer creatures/lantern-archer/concept/views-final final-v1` (20 кредитов, 985 → 965), `python3 -I pipelines/creature-recolor/extract_textures.py lantern-archer final-v1`.
+
+### 2026-11-04 Задача 76: исправление текстуры Фонарщика
+
+- `game/scenes/creature_test.gd`: путь `orm` был испорчен, карта материала не загружалась.
+- `game/assets/creatures/lantern-archer/generations/final-v1/*.import`: `normal_map=0`, мипмапы как у остальных; пиктограмма снята заново.

@@ -11,8 +11,7 @@ const CREATURES := {
 	"lantern-archer": {
 		"name": "Фонарщик", "icon": "res://assets/creatures/lantern-archer/icon.png",
 		# Генерации: цифры в этой сцене, для просмотра. Последняя — финальная, она идёт в сцену боя и на пиктограмму.
-		"variants": [{"title": "первая, зелёный плащ"}, {"title": "финальный концепт", "textures": {"albedo": "res://assets/creatures/lantern-archer/generations/final-v1/albedo.jpg", "normal": "res://assets/creatures/lantern-archer/generations/final-v1/normal.jpg", "orm": "res://assets/creatures/lantern-archer/generations/final-v1/normal.jpg
-orm.png"}}],
+		"variants": [{"title": "первая, зелёный плащ"}, {"title": "финальный концепт", "textures": {"albedo": "res://assets/creatures/lantern-archer/generations/final-v1/albedo.jpg", "normal": "res://assets/creatures/lantern-archer/generations/final-v1/normal.jpg", "orm": "res://assets/creatures/lantern-archer/generations/final-v1/orm.png"}}],
 		"scene": "res://assets/creatures/lantern-archer/lantern-archer.glb",  # риг Tripo со spec: mixamo, анимации Mixamo (пайплайн creature-tripo-mixamo)
 		"extra": ["res://assets/creatures/lantern-archer/anims/idle.glb", "res://assets/creatures/lantern-archer/anims/walk.glb",
 			"res://assets/creatures/lantern-archer/anims/fall.glb", "res://assets/creatures/lantern-archer/anims/hurt.glb",
