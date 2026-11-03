@@ -675,3 +675,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 84: подсветка союзника
 
 - `game/scenes/battle_test.gd`: `ENEMY_RANGE` → `INSPECT_RANGE`; в `_paint()` тусклая подсветка у всех, кроме текущего существа.
+
+### 2026-11-04 Задача 85: дальние ряды
+
+- `game/scenes/battle_test.gd`: `CAMERA_FOV` 30 вместо 55, `CAMERA_CLOSE` 0.681: расстояние 15,15 м, дальние ряды мельче ближних в 1,53 раза вместо 2,1.
