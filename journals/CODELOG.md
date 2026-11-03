@@ -723,3 +723,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 96: шкала веером
 
 - `game/scenes/battle_test.gd`: `_queue_slot(c, current, shown)` отводит только видимую часть, карта уходит под предыдущую, `z_index` убывает по очереди; `_add_stack()`; `QUEUE_NOW`, `QUEUE_NEXT`, `QUEUE_GAP`, `QUEUE_MARGIN` 1.
+
+### 2026-11-04 Задача 97: раскрытие карты
+
+- `game/scenes/battle_test.gd`: `QUEUE_NOW` 2/3, `_hover_queue()` в `_process`, `QUEUE_HOVER` 18.

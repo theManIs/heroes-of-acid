@@ -30,8 +30,9 @@ const NO_HEX := Vector2i(999, 999)
 const QUEUE_ICON := 44.0  # размер пиктограммы в шкале инициативы
 const QUEUE_GAP := 6  # расстояние между элементами шкалы
 const QUEUE_MARGIN := 1.0  # рамка вокруг пиктограммы
-const QUEUE_NOW := 0.5  # какая доля карты видна на этом ходу
+const QUEUE_NOW := 2.0 / 3.0  # какая доля карты видна на этом ходу
 const QUEUE_NEXT := 1.0 / 3.0  # какая доля карты видна на следующем ходу
+const QUEUE_HOVER := 18.0  # скорость раскрытия карты под курсором
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
 const CAMERA_FOV := 20.0  # узкий угол и камера дальше: дальние ряды почти не мельче ближних
 const CAMERA_CLOSE := 0.853  # ближе, чем нужно с запасом сверху: все существа в кадре
@@ -500,11 +501,24 @@ func _queue_slot(c: Creature, current: bool, shown := 1.0) -> Control:
 	var full := QUEUE_ICON + QUEUE_MARGIN * 2.0
 	var slot := Control.new()  # шкала отводит только видимую часть, карта уходит под предыдущую
 	slot.custom_minimum_size = Vector2(full * shown - QUEUE_GAP, full)
+	slot.set_meta("rest", slot.custom_minimum_size.x)
 	slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.position.x = slot.custom_minimum_size.x - full
 	slot.add_child(frame)
 	return slot
+
+
+## Карта под курсором раскрывается целиком и раздвигает соседей, остальные возвращаются.
+func _hover_queue(delta: float) -> void:
+	var mouse := get_viewport().get_mouse_position()
+	var full := QUEUE_ICON + QUEUE_MARGIN * 2.0
+	for slot: Control in queue_bar.get_children():
+		if not slot.has_meta("rest"):
+			continue
+		var target: float = full - QUEUE_GAP if slot.get_global_rect().has_point(mouse) else slot.get_meta("rest")
+		slot.custom_minimum_size.x = lerpf(slot.custom_minimum_size.x, target, 1.0 - exp(-QUEUE_HOVER * delta / Engine.time_scale))
+		slot.get_child(0).position.x = slot.custom_minimum_size.x - full
 
 
 # --- Ход боя ---
@@ -843,6 +857,7 @@ func _paint() -> void:
 
 
 func _process(delta: float) -> void:
+	_hover_queue(delta)
 	var keys := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if keys != Vector2.ZERO:
 		_pan_by(Vector3(keys.x, 0.0, keys.y) * PAN_KEYS * delta / Engine.time_scale)
