@@ -552,3 +552,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/creature.gd`: `revive()` возвращает `model.position` к `_model_base`.
 - `game/scenes/creature_test.gd`: кадр `-reset` и вывод сдвига в `_shoot_ranged`.
+
+### 2026-11-03 Задача 59: снимок идущей игры
+
+- `game/scenes/creature_test.gd`: `_check_shot_request()`, только в отладочной сборке.

@@ -3,6 +3,7 @@ extends Node3D
 ## Твой ход: клик по подсвеченному гексу — идти (до MOVE гексов), клик по противнику — подойти и ударить.
 ## Потом ходит противник: подходит и бьёт. Обводка по контуру того, кто ходит: синяя — твой боец, красная — противник.
 ## Отладка: godot --path game -- --shot=<префикс> — кадр арены <префикс>-arena.png.
+## Снимок идущей игры: создать файл screens/.shot — игра запишет кадр в screens/current/arena.png и удалит файл.
 
 # Проверяемое существо: оба бойца — оно. Новое существо — добавить запись в CREATURES; выбор — пиктограммы слева.
 const TESTED := "lantern-archer"  # с кого начинать
@@ -644,7 +645,19 @@ func _paint() -> void:
 		mat.albedo_color = color
 
 
+## Снимок окна по запросу снаружи: игра снимает сама себя.
+func _check_shot_request() -> void:
+	var screens := ProjectSettings.globalize_path("res://").path_join("../screens")
+	if not FileAccess.file_exists(screens.path_join(".shot")):
+		return
+	DirAccess.make_dir_recursive_absolute(screens.path_join("current"))
+	get_viewport().get_texture().get_image().save_png(screens.path_join("current/arena.png"))
+	DirAccess.remove_absolute(screens.path_join(".shot"))
+
+
 func _process(delta: float) -> void:
+	if OS.is_debug_build():
+		_check_shot_request()
 	_zoom_idle += delta
 	if _zoom_idle > ZOOM_HOLD:
 		_zoom_target = 0.0
