@@ -626,3 +626,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Имя Фонарщик
 
 - `game/scenes/creature_test.gd`: `name` → «Фонарщик»; описание, README и задачи. `id` и папки `lantern-archer` прежние.
+
+### 2026-11-04 Задача 77: генерации в тесте существа
+
+- `game/scenes/creature_test.gd`: `variants` в записи существа, `_pick_variant()`, `_variant_column()`, `ROMAN`.
+- `game/scenes/creature.gd`: `set_textures()`.
+- `pipelines/creature-recolor/retexture.py`: новая текстура по 4 видам с записью входа и результата.

@@ -487,6 +487,26 @@ func scale_bones(anim_name: String, bones: Array, amount: float) -> void:
 			a.track_set_key_value(t, k, rest.slerp(a.track_get_key_value(t, k), amount))
 
 
+## Другие текстуры на той же модели: {"albedo": путь, "normal": путь, "orm": путь}. Развёртка должна совпадать.
+func set_textures(paths: Dictionary) -> void:
+	if paths.is_empty():
+		return
+	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		for i in mesh.mesh.get_surface_count():
+			var mat := mesh.mesh.surface_get_material(i).duplicate() as StandardMaterial3D
+			if paths.has("albedo"):
+				mat.albedo_texture = load(paths.albedo)
+			if paths.has("normal"):
+				mat.normal_texture = load(paths.normal)
+			if paths.has("orm"):
+				var orm: Texture2D = load(paths.orm)
+				mat.roughness_texture = orm
+				mat.metallic_texture = orm
+				mat.ao_texture = orm
+			mesh.mesh = mesh.mesh.duplicate()
+			mesh.mesh.surface_set_material(i, mat)
+
+
 ## Постоянно подвернуть кости во всех анимациях: кость -> градусы вокруг осей позы покоя.
 ## Число — вокруг вертикали: для руки в T-позе это сгиб локтя и поворот кисти вперёд.
 ## Vector2(вертикаль, ось руки): вторая — наклон кисти, рукоять встаёт круче, а лезвие смотрит туда же. Потомки кости следуют за ней.

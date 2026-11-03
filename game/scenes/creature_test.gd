@@ -75,6 +75,7 @@ const CREATURES := {
 		"hurt": "hit_to_body_01", "hurt_len": 0.65, "idle": "idle", "defend": "fold_arms", "defend_from": 0.102, "defend_len": 1.6, "defend_lead": 1.0, "size": 2.0,  # кусок 1,75–3,35 с: руки скрещиваются
 	},
 }
+const ROMAN := ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"]
 const COLS := 6
 const ROWS := 4
 const MOVE := 3  # гексов за ход
@@ -104,6 +105,8 @@ var board := Node3D.new()  # плитки и основание
 var tested: String = TESTED
 var _cache: Array[Resource] = []  # все модели и анимации держим загруженными: смена существа без перезагрузки
 var _roster_group := ButtonGroup.new()
+var _variant := {}  # существо -> номер показанной генерации; только для просмотра в этой сцене
+var _variant_buttons := {}  # существо -> его кнопки I, II…
 var camera := Camera3D.new()
 var status := Label.new()
 var radius := 0.85  # радиус гекса: соседние центры — ровно на дистанции удара
@@ -147,7 +150,9 @@ func _make() -> Creature:
 	var c := Creature.new()
 	add_child(c)
 	var cfg: Dictionary = CREATURES[tested]
-	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
+	var variant: Dictionary = _current_variant()
+	c.setup(load(variant.get("scene", cfg.scene)), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
+	c.set_textures(variant.get("textures", {}))
 	c.defend_anim = cfg.defend
 	c.defend_from = cfg.defend_from
 	c.defend_len = cfg.defend_len
@@ -163,6 +168,33 @@ func _make() -> Creature:
 	if cfg.get("smoke", false):
 		c.add_smoke()
 	return c
+
+
+## Показанная генерация существа. Запись в "variants": "scene" — своя модель с ригом, "textures" — другие текстуры на той же модели.
+func _current_variant() -> Dictionary:
+	var variants: Array = CREATURES[tested].get("variants", [])
+	return variants[_variant.get(tested, 0)] if not variants.is_empty() else {}
+
+
+## Выбрать генерацию: цифра рядом с пиктограммой, заодно выбирает и само существо.
+func _pick_variant(id: String, index: int) -> void:
+	if turn == Turn.BUSY or turn == Turn.ENEMY:
+		return
+	if id == tested and _variant.get(id, 0) == index:
+		return
+	_variant[id] = index
+	_show_variants()
+	var same := id == tested
+	tested = "" if same else tested
+	_switch(id)
+
+
+## Подсветка выбранной цифры.
+func _show_variants() -> void:
+	for id: String in _variant_buttons:
+		var buttons: Array = _variant_buttons[id]
+		for i in buttons.size():
+			buttons[i].button_pressed = i == _variant.get(id, 0)
 
 
 ## Сменить проверяемое существо: сцена и поле те же, пересоздаются только бойцы.
@@ -402,7 +434,10 @@ func _build_hud() -> void:
 		b.button_pressed = id == tested
 		b.button_group = _roster_group
 		b.pressed.connect(_switch.bind(id))
-		roster.add_child(b)
+		var line := HBoxContainer.new()
+		line.add_child(b)
+		line.add_child(_variant_column(id))
+		roster.add_child(line)
 
 	var bar := HBoxContainer.new()
 	bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -422,6 +457,27 @@ func _build_hud() -> void:
 		button.pressed.connect(item[1])
 		bar.add_child(button)
 
+
+
+## Римские цифры рядом с пиктограммой: генерации существа. Одна генерация — цифр нет.
+func _variant_column(id: String) -> Control:
+	var column := VBoxContainer.new()
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	var buttons: Array = []
+	var variants: Array = CREATURES[id].get("variants", [])
+	for i in (variants.size() if variants.size() > 1 else 0):
+		var number := Button.new()
+		number.text = ROMAN[i]
+		number.tooltip_text = variants[i].get("title", "")
+		number.toggle_mode = true
+		number.button_pressed = i == 0
+		number.custom_minimum_size = Vector2(32, 28)
+		number.focus_mode = Control.FOCUS_NONE
+		number.pressed.connect(_pick_variant.bind(id, i))
+		column.add_child(number)
+		buttons.append(number)
+	_variant_buttons[id] = buttons
+	return column
 
 
 ## Рамка пиктограммы: при наведении — белая обводка, выбранная — тонкая серая.
