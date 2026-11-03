@@ -16,7 +16,7 @@ const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, 
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
 const TILE_HEIGHT := 0.01  # заливка гекса плоская, лежит на траве
-const LINE_WIDTH := 0.04  # доля радиуса: толщина контура гекса
+const LINE_WIDTH := 0.03  # толщина контура гекса, метров
 const LINE_COLOR := Color(1.0, 1.0, 0.9, 0.4)
 const RADIUS := 0.6
 const GRASS_DARK := Color(0.23, 0.33, 0.15)
@@ -286,8 +286,8 @@ func _build_world() -> void:
 
 func _build_board() -> void:
 	var mesh := CylinderMesh.new()
-	mesh.top_radius = RADIUS * (1.0 - LINE_WIDTH)
-	mesh.bottom_radius = RADIUS * (1.0 - LINE_WIDTH)
+	mesh.top_radius = RADIUS - LINE_WIDTH * 0.6  # заливка вплотную к контуру
+	mesh.bottom_radius = RADIUS - LINE_WIDTH * 0.6
 	mesh.height = TILE_HEIGHT
 	mesh.radial_segments = 6
 	mesh.rings = 1
@@ -309,21 +309,24 @@ func _build_board() -> void:
 	_build_grass()
 
 
-## Контуры всех гексов одной сеткой: у каждого кольцо по внутреннему краю.
+## Контуры всех гексов одной сеткой: общая граница двух гексов рисуется один раз, иначе она вдвое толще внешней.
 func _build_lines() -> void:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	st.set_normal(Vector3.UP)  # контуры освещаются: в тени темнеют вместе с травой
+	var drawn := {}
 	for h: Vector2i in tiles:
 		var center := _hex_center(h)
 		for i in 6:
-			var a := i * TAU / 6.0
-			var b := (i + 1) * TAU / 6.0
-			var dir_a := Vector3(sin(a), 0.0, cos(a)) * RADIUS
-			var dir_b := Vector3(sin(b), 0.0, cos(b)) * RADIUS
-			var inner := 1.0 - LINE_WIDTH
-			for corner: Vector3 in [dir_a, dir_a * inner, dir_b, dir_a * inner, dir_b * inner, dir_b]:
-				st.add_vertex(center + corner)
+			var a := center + Vector3(sin(i * TAU / 6.0), 0.0, cos(i * TAU / 6.0)) * RADIUS
+			var b := center + Vector3(sin((i + 1) * TAU / 6.0), 0.0, cos((i + 1) * TAU / 6.0)) * RADIUS
+			var middle := Vector2i(roundi((a.x + b.x) * 50.0), roundi((a.z + b.z) * 50.0))  # середина ребра — одна у обоих соседей
+			if drawn.has(middle):
+				continue
+			drawn[middle] = true
+			var side := (b - a).cross(Vector3.UP).normalized() * LINE_WIDTH * 0.5
+			for corner: Vector3 in [a - side, b - side, a + side, a + side, b - side, b + side]:
+				st.add_vertex(corner)
 	var lines := MeshInstance3D.new()
 	lines.mesh = st.commit()
 	var mat := StandardMaterial3D.new()
