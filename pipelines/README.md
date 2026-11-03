@@ -16,4 +16,5 @@
 | [`creature`](creature/README.md) | существо-гуманоид | Tripo | Tripo, `spec: tripo` | пресеты Tripo, общая библиотека | кредиты Tripo | основной |
 | [`creature-tripo-mixamo`](creature-tripo-mixamo/README.md) | существо-гуманоид | Tripo | Tripo, `spec: mixamo` | Mixamo | кредиты Tripo | проба, задача 54 |
 | [`creature-fal-mixamo`](creature-fal-mixamo/README.md) | существо-гуманоид | fal, Meshy | fal, Meshy | Mixamo | счёт fal | ждёт, задача 55 |
+| [`creature-recolor`](creature-recolor/README.md) | новая раскраска готового существа, модель и риг прежние | не меняется | не меняется | не меняются | кредиты Tripo, 20 за текстуру | основной |
 | [`3d-model`](3d-model/README.md) | то же, что `creature`, для других проектов | Tripo | Tripo | пресеты Tripo | кредиты Tripo | копия |

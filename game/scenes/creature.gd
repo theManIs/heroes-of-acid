@@ -22,6 +22,7 @@ const RECOIL := 0.3  # после попадания рука сразу воз�
 const RECOIL_BLEND := 0.35
 const HITS_TO_KILL := 3  # пока вместо здоровья: столько ударов выдерживает существо
 const OUTLINE_WIDTH := 0.025  # толщина обводки по контуру, метров
+const GLOW_ENERGY := 2.5  # яркость светящихся частей текстуры
 const HIP_NAMES := ["Hip", "mixamorig_Hips"]  # кость таза: скелет Tripo и скелет Mixamo
 
 var model: Node3D
@@ -49,6 +50,8 @@ var jolt := 0.0  # текущий толчок назад от удара в з�
 var smoke: GPUParticles3D  # дым из трубы (котельщик); null — нет
 var _smoke_anchor: Node3D
 var hits := 0  # полученные удары
+var _glow: OmniLight3D  # свет от части модели (фонарь); null — нет
+var _glow_anchor: Node3D
 var shots := {}  # режимы огня: имя -> настройки снаряда; пусто — ближний бой
 var shot_mode := ""  # режим огня, которым выстрелит
 var shot_wanted := ""  # какой режим выбран; shot_mode отличается, если выбранный сейчас запрещён
@@ -498,6 +501,11 @@ func set_textures(paths: Dictionary) -> void:
 				mat.albedo_texture = load(paths.albedo)
 			if paths.has("normal"):
 				mat.normal_texture = load(paths.normal)
+			if paths.has("emission"):
+				mat.emission_enabled = true
+				mat.emission = Color.BLACK  # цвет складывается с картой: светит только карта
+				mat.emission_texture = load(paths.emission)
+				mat.emission_energy_multiplier = GLOW_ENERGY
 			if paths.has("orm"):
 				var orm: Texture2D = load(paths.orm)
 				mat.roughness_texture = orm
@@ -505,6 +513,26 @@ func set_textures(paths: Dictionary) -> void:
 				mat.ao_texture = orm
 			mesh.mesh = mesh.mesh.duplicate()
 			mesh.mesh.surface_set_material(i, mat)
+
+
+## Источник света в точке модели, едет за костью: фонарь на поясе освещает одежду рядом.
+## cfg: bone, point (в осях сетки), color, energy, range (метры). Расчёт точки — pipelines/creature-recolor/make_glow.py.
+func add_glow(cfg: Dictionary) -> void:
+	var mesh: MeshInstance3D = model.find_children("*", "MeshInstance3D", true, false)[0]
+	var point: Vector3 = (skeleton.global_transform.affine_inverse() * mesh.global_transform) * cfg.point
+	var bone := skeleton.find_bone(cfg.bone)
+	var attach := BoneAttachment3D.new()
+	attach.bone_idx = bone
+	skeleton.add_child(attach)
+	_glow_anchor = Node3D.new()
+	_glow_anchor.position = skeleton.get_bone_global_rest(bone).affine_inverse() * point
+	attach.add_child(_glow_anchor)
+	_glow = OmniLight3D.new()
+	_glow.top_level = true  # без масштаба модели: дальность в метрах
+	_glow.light_color = cfg.color
+	_glow.light_energy = cfg.energy
+	_glow.omni_range = cfg.range
+	add_child(_glow)
 
 
 ## Постоянно подвернуть кости во всех анимациях: кость -> градусы вокруг осей позы покоя.
@@ -653,6 +681,8 @@ func _process(delta: float) -> void:
 	anim.advance(delta)
 	if smoke:
 		smoke.global_position = _smoke_anchor.global_position
+	if _glow:
+		_glow.global_position = _glow_anchor.global_position
 	_pin_hip()
 	_keep_above_ground()
 	rotation.y = lerp_angle(rotation.y, _yaw, minf(1.0, TURN_SPEED * delta))

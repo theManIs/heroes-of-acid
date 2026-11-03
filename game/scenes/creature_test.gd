@@ -11,7 +11,8 @@ const CREATURES := {
 	"lantern-archer": {
 		"name": "Фонарщик", "icon": "res://assets/creatures/lantern-archer/icon.png",
 		# Генерации: цифры в этой сцене, для просмотра. Последняя — финальная, она идёт в сцену боя и на пиктограмму.
-		"variants": [{"title": "первая, зелёный плащ"}, {"title": "финальный концепт", "textures": {"albedo": "res://assets/creatures/lantern-archer/generations/final-v1/albedo.jpg", "normal": "res://assets/creatures/lantern-archer/generations/final-v1/normal.jpg", "orm": "res://assets/creatures/lantern-archer/generations/final-v1/orm.png"}}],
+		"variants": [{"title": "первая, зелёный плащ"}, {"title": "финальный концепт", "textures": {"albedo": "res://assets/creatures/lantern-archer/generations/final-v1/albedo.jpg", "normal": "res://assets/creatures/lantern-archer/generations/final-v1/normal.jpg", "orm": "res://assets/creatures/lantern-archer/generations/final-v1/orm.png", "emission": "res://assets/creatures/lantern-archer/generations/final-v1/emission.png"},
+			"glow": {"bone": "mixamorig_RightUpLeg", "point": Vector3(0.0741, 0.4916, 0.1013), "color": Color(1.0, 0.55, 0.15), "energy": 0.8, "range": 1.2}}],
 		"scene": "res://assets/creatures/lantern-archer/lantern-archer.glb",  # риг Tripo со spec: mixamo, анимации Mixamo (пайплайн creature-tripo-mixamo)
 		"extra": ["res://assets/creatures/lantern-archer/anims/idle.glb", "res://assets/creatures/lantern-archer/anims/walk.glb",
 			"res://assets/creatures/lantern-archer/anims/fall.glb", "res://assets/creatures/lantern-archer/anims/hurt.glb",
@@ -155,6 +156,8 @@ func _make() -> Creature:
 	var variant: Dictionary = _current_variant()
 	c.setup(load(variant.get("scene", cfg.scene)), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
 	c.set_textures(variant.get("textures", {}))
+	if variant.has("glow"):
+		c.add_glow(variant.glow)
 	c.defend_anim = cfg.defend
 	c.defend_from = cfg.defend_from
 	c.defend_len = cfg.defend_len

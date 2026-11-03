@@ -644,3 +644,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/creature_test.gd`: путь `orm` был испорчен, карта материала не загружалась.
 - `game/assets/creatures/lantern-archer/generations/final-v1/*.import`: `normal_map=0`, мипмапы как у остальных; пиктограмма снята заново.
+
+### 2026-11-04 Задачи 78, 79: пайплайн и свет фонаря
+
+- `pipelines/creature-recolor/README.md`, строка в `pipelines/README.md`; `make_glow.py`: карта свечения, кость и точка.
+- `game/scenes/creature.gd`: `add_glow()`, `emission` в `set_textures()`.
+- `game/scenes/creature_test.gd`, `battle_test.gd`: `glow` в варианте.
+- `game/assets/creatures/lantern-archer/generations/final-v1/emission.png`.
