@@ -59,6 +59,7 @@ const CREATURES := {
 	},
 	"militiaman": {
 		"name": "Ополченец", "icon": "res://assets/creatures/militiaman/icon.png",
+		"variants": [{"title": "первая, коричневая стёганка"}, {"title": "финальный концепт", "textures": {"albedo": "res://assets/creatures/militiaman/generations/concept-v2/albedo.jpg", "normal": "res://assets/creatures/militiaman/generations/concept-v2/normal.jpg", "orm": "res://assets/creatures/militiaman/generations/concept-v2/orm.png"}}],
 		"scene": "res://assets/creatures/militiaman/militiaman.glb",  # риг без анимаций: все анимации из общей библиотеки
 		"extra": ["res://assets/animations/idle.glb", "res://assets/animations/walk.glb", "res://assets/animations/fall.glb",
 			"res://assets/animations/chop.glb", "res://assets/animations/hit_to_head.glb", "res://assets/animations/hit_to_side.glb"],

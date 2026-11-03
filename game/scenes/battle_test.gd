@@ -1,5 +1,5 @@
 extends Node3D
-## Тест боя: поле 15×11 как в Героях 3, все существа слева против всех справа.
+## Тест боя: поле 11×7, все существа слева против всех справа. Два пальца, стрелки или правая кнопка — двигать камеру.
 ## Игровой ход: каждое существо ходит один раз, порядок — по инициативе, он показан в шкале сверху.
 ## Твоя сторона — левая: клик по подсвеченному гексу — идти (дальность своя у каждого, MOVES), клик по противнику — подойти и ударить.
 ## Запуск: godot --path game res://scenes/battle_test.tscn
@@ -9,10 +9,10 @@ const ARENA := preload("res://scenes/creature_test.gd")  # записи суще
 const SWORD := preload("res://scenes/sword_cursor.gd")
 const BOW := preload("res://scenes/bow_cursor.gd")
 const ACTION_ICON := preload("res://scenes/action_icon.gd")
-const COLS := 15
-const ROWS := 11
-const START_ROWS: Array[int] = [0, 2, 4, 6, 8, 10]  # ряды, где стоят существа в начале боя
-const MOVES := {"ghoul": 8, "vampire": 7, "militiaman": 6, "lantern-archer": 6, "boilerman": 5, "flesh-golem": 4}  # гексов за ход: чем массивнее, тем меньше
+const COLS := 11
+const ROWS := 7
+const START_ROWS: Array[int] = [0, 1, 2, 4, 5, 6]  # ряды, где стоят существа в начале боя
+const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3}  # гексов за ход: чем массивнее, тем меньше
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
 const TILE_HEIGHT := 0.12
@@ -25,7 +25,10 @@ const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсор
 const NO_HEX := Vector2i(999, 999)
 const QUEUE_ICON := 44.0  # размер пиктограммы в шкале инициативы
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
-const CAMERA_CLOSE := 0.8  # ближе, чем нужно для всего поля: крайние гексы могут не влезать
+const CAMERA_CLOSE := 0.92  # ближе, чем нужно для всего поля: край поля смотрим прокруткой
+const CREATURE_SCALE := 1.2  # существа крупнее гекса: так их лучше видно, соседи могут перекрывать друг друга
+const PAN_GESTURE := 0.05  # чувствительность прокрутки двумя пальцами
+const PAN_KEYS := 6.0  # скорость прокрутки стрелками, метров в секунду
 const ZOOM_NEAR := 0.2  # насколько сокращается дистанция при полном приближении
 const ZOOM_PINCH := 0.5  # чувствительность щипка
 const ZOOM_WHEEL := 0.12  # шаг колеса мыши
@@ -61,6 +64,8 @@ var _inspected: Creature  # существо под курсором: показ
 var _auto := false
 var _shot := ""
 var _cam_base := Vector3.ZERO  # камера общего плана
+var _pan := Vector3.ZERO  # сдвиг камеры над полем
+var _dragging := false  # правая кнопка зажата
 var _cam_look := Vector3(0, 0.5, 0)
 var _zoom := 0.0  # 0 — общий план, 1 — вплотную
 var _zoom_target := 0.0
@@ -95,7 +100,7 @@ func _make(id: String) -> Creature:
 	var c := Creature.new()
 	add_child(c)
 	var cfg: Dictionary = ARENA.CREATURES[id]
-	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
+	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size * CREATURE_SCALE, cfg.attack_from, cfg.idle)
 	if cfg.has("variants"):  # финальная генерация — последняя
 		c.set_textures(cfg.variants[-1].get("textures", {}))
 		if cfg.variants[-1].has("glow"):
@@ -109,7 +114,7 @@ func _make(id: String) -> Creature:
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
-	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED)
+	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED) * CREATURE_SCALE  # шаг крупнее — ноги не скользят
 	c.shots = cfg.get("shots", {})
 	c.set_shot(c.shots.keys()[0] if c.ranged() else "")
 	c.walk_rate = WALK_RATE
@@ -127,7 +132,7 @@ func _make(id: String) -> Creature:
 func _place_camera() -> void:
 	var off := _board_offset()
 	var points: Array[Vector3] = [
-		Vector3(-off.x - RADIUS, 2.2, -off.z - RADIUS), Vector3(off.x + RADIUS, 2.2, -off.z - RADIUS),
+		Vector3(-off.x - RADIUS, 2.8, -off.z - RADIUS), Vector3(off.x + RADIUS, 2.8, -off.z - RADIUS),
 		Vector3(-off.x - RADIUS, 0.0, off.z + RADIUS * 3.0), Vector3(off.x + RADIUS, 0.0, off.z + RADIUS * 3.0),
 	]
 	var dir := CAMERA_DIR.normalized()
@@ -145,9 +150,16 @@ func _place_camera() -> void:
 
 ## Щипок и колесо: камера едет к точке под курсором; отпустил пальцы — вернулась на общий план.
 func _apply_zoom() -> void:
-	var look := _cam_look.lerp(_zoom_focus, _zoom)
+	var look := (_cam_look + _pan).lerp(_zoom_focus, _zoom)
 	camera.position = look + (_cam_base - _cam_look) * (1.0 - _zoom * ZOOM_NEAR)
 	camera.look_at(look)
+
+
+## Сдвинуть камеру над полем, не дальше его краёв.
+func _pan_by(amount: Vector3) -> void:
+	var off := _board_offset()
+	_pan = Vector3(clampf(_pan.x + amount.x, -off.x, off.x), 0.0, clampf(_pan.z + amount.z, -off.z, off.z))
+	_apply_zoom()
 
 
 func _zoom_by(amount: float, screen: Vector2) -> void:
@@ -610,7 +622,19 @@ func _unhandled_input(event: InputEvent) -> void:
 	if pinch:
 		_zoom_by((pinch.factor - 1.0) * ZOOM_PINCH, pinch.position)
 		return
+	var pan := event as InputEventPanGesture
+	if pan:
+		_pan_by(Vector3(pan.delta.x, 0.0, pan.delta.y) * PAN_GESTURE)
+		return
+	var motion := event as InputEventMouseMotion
+	if motion and _dragging:
+		var metres := 2.0 * camera.position.distance_to(_cam_look + _pan) * tan(deg_to_rad(camera.fov * 0.5)) / get_viewport().get_visible_rect().size.y
+		_pan_by(Vector3(-motion.relative.x, 0.0, -motion.relative.y) * metres)
+		return
 	var click := event as InputEventMouseButton
+	if click and click.button_index == MOUSE_BUTTON_RIGHT:
+		_dragging = click.pressed
+		return
 	if click and click.pressed and click.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 		_zoom_by(ZOOM_WHEEL if click.button_index == MOUSE_BUTTON_WHEEL_UP else -ZOOM_WHEEL, click.position)
 		return
@@ -741,6 +765,9 @@ func _paint() -> void:
 
 
 func _process(delta: float) -> void:
+	var keys := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	if keys != Vector2.ZERO:
+		_pan_by(Vector3(keys.x, 0.0, keys.y) * PAN_KEYS * delta / Engine.time_scale)
 	wait_button.disabled = turn != Turn.PLAYER or _wait_phase
 	wait_button.modulate.a = 0.4 if wait_button.disabled else 1.0
 	_zoom_idle += delta
