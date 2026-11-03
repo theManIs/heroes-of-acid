@@ -614,3 +614,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/creature.gd`: `turn_bones` принимает `Vector2(вертикаль, ось руки)`.
 - `game/scenes/creature_test.gd`: `R_Hand` у ополченца `Vector2(30, -30)`.
+
+### 2026-11-04 Задача 73: щит ополченца при получении удара
+
+- `game/scenes/creature_test.gd`: `hurt_calm`, `hurt_calm_by` 0.25 у ополченца, те же кости, что в защите.
