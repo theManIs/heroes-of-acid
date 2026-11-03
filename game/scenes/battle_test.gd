@@ -36,6 +36,7 @@ const QUEUE_HOVER := 18.0  # скорость раскрытия карты по
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
 const CAMERA_FOV := 20.0  # узкий угол и камера дальше: дальние ряды почти не мельче ближних
 const CAMERA_CLOSE := 0.853  # ближе, чем нужно с запасом сверху: все существа в кадре
+const CAMERA_LOOK := Vector3(0, 0.5, 0)  # куда смотрит камера до сдвига
 const CAMERA_SHIFT := 0.2  # поле выше в кадре, метров: нижние углы не прячутся за край
 const CAMERA_SHIFT_X := 0.26  # рядов чётное число, нижний сдвинут вправо на четверть гекса: по нему и центруем
 const CREATURE_SCALE := 1.2  # существа крупнее гекса: так их лучше видно, соседи могут перекрывать друг друга
@@ -78,7 +79,7 @@ var _shot := ""
 var _cam_base := Vector3.ZERO  # камера общего плана
 var _pan := Vector3.ZERO  # сдвиг камеры над полем
 var _dragging := false  # правая кнопка зажата
-var _cam_look := Vector3(0, 0.5, 0)
+var _cam_look := CAMERA_LOOK
 var _zoom := 0.0  # 0 — общий план, 1 — вплотную
 var _zoom_target := 0.0
 var _zoom_focus := Vector3.ZERO  # на что смотрим при приближении
@@ -142,6 +143,7 @@ func _make(id: String) -> Creature:
 
 ## Камера отъезжает, пока в кадр не войдёт всё поле с головами в дальнем ряду, затем подъезжает на CAMERA_CLOSE.
 func _place_camera() -> void:
+	_cam_look = CAMERA_LOOK  # вызывается при каждом изменении окна: сдвиг не должен накапливаться
 	var off := _board_offset()
 	var points: Array[Vector3] = [
 		Vector3(-off.x - RADIUS, 2.8, -off.z - RADIUS), Vector3(off.x + RADIUS, 2.8, -off.z - RADIUS),

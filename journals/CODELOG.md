@@ -727,3 +727,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 97: раскрытие карты
 
 - `game/scenes/battle_test.gd`: `QUEUE_NOW` 2/3, `_hover_queue()` в `_process`, `QUEUE_HOVER` 18.
+
+### 2026-11-04 Задача 98: сдвиг камеры при изменении окна
+
+- `game/scenes/battle_test.gd`: `CAMERA_LOOK`; `_place_camera()` начинает с него, сдвиг больше не копится.
+- Проверка: временный автозапуск-зонд разворачивал окно и печатал положение камеры; после проверки удалён.
