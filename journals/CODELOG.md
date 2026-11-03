@@ -571,3 +571,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `pipelines/creature-tripo-mixamo/build_clips.py`: `_arm_out`, отведение правой руки в позе покоя.
 - `creatures/lantern-archer/mixamo/clips.json`: `{"arm": 5, "fore": 12}`.
 - Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py lantern-archer`, `godot --headless --path game --import`.
+
+### 2026-11-04 Задача 63: кисть дальше
+
+- `creatures/lantern-archer/mixamo/clips.json`: `_arm_out.fore` 12 → 18.
