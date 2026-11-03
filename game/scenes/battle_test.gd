@@ -7,11 +7,12 @@ extends Node3D
 
 const ARENA := preload("res://scenes/creature_test.gd")  # записи существ — там
 const SWORD := preload("res://scenes/sword_cursor.gd")
+const BOW := preload("res://scenes/bow_cursor.gd")
 const ACTION_ICON := preload("res://scenes/action_icon.gd")
 const COLS := 15
 const ROWS := 11
-const START_ROWS: Array[int] = [1, 3, 5, 7, 9]  # ряды, где стоят существа в начале боя
-const MOVES := {"ghoul": 8, "vampire": 7, "militiaman": 6, "boilerman": 5, "flesh-golem": 4}  # гексов за ход: чем массивнее, тем меньше
+const START_ROWS: Array[int] = [0, 2, 4, 6, 8, 10]  # ряды, где стоят существа в начале боя
+const MOVES := {"ghoul": 8, "vampire": 7, "militiaman": 6, "lantern-archer": 6, "boilerman": 5, "flesh-golem": 4}  # гексов за ход: чем массивнее, тем меньше
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
 const TILE_HEIGHT := 0.12
@@ -45,6 +46,8 @@ var tiles := {}  # Vector2i (осевые координаты) -> MeshInstance3
 var turn := Turn.PLAYER
 var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущего хода игрока
 var sword: Control
+var bow: Control
+var mode_button: Button  # смена режима огня: видна, когда ходит свой стрелок
 var queue_bar := HBoxContainer.new()  # шкала инициативы
 var wait_button: Button
 var round_no := 0  # номер игрового хода
@@ -100,6 +103,10 @@ func _make(id: String) -> Creature:
 	c.hurt_len = cfg.hurt_len
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
+	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
+	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED)
+	c.shots = cfg.get("shots", {})
+	c.shot_mode = c.shots.keys()[0] if c.ranged() else ""
 	c.walk_rate = WALK_RATE
 	c.set_meta("move", MOVES[id])
 	c.set_meta("title", cfg.name)
@@ -300,6 +307,11 @@ func _build_hud() -> void:
 	sword.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sword.visible = false
 	hud.add_child(sword)
+	bow = Control.new()
+	bow.set_script(BOW)
+	bow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bow.visible = false
+	hud.add_child(bow)
 
 	var bar := HBoxContainer.new()
 	bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -308,6 +320,8 @@ func _build_hud() -> void:
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	bar.add_theme_constant_override("separation", 18)
 	hud.add_child(bar)
+	mode_button = _action_button("Режим огня", _switch_mode, ACTION_ICON.Kind.FIRE_MODE)
+	bar.add_child(mode_button)
 	wait_button = _action_button("Ждать", _wait, ACTION_ICON.Kind.WAIT)
 	bar.add_child(wait_button)
 	bar.add_child(_action_button("Защита", _defend, ACTION_ICON.Kind.DEFEND))
@@ -468,9 +482,20 @@ func _round_order() -> Array[Creature]:
 	return out
 
 
-## Ходит сам: рядом есть враг — бьёт, иначе идёт к ближайшему и бьёт, если дошёл.
+## Ходит сам: стрелок стреляет с места в ближайшего, две стрелы и бросок;
+## остальные: рядом есть враг — бьёт, иначе идёт к ближайшему и бьёт, если дошёл.
 func _ai_move(enemy_side: int) -> void:
 	var enemies := _living(enemy_side)
+	if active.ranged():
+		var nearest: Creature = enemies[0]
+		for e: Creature in enemies:
+			if _hex_distance(cells[active], cells[e]) < _hex_distance(cells[active], cells[nearest]):
+				nearest = e
+		var fired: int = active.get_meta("fired", 0) + 1
+		active.set_meta("fired", fired)
+		active.shot_mode = "lantern" if fired % 3 == 0 else "arrow"
+		_fire(active, nearest)
+		return
 	for e: Creature in enemies:
 		if _hex_distance(cells[active], cells[e]) == 1:
 			_act(active, e, [] as Array[Vector2i])
@@ -510,6 +535,19 @@ func _act(who: Creature, target: Creature, path: Array[Vector2i]) -> void:
 	_next_turn()
 
 
+## Выстрел текущим режимом огня с места, потом следующий ход.
+func _fire(who: Creature, target: Creature) -> void:
+	turn = Turn.BUSY
+	_set_target(null)
+	who.set_outline(null)
+	reachable.clear()
+	_paint()
+	await get_tree().create_timer(who.fire_shot(target, self)).timeout
+	_show_queue()  # убитый уходит из шкалы в момент попадания
+	await get_tree().create_timer(1.5).timeout  # реакция цели
+	_next_turn()
+
+
 func _game_over() -> void:
 	turn = Turn.OVER
 	reachable.clear()
@@ -521,6 +559,12 @@ func _game_over() -> void:
 		if _shot != "":
 			get_viewport().get_texture().get_image().save_png(_shot + "-end.png")
 		get_tree().quit()
+
+
+## Смена режима огня: не тратит ход.
+func _switch_mode() -> void:
+	if turn == Turn.PLAYER and active.ranged():
+		active.next_shot_mode()
 
 
 ## Ждать, как в Героях: существо сходит в конце этого игрового хода, один раз за ход.
@@ -558,6 +602,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var enemy := _enemy_under(click.position)
 	if enemy:
+		if active.ranged():
+			_fire(active, enemy)
+			return
 		var from := _attack_hex(click.position, enemy)
 		if from != NO_HEX:
 			_act(active, enemy, reachable[from])
@@ -693,7 +740,8 @@ func _process(delta: float) -> void:
 	var targeted := enemy if turn == Turn.PLAYER else null
 	_set_target(targeted)
 	var h := NO_HEX if enemy else _hex_under(mouse)  # противник заслоняет гексы за собой
-	var from := _attack_hex(mouse, targeted) if targeted else NO_HEX
+	var shooter := turn == Turn.PLAYER and active.ranged()
+	var from := _attack_hex(mouse, targeted) if targeted and not shooter else NO_HEX
 	var inspected := enemy if enemy else _ally_under(mouse)
 	if h != _hovered or from != _attack_from or inspected != _inspected:
 		_hovered = h
@@ -707,17 +755,26 @@ func _process(delta: float) -> void:
 		var b := camera.unproject_position(_hex_center(cells[targeted]))
 		sword.position = mouse
 		sword.rotation = (b - a).angle()
+	mode_button.visible = shooter
+	if shooter:
+		mode_button.get_child(0).mode = active.shot_mode
+		bow.mode = active.shot_mode
+	bow.visible = shooter and targeted != null
+	bow.position = mouse
+	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN if bow.visible else Input.MOUSE_MODE_VISIBLE  # лук заменяет курсор
 	status.text = _status_text(inspected, from)
 
 
 func _status_text(unit: Creature, from: Vector2i) -> String:
 	if unit:
 		var text := "%s: удары %d/%d" % [unit.get_meta("title"), unit.hits, Creature.HITS_TO_KILL]
-		if unit == _targeted and from == NO_HEX:
+		if unit == _targeted and from == NO_HEX and not active.ranged():
 			text += ". Не дотянуться: нет свободной стороны в пределах хода"
 		return text
 	match turn:
 		Turn.PLAYER:
+			if active.ranged():
+				return "Твой ход, %s: гекс — идти (до %d), противник — стрелять (%s), иконка — сменить режим огня" % [active.get_meta("title"), active.get_meta("move"), active.shots[active.shot_mode].title]
 			return "Твой ход, %s: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % [active.get_meta("title"), active.get_meta("move")]
 		Turn.OVER:
 			return "Победа!" if not _living(0).is_empty() else "Поражение."

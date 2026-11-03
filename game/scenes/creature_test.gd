@@ -20,10 +20,10 @@ const CREATURES := {
 			"mixamorig_RightShoulder", "mixamorig_RightArm", "mixamorig_RightForeArm", "mixamorig_RightHand"], "hurt_calm_by": 0.25,  # руки: четверть размаха, клип поднимает их перед собой
 		"size": 1.8, "walk_speed": 1.7,  # по замеру стопы в pose_sheet
 		# Дальний бой: стреляет с места. kind — снаряд, hand — откуда летит, release — доля клипа в момент выпуска,
-		# rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, м.
+		# title — подпись режима огня, rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, м.
 		"shots": {
-			"arrow": {"anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 11.0, "arc": 0.15},
-			"lantern": {"anim": "throw", "hand": "RightHand", "release": 0.37, "rate": 1.0, "speed": 5.0, "arc": 0.7},
+			"arrow": {"title": "лук", "anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 11.0, "arc": 0.15},
+			"lantern": {"title": "фонарь", "anim": "throw", "hand": "RightHand", "release": 0.37, "rate": 1.0, "speed": 5.0, "arc": 0.7},
 		},
 	},
 	"ghoul": {
@@ -108,7 +108,7 @@ var tiles := {}  # Vector2i (осевые координаты) -> MeshInstance3
 var turn := Turn.PLAYER
 var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущего хода игрока
 var _hovered := Vector2i(999, 999)
-var _throw_button := Button.new()  # «Бросить фонарь»: только у стрелка
+var _mode_button := Button.new()  # смена режима огня: только у стрелка
 var _enemy_shots := 0  # противник-стрелок чередует стрелы и бросок
 var _targeted := false  # на противнике зелёная обводка
 var _attack_from := Vector2i(999, 999)  # гекс, с которого будет удар (выбран сектором под курсором)
@@ -151,6 +151,8 @@ func _make() -> Creature:
 	c.defend_lead = cfg.defend_lead
 	c.hurt_len = cfg.hurt_len
 	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED)
+	c.shots = cfg.get("shots", {})
+	c.shot_mode = c.shots.keys()[0] if c.ranged() else ""
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
@@ -168,12 +170,26 @@ func _switch(id: String) -> void:
 	enemy.queue_free()
 	player = _make()
 	enemy = _make()
-	_throw_button.visible = _ranged()
+	_show_mode()
 	_reset()
 
 
 func _ranged() -> bool:
 	return CREATURES[tested].has("shots")
+
+
+## Подпись кнопки — текущий режим огня.
+func _show_mode() -> void:
+	_mode_button.visible = _ranged()
+	if _ranged():
+		_mode_button.text = "Режим огня: %s" % CREATURES[tested].shots[player.shot_mode].title
+		bow.mode = player.shot_mode
+
+
+func _switch_mode() -> void:
+	if turn == Turn.PLAYER and _ranged():
+		player.next_shot_mode()
+		_show_mode()
 
 
 func _fit_radius() -> void:
@@ -388,11 +404,10 @@ func _build_hud() -> void:
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	bar.add_theme_constant_override("separation", 10)
 	hud.add_child(bar)
-	_throw_button.text = "Бросить фонарь"
-	_throw_button.custom_minimum_size = Vector2(160, 48)
-	_throw_button.visible = _ranged()
-	_throw_button.pressed.connect(_throw_lantern)
-	bar.add_child(_throw_button)
+	_mode_button.custom_minimum_size = Vector2(220, 48)
+	_mode_button.pressed.connect(_switch_mode)
+	bar.add_child(_mode_button)
+	_show_mode()
 	for item in [["Защита", _defend], ["Пропустить ход", _skip], ["Заново", _reset]]:
 		var button := Button.new()
 		button.text = item[0]
@@ -463,7 +478,8 @@ func _start_enemy_turn() -> void:
 	await get_tree().create_timer(0.6).timeout
 	if _ranged():
 		_enemy_shots += 1
-		_fire(enemy, player, "lantern" if _enemy_shots % 3 == 0 else "arrow", _start_player_turn)
+		enemy.shot_mode = "lantern" if _enemy_shots % 3 == 0 else "arrow"
+		_fire(enemy, player, _start_player_turn)
 		return
 	var path := _approach(enemy, player)
 	_move_and_maybe_strike(enemy, player, path, _start_player_turn)
@@ -491,28 +507,16 @@ func _skip() -> void:
 		_start_enemy_turn()
 
 
-func _throw_lantern() -> void:
-	if turn == Turn.PLAYER and enemy.can_be_hit():
-		_fire(player, enemy, "lantern", _start_enemy_turn)
-
-
-## Выстрел или бросок с места: снаряд вылетает в момент выпуска, цель получает удар по его прилёте.
-func _fire(who: Creature, target: Creature, kind: String, next: Callable) -> void:
+## Выстрел текущим режимом огня с места; когда цель отреагирует — next.
+func _fire(who: Creature, target: Creature, next: Callable) -> void:
 	turn = Turn.BUSY
 	_targeted = false
 	who.set_outline(null)
 	target.set_outline(null)
 	reachable.clear()
 	_paint()
-	var shot: Dictionary = CREATURES[tested].shots[kind]
-	var clip: float = who.anim.get_animation(shot.anim).length
-	who.fire(target, shot.anim, shot.release, shot.rate, func() -> void:
-		var from := who.bone_tip(shot.hand)
-		var to := target.position + Vector3.UP * target.height * 0.6
-		var seconds: float = from.distance_to(to) / shot.speed
-		Projectile.launch(self, kind, from, to, seconds, shot.arc)
-		target.take_hit(seconds))
-	await get_tree().create_timer(clip * shot.release / shot.rate + 2.0).timeout
+	var seconds := who.fire_shot(target, self)
+	await get_tree().create_timer(seconds + 1.7).timeout
 	next.call()
 
 
@@ -566,7 +570,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _on_enemy(click.position) or _hex_at(_ground_point(click.position)) == _hex_of(enemy):
 		if _ranged():
 			if enemy.can_be_hit():
-				_fire(player, enemy, "arrow", _start_enemy_turn)
+				_fire(player, enemy, _start_enemy_turn)
 			return
 		var from := _attack_hex(click.position)
 		if from != NO_HEX and enemy.can_be_hit():
@@ -689,7 +693,7 @@ func _process(delta: float) -> void:
 	var text := ""
 	match turn:
 		Turn.PLAYER:
-			text = "Твой ход: гекс — идти (до %d), противник — выстрелить, «Бросить фонарь», «Защита» — ждать удара" % MOVE if _ranged() else "Твой ход: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % MOVE
+			text = "Твой ход: гекс — идти (до %d), противник — стрелять (%s), «Защита» — ждать удара" % [MOVE, CREATURES[tested].shots[player.shot_mode].title] if _ranged() else "Твой ход: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % MOVE
 		Turn.ENEMY, Turn.BUSY:
 			text = "Ход…" if turn == Turn.BUSY else "Ход противника"
 		Turn.OVER:
@@ -723,14 +727,16 @@ func _shoot_ranged(prefix: String) -> void:
 	Input.warp_mouse(camera.unproject_position(enemy.position + Vector3.UP * enemy.height * 0.5))
 	await get_tree().create_timer(0.3).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-cursor.png")
-	_fire(player, enemy, "arrow", func() -> void: pass)
+	_fire(player, enemy, func() -> void: pass)
 	var arrow: Dictionary = CREATURES[tested].shots.arrow
 	await get_tree().create_timer(player.anim.get_animation(arrow.anim).length * arrow.release / arrow.rate * 0.8).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-aim.png")
 	await get_tree().create_timer(0.25).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-arrow.png")
 	await get_tree().create_timer(2.5).timeout
-	_fire(player, enemy, "lantern", func() -> void: pass)
+	player.next_shot_mode()
+	_show_mode()
+	_fire(player, enemy, func() -> void: pass)
 	var lantern: Dictionary = CREATURES[tested].shots.lantern
 	await get_tree().create_timer(player.anim.get_animation(lantern.anim).length * lantern.release / lantern.rate + 0.35).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-lantern.png")
@@ -741,7 +747,7 @@ func _shoot_ranged(prefix: String) -> void:
 	await get_tree().create_timer(0.45).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-walk.png")
 	await player.arrived
-	_fire(player, enemy, "arrow", func() -> void: pass)
+	_fire(player, enemy, func() -> void: pass)
 	await get_tree().create_timer(3.5).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-dead.png")
 	_reset()

@@ -1,7 +1,7 @@
 extends Control
 ## Иконка действия на кнопке боя: один цвет на чёрной кляксе. Рисуется кодом.
 
-enum Kind { WAIT, DEFEND, RESTART }
+enum Kind { WAIT, DEFEND, RESTART, FIRE_MODE }
 
 const INK := Color(0.86, 0.73, 0.47)  # светлая бронза
 const DARK := Color(0.04, 0.035, 0.03)  # клякса и вырезы в иконке
@@ -10,6 +10,10 @@ const BLOT_POINTS := 40
 const BLOT_SCALE := 1.3  # клякса крупнее иконки: виден неровный край
 
 var kind := Kind.WAIT
+var mode := "arrow":  # для FIRE_MODE: что рисовать
+	set(value):
+		mode = value
+		queue_redraw()
 
 
 func _ready() -> void:
@@ -29,6 +33,11 @@ func _draw() -> void:
 			_shield(c)
 		Kind.RESTART:
 			_restart(c)
+		Kind.FIRE_MODE:
+			if mode == "lantern":
+				_lantern(c)
+			else:
+				_bow(c)
 
 
 ## Клякса: круг с неровным краем и брызги рядом; форма своя у каждого вида иконки и не меняется.
@@ -69,3 +78,22 @@ func _restart(c: Vector2) -> void:
 	draw_arc(c, 15.0, -PI * 0.3, PI * 1.5, 32, INK, 4.5, true)
 	var tip := c + Vector2(15, 0).rotated(-PI * 0.3)
 	draw_colored_polygon(PackedVector2Array([tip + Vector2(-9, -6), tip + Vector2(8, -6), tip + Vector2(1, 9)]), INK)
+
+
+func _bow(c: Vector2) -> void:
+	draw_arc(c + Vector2(-7, 0), 21.0, -1.1, 1.1, 24, INK, 4.5, true)
+	var a := c + Vector2(-7, 0) + Vector2.from_angle(-1.1) * 21.0
+	var b := c + Vector2(-7, 0) + Vector2.from_angle(1.1) * 21.0
+	draw_line(a, c + Vector2(-16, 0), INK, 1.5, true)
+	draw_line(b, c + Vector2(-16, 0), INK, 1.5, true)
+	draw_line(c + Vector2(-16, 0), c + Vector2(14, 0), INK, 2.5, true)
+	draw_colored_polygon(PackedVector2Array([c + Vector2(22, 0), c + Vector2(12, -5), c + Vector2(12, 5)]), INK)
+
+
+func _lantern(c: Vector2) -> void:
+	draw_arc(c + Vector2(0, -21), 5.0, 0.0, TAU, 20, INK, 2.5, true)
+	draw_colored_polygon(PackedVector2Array([c + Vector2(-13, -10), c + Vector2(13, -10), c + Vector2(5, -17), c + Vector2(-5, -17)]), INK)
+	draw_rect(Rect2(c + Vector2(-12, -8), Vector2(24, 24)), INK, false, 3.0)
+	draw_line(c + Vector2(-11, -7), c + Vector2(11, 15), INK, 2.0, true)
+	draw_line(c + Vector2(11, -7), c + Vector2(-11, 15), INK, 2.0, true)
+	draw_rect(Rect2(c + Vector2(-14, 16), Vector2(28, 4)), INK)

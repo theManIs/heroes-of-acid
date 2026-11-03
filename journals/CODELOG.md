@@ -575,3 +575,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 63: кисть дальше
 
 - `creatures/lantern-archer/mixamo/clips.json`: `_arm_out.fore` 12 → 18.
+
+### 2026-11-04 Задачи 64, 65: режим огня, сцена боя
+
+- `game/scenes/creature.gd`: `shots`, `shot_mode`, `ranged()`, `next_shot_mode()`, `fire_shot()`.
+- `game/scenes/creature_test.gd`: кнопка режима вместо «Бросить фонарь», `_fire()` без вида снаряда, `title` в `shots`.
+- `game/scenes/battle_test.gd`: иконка `FIRE_MODE`, `_fire()`, `_switch_mode()`, стрелок ИИ, курсор, `MOVES` и `START_ROWS` на 6 существ, `hurt_calm` и `walk_speed` в `_make`.
+- `game/scenes/action_icon.gd`: `FIRE_MODE`, лук и фонарь; `game/scenes/bow_cursor.gd`: курсор-фонарь.

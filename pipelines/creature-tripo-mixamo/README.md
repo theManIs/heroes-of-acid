@@ -5,7 +5,7 @@
 1. **Концепт в ChatGPT:** вид спереди в T-позе, после подтверждения — виды `left`, `back`, `right` в `creatures/<id>/concept/views/`, в одном чате, к каждому запросу прикреплять `front.png`. Показать и дождаться подтверждения.
 2. **Модель и риг в Tripo:** `.venv/bin/python pipelines/creature-tripo-mixamo/stage2.py <id>`, 40 + 25 кредитов. Пресеты Tripo на этом скелете не работают (код 1004).
 3. **Клипы с mixamo.com:** вход делает пользователь. FBX Binary, `Without Skin`, 30 кадров, ходьба с галкой `In Place` (проверять по экрану: галка сбрасывается при выборе другого клипа). Файлы в `creatures/<id>/mixamo/`, таблица «файл → имя анимации» в `clips.json`. Сборка: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py <id>`, результат в `game/assets/creatures/<id>/anims/`, не в общей библиотеке.
-4. **Арена:** запись в `CREATURES` (`creature_test.gd`), дальний бой — `shots`. Проверка клипов по картинке: `godot --path game res://tools/pose_sheet.tscn -- --id=<id> --out=<файл.png>`, там же замер `walk_speed`. Пиктограмма: `godot --path game res://tools/icon_shot.tscn -- --id=<id>`. Текстуры: ARTIFACTS п.37.
+4. **Арена:** запись в `CREATURES` (`creature_test.gd`), дальний бой — `shots` (режимы огня: первый основной). Новое существо сразу попадает и в сцену боя: добавить его в `MOVES` и проверить, что хватает `START_ROWS` (`battle_test.gd`), иначе сцена падает. Проверка клипов по картинке: `godot --path game res://tools/pose_sheet.tscn -- --id=<id> --out=<файл.png>`, там же замер `walk_speed`. Пиктограмма: `godot --path game res://tools/icon_shot.tscn -- --id=<id>`. Текстуры: ARTIFACTS п.37.
 
 **Проверено на лучнике (`lantern-archer`):**
 

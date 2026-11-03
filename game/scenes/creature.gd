@@ -49,6 +49,8 @@ var jolt := 0.0  # текущий толчок назад от удара в з�
 var smoke: GPUParticles3D  # дым из трубы (котельщик); null — нет
 var _smoke_anchor: Node3D
 var hits := 0  # полученные удары
+var shots := {}  # режимы огня: имя -> настройки снаряда; пусто — ближний бой
+var shot_mode := ""  # текущий режим огня
 
 var _model_base := Vector3.ZERO
 var _target := Vector3.ZERO
@@ -504,6 +506,30 @@ func strike(target: Creature, distance: float, overlap: float) -> void:
 		var tween := create_tween()
 		tween.tween_property(model, "position:x", _model_base.x + lunge, hit_delay()).set_trans(Tween.TRANS_SINE)
 		tween.tween_property(model, "position:x", _model_base.x, RECOIL + RECOIL_BLEND).set_trans(Tween.TRANS_SINE)
+
+
+func ranged() -> bool:
+	return not shots.is_empty()
+
+
+## Смена режима огня: следующий по кругу (лук → фонарь → лук).
+func next_shot_mode() -> void:
+	var names := shots.keys()
+	shot_mode = names[(names.find(shot_mode) + 1) % names.size()]
+
+
+## Выстрел текущим режимом огня с места: снаряд вылетает в момент выпуска, цель получает удар по его прилёте.
+## parent — куда добавить снаряд. Возвращает секунды до попадания.
+func fire_shot(target: Creature, parent: Node) -> float:
+	var shot: Dictionary = shots[shot_mode]
+	var kind := shot_mode
+	var to := target.position + Vector3.UP * target.height * 0.6
+	fire(target, shot.anim, shot.release, shot.rate, func() -> void:
+		var from := bone_tip(shot.hand)
+		var seconds: float = from.distance_to(to) / shot.speed
+		Projectile.launch(parent, kind, from, to, seconds, shot.arc)
+		target.take_hit(seconds))
+	return anim.get_animation(shot.anim).length * shot.release / shot.rate + bone_tip(shot.hand).distance_to(to) / shot.speed
 
 
 ## Дальняя атака с места: сыграть клип и в момент выпуска (release, доля длины) вызвать on_release.
