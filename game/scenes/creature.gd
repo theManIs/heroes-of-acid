@@ -50,7 +50,8 @@ var smoke: GPUParticles3D  # дым из трубы (котельщик); null �
 var _smoke_anchor: Node3D
 var hits := 0  # полученные удары
 var shots := {}  # режимы огня: имя -> настройки снаряда; пусто — ближний бой
-var shot_mode := ""  # текущий режим огня
+var shot_mode := ""  # режим огня, которым выстрелит
+var shot_wanted := ""  # какой режим выбран; shot_mode отличается, если выбранный сейчас запрещён
 
 var _model_base := Vector3.ZERO
 var _target := Vector3.ZERO
@@ -512,10 +513,29 @@ func ranged() -> bool:
 	return not shots.is_empty()
 
 
-## Смена режима огня: следующий по кругу (лук → фонарь → лук).
-func next_shot_mode() -> void:
-	var names := shots.keys()
-	shot_mode = names[(names.find(shot_mode) + 1) % names.size()]
+func set_shot(mode: String) -> void:
+	shot_wanted = mode
+	shot_mode = mode
+
+
+## Режимы, доступные сейчас: с врагом вплотную нельзя те, у которых no_adjacent.
+func allowed_shots(adjacent: bool) -> Array:
+	return shots.keys().filter(func(mode: String) -> bool: return not (adjacent and shots[mode].get("no_adjacent", false)))
+
+
+## Обновить режим по обстановке: выбранный запрещён — первый разрешённый; запрет снят — снова выбранный.
+func update_shot(adjacent: bool) -> void:
+	var allowed := allowed_shots(adjacent)
+	shot_mode = shot_wanted if allowed.has(shot_wanted) else allowed[0]
+
+
+## Смена режима огня: следующий разрешённый по кругу (лук → фонарь → лук).
+func next_shot_mode(adjacent := false) -> void:
+	var allowed := allowed_shots(adjacent)
+	if allowed.size() < 2:
+		return  # менять не на что: выбор игрока не трогаем
+	shot_wanted = allowed[(allowed.find(shot_mode) + 1) % allowed.size()]
+	shot_mode = shot_wanted
 
 
 ## Выстрел текущим режимом огня с места: снаряд вылетает в момент выпуска, цель получает удар по его прилёте.

@@ -106,7 +106,7 @@ func _make(id: String) -> Creature:
 	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
 	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED)
 	c.shots = cfg.get("shots", {})
-	c.shot_mode = c.shots.keys()[0] if c.ranged() else ""
+	c.set_shot(c.shots.keys()[0] if c.ranged() else "")
 	c.walk_rate = WALK_RATE
 	c.set_meta("move", MOVES[id])
 	c.set_meta("title", cfg.name)
@@ -458,6 +458,8 @@ func _next_turn() -> void:
 	reachable.clear()
 	_show_queue()
 	var left: bool = sides[0].has(active)
+	if active.ranged():
+		active.update_shot(_enemy_adjacent(active))
 	if left and not _auto:
 		turn = Turn.PLAYER
 		active.set_outline(PLAYER_TURN)
@@ -493,7 +495,8 @@ func _ai_move(enemy_side: int) -> void:
 				nearest = e
 		var fired: int = active.get_meta("fired", 0) + 1
 		active.set_meta("fired", fired)
-		active.shot_mode = "lantern" if fired % 3 == 0 else "arrow"
+		active.set_shot("lantern" if fired % 3 == 0 else "arrow")
+		active.update_shot(_enemy_adjacent(active))
 		_fire(active, nearest)
 		return
 	for e: Creature in enemies:
@@ -535,6 +538,14 @@ func _act(who: Creature, target: Creature, path: Array[Vector2i]) -> void:
 	_next_turn()
 
 
+## Вплотную к существу стоит живой враг: из лука стрелять нельзя.
+func _enemy_adjacent(c: Creature) -> bool:
+	for e: Creature in _living(1 if sides[0].has(c) else 0):
+		if _hex_distance(cells[c], cells[e]) == 1:
+			return true
+	return false
+
+
 ## Выстрел текущим режимом огня с места, потом следующий ход.
 func _fire(who: Creature, target: Creature) -> void:
 	turn = Turn.BUSY
@@ -564,7 +575,7 @@ func _game_over() -> void:
 ## Смена режима огня: не тратит ход.
 func _switch_mode() -> void:
 	if turn == Turn.PLAYER and active.ranged():
-		active.next_shot_mode()
+		active.next_shot_mode(_enemy_adjacent(active))
 
 
 ## Ждать, как в Героях: существо сходит в конце этого игрового хода, один раз за ход.
@@ -755,6 +766,9 @@ func _process(delta: float) -> void:
 		sword.rotation = (b - a).angle()
 	mode_button.visible = shooter
 	if shooter:
+		var single: bool = active.allowed_shots(_enemy_adjacent(active)).size() < 2
+		mode_button.disabled = single
+		mode_button.modulate.a = 0.4 if single else 1.0
 		mode_button.get_child(0).mode = active.shot_mode
 		bow.mode = active.shot_mode
 	bow.visible = shooter and targeted != null

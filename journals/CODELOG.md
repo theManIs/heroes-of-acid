@@ -598,3 +598,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 69: удар с другого гекса вплотную
 
 - `game/scenes/creature_test.gd`, `game/scenes/battle_test.gd`: из `_attack_hex` убран ранний возврат для стоящего рядом.
+
+### 2026-11-04 Задача 70: лук вплотную запрещён
+
+- `game/scenes/creature.gd`: `shot_wanted`, `set_shot()`, `allowed_shots()`, `update_shot()`, `next_shot_mode(adjacent)`.
+- `game/scenes/creature_test.gd`: `no_adjacent` у стрелы; кнопка режима выключается, режим обновляется в начале хода; ИИ.
+- `game/scenes/battle_test.gd`: `_enemy_adjacent()`, обновление режима в начале хода и у ИИ, иконка гаснет.

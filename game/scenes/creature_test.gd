@@ -21,9 +21,9 @@ const CREATURES := {
 			"mixamorig_RightShoulder", "mixamorig_RightArm", "mixamorig_RightForeArm", "mixamorig_RightHand"], "hurt_calm_by": 0.25,  # руки: четверть размаха, клип поднимает их перед собой
 		"size": 1.8, "walk_speed": 1.7,  # по замеру стопы в pose_sheet
 		# Дальний бой: стреляет с места. kind — снаряд, hand — откуда летит, release — доля клипа в момент выпуска,
-		# title — подпись режима огня, rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, доля расстояния до цели.
+		# title — подпись режима огня, no_adjacent — нельзя с врагом вплотную, rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, доля расстояния до цели.
 		"shots": {
-			"arrow": {"title": "лук", "anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 11.0, "arc": 0.12},
+			"arrow": {"title": "лук", "no_adjacent": true, "anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 11.0, "arc": 0.12},
 			"lantern": {"title": "фонарь", "anim": "throw", "hand": "RightHand", "release": 0.37, "rate": 1.0, "speed": 5.0, "arc": 0.14},
 		},
 	},
@@ -153,7 +153,7 @@ func _make() -> Creature:
 	c.hurt_len = cfg.hurt_len
 	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED)
 	c.shots = cfg.get("shots", {})
-	c.shot_mode = c.shots.keys()[0] if c.ranged() else ""
+	c.set_shot(c.shots.keys()[0] if c.ranged() else "")
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
@@ -183,13 +183,16 @@ func _ranged() -> bool:
 func _show_mode() -> void:
 	_mode_button.visible = _ranged()
 	if _ranged():
+		var adjacent := _hex_distance(_hex_of(player), _hex_of(enemy)) == 1
+		player.update_shot(adjacent)
 		_mode_button.text = "Режим огня: %s" % CREATURES[tested].shots[player.shot_mode].title
+		_mode_button.disabled = player.allowed_shots(adjacent).size() < 2
 		bow.mode = player.shot_mode
 
 
 func _switch_mode() -> void:
 	if turn == Turn.PLAYER and _ranged():
-		player.next_shot_mode()
+		player.next_shot_mode(_hex_distance(_hex_of(player), _hex_of(enemy)) == 1)
 		_show_mode()
 
 
@@ -457,6 +460,7 @@ func _start_player_turn() -> void:
 		return
 	turn = Turn.PLAYER
 	player.defending = false
+	_show_mode()
 	enemy.set_outline(null)
 	player.set_outline(PLAYER_TURN)
 	reachable.clear()
@@ -479,7 +483,8 @@ func _start_enemy_turn() -> void:
 	await get_tree().create_timer(0.6).timeout
 	if _ranged():
 		_enemy_shots += 1
-		enemy.shot_mode = "lantern" if _enemy_shots % 3 == 0 else "arrow"
+		enemy.set_shot("lantern" if _enemy_shots % 3 == 0 else "arrow")
+		enemy.update_shot(_hex_distance(_hex_of(enemy), _hex_of(player)) == 1)
 		_fire(enemy, player, _start_player_turn)
 		return
 	var path := _approach(enemy, player)
