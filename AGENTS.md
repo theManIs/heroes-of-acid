@@ -116,6 +116,8 @@ Rules:
 - A project may keep step-by-step recipes for recurring jobs in `pipelines/<name>/` (`README.md` + the scripts it uses).
 - When a task matches a pipeline, follow it step by step; when the user changes the process, update the pipeline in the same turn.
 - A pipeline is project-specific know-how, like a skill but kept in the repo, versioned and readable by any tool.
+- Index: `pipelines/README.md` lists every pipeline with its tools and status. Before a task, find its row and name it to the user.
+- One task, one pipeline: do not mix steps between pipelines. A new combination of tools is a new row and a new folder, even if one step differs.
 
 ### Local URLs
 
