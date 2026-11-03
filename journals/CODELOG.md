@@ -695,3 +695,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 89: угол обзора 20°
 
 - `game/scenes/battle_test.gd`: `CAMERA_FOV` 20, `CAMERA_CLOSE` 0.839 (26,4 м), `CAMERA_SHIFT` 0.2.
+
+### 2026-11-04 Задача 90: контуры в тени
+
+- `game/scenes/battle_test.gd`, `_build_lines()`: материал освещаемый, нормаль вверх, порядок вершин лицом к камере, без `CULL_DISABLED`.

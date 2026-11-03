@@ -313,6 +313,7 @@ func _build_board() -> void:
 func _build_lines() -> void:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_normal(Vector3.UP)  # контуры освещаются: в тени темнеют вместе с травой
 	for h: Vector2i in tiles:
 		var center := _hex_center(h)
 		for i in 6:
@@ -321,14 +322,13 @@ func _build_lines() -> void:
 			var dir_a := Vector3(sin(a), 0.0, cos(a)) * RADIUS
 			var dir_b := Vector3(sin(b), 0.0, cos(b)) * RADIUS
 			var inner := 1.0 - LINE_WIDTH
-			for corner: Vector3 in [dir_a, dir_b, dir_a * inner, dir_a * inner, dir_b, dir_b * inner]:
+			for corner: Vector3 in [dir_a, dir_a * inner, dir_b, dir_a * inner, dir_b * inner, dir_b]:
 				st.add_vertex(center + corner)
 	var lines := MeshInstance3D.new()
 	lines.mesh = st.commit()
 	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.roughness = 1.0
 	mat.albedo_color = LINE_COLOR
 	lines.material_override = mat
 	lines.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
