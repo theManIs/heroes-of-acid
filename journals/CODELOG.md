@@ -604,3 +604,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/scenes/creature.gd`: `shot_wanted`, `set_shot()`, `allowed_shots()`, `update_shot()`, `next_shot_mode(adjacent)`.
 - `game/scenes/creature_test.gd`: `no_adjacent` у стрелы; кнопка режима выключается, режим обновляется в начале хода; ИИ.
 - `game/scenes/battle_test.gd`: `_enemy_adjacent()`, обновление режима в начале хода и у ИИ, иконка гаснет.
+
+### 2026-11-04 Задача 71: рука ополченца
+
+- `game/scenes/creature.gd`: `turn_bones()`, постоянный поворот кости вокруг вертикали позы покоя во всех анимациях.
+- `game/scenes/creature_test.gd`: `bone_turn` у ополченца; вызов в `_make` тоже в `battle_test.gd` и `tools/pose_sheet.gd`.

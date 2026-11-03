@@ -487,6 +487,27 @@ func scale_bones(anim_name: String, bones: Array, amount: float) -> void:
 			a.track_set_key_value(t, k, rest.slerp(a.track_get_key_value(t, k), amount))
 
 
+## Постоянно подвернуть кости во всех анимациях: кость -> градусы вокруг вертикали позы покоя.
+## Для руки в T-позе это сгиб локтя и поворот кисти вперёд; потомки кости следуют за ней.
+func turn_bones(turns: Dictionary) -> void:
+	if turns.is_empty():
+		return
+	var root_path := anim.get_node(anim.root_node).get_path_to(skeleton)
+	for bone: String in turns:
+		var index := skeleton.find_bone(bone)
+		if index < 0:
+			continue
+		var rest := skeleton.get_bone_global_rest(index).basis.get_rotation_quaternion()
+		var turn := rest.inverse() * Quaternion(Vector3.UP, deg_to_rad(turns[bone])) * rest
+		var path := NodePath("%s:%s" % [root_path, bone])
+		for anim_name in anim.get_animation_list():
+			var a := anim.get_animation(anim_name)
+			var t := a.find_track(path, Animation.TYPE_ROTATION_3D)
+			for k in (a.track_get_key_count(t) if t >= 0 else 0):
+				a.track_set_key_value(t, k, (a.track_get_key_value(t, k) * turn).normalized())
+	_find_impact()
+
+
 ## Сменить анимацию удара: заново ищем момент попадания и дальность.
 func set_attack(anim_name: String) -> void:
 	attack_anim = anim_name

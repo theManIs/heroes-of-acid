@@ -101,6 +101,7 @@ func _make(id: String) -> Creature:
 	c.defend_len = cfg.defend_len
 	c.defend_lead = cfg.defend_lead
 	c.hurt_len = cfg.hurt_len
+	c.turn_bones(cfg.get("bone_turn", {}))
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
