@@ -59,7 +59,7 @@ const CREATURES := {
 		"scene": "res://assets/creatures/militiaman/militiaman.glb",  # риг без анимаций: все анимации из общей библиотеки
 		"extra": ["res://assets/animations/idle.glb", "res://assets/animations/walk.glb", "res://assets/animations/fall.glb",
 			"res://assets/animations/chop.glb", "res://assets/animations/hit_to_head.glb", "res://assets/animations/hit_to_side.glb"],
-		"attack": "chop", "attack_from": 0.0,  # замах и рубящий удар топором сверху
+		"attack": "chop", "attack_from": 0.17,  # с начала подъёма топора: первые 1,1 с клипа он просто стоит
 		"hurt": "hit_to_head", "hurt_len": 0.0, "idle": "idle",
 		"defend": "hit_to_side", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.4, "defend_pin": false,  # уклон вбок, анимация с файла вампира
 		"defend_calm": ["L_Clavicle", "L_Upperarm", "L_UpperarmTwist01", "L_UpperarmTwist02", "L_Forearm", "L_ForearmTwist01", "L_ForearmTwist02", "L_Hand"], "defend_calm_by": 0.25,  # левая рука со щитом: четверть размаха

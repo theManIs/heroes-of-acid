@@ -618,3 +618,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 73: щит ополченца при получении удара
 
 - `game/scenes/creature_test.gd`: `hurt_calm`, `hurt_calm_by` 0.25 у ополченца, те же кости, что в защите.
+
+### 2026-11-04 Задача 74: короткий удар ополченца
+
+- `game/scenes/creature_test.gd`: `attack_from` 0.0 → 0.17.
