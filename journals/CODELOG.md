@@ -687,3 +687,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 87: подсветка во время ходьбы
 
 - `game/scenes/battle_test.gd`: в `_process` при `Turn.BUSY` существо под курсором не показывает дальность.
+
+### 2026-11-04 Задача 88: трава и контуры
+
+- `game/scenes/battle_test.gd`: `_build_grass()` (шум, `GROUND_SIZE` 80), `_build_lines()` (кольца одной сеткой), заливка гекса плоская и видна только при подсветке; `_paint()` меняет прозрачность вместо цвета плитки; плита-основание и `TILE_COLOR` убраны.

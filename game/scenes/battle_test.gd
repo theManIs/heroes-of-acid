@@ -15,10 +15,13 @@ const START_ROWS: Array[int] = [0, 2, 4, 6, 8, 10]  # ряды, где стоя�
 const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3}  # гексов за ход: чем массивнее, тем меньше
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
-const TILE_HEIGHT := 0.12
-const TILE_GAP := 0.94  # доля радиуса: щель между плитками
+const TILE_HEIGHT := 0.01  # заливка гекса плоская, лежит на траве
+const LINE_WIDTH := 0.04  # доля радиуса: толщина контура гекса
+const LINE_COLOR := Color(1.0, 1.0, 0.9, 0.4)
 const RADIUS := 0.6
-const TILE_COLOR := Color(0.78, 0.78, 0.78)  # белое матовое поле: существа читаются лучше всего
+const GRASS_DARK := Color(0.23, 0.33, 0.15)
+const GRASS_LIGHT := Color(0.36, 0.47, 0.22)
+const GROUND_SIZE := 80.0  # шире любого кадра, с прокруткой тоже
 const PLAYER_TURN := Color(0.25, 0.55, 1.0)
 const ENEMY_TURN := Color(1.0, 0.25, 0.2)
 const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсором — можно ударить
@@ -282,40 +285,82 @@ func _build_world() -> void:
 
 
 func _build_board() -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 7
 	var mesh := CylinderMesh.new()
-	mesh.top_radius = RADIUS * TILE_GAP
-	mesh.bottom_radius = RADIUS * TILE_GAP
+	mesh.top_radius = RADIUS * (1.0 - LINE_WIDTH)
+	mesh.bottom_radius = RADIUS * (1.0 - LINE_WIDTH)
 	mesh.height = TILE_HEIGHT
 	mesh.radial_segments = 6
 	mesh.rings = 1
 	for r in ROWS:
 		for c in COLS:
 			var h := _cell(c, r)
-			var tile := MeshInstance3D.new()
+			var tile := MeshInstance3D.new()  # заливка подсветки: видна, только когда гекс подсвечен
 			tile.mesh = mesh
 			var mat := StandardMaterial3D.new()
-			mat.albedo_color = TILE_COLOR * rng.randf_range(0.98, 1.02)
-			mat.albedo_color.a = 1.0
-			mat.roughness = 0.9
+			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED  # подсветка не должна зависеть от цвета солнца
+			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 			tile.material_override = mat
-			tile.set_meta("base", mat.albedo_color)
-			tile.position = _hex_center(h) - Vector3(0, TILE_HEIGHT * 0.5, 0)
+			tile.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			tile.visible = false
+			tile.position = _hex_center(h) - Vector3(0, TILE_HEIGHT, 0)
 			board.add_child(tile)
 			tiles[h] = tile
+	_build_lines()
+	_build_grass()
 
-	# Основание под плитками: тёмная плита, в щелях между гексами видна она.
-	var base := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	var off := _board_offset()
-	box.size = Vector3(off.x * 2.0 + RADIUS * 2.4, 0.25, off.z * 2.0 + RADIUS * 2.6)
-	base.mesh = box
-	var base_mat := StandardMaterial3D.new()
-	base_mat.albedo_color = Color(0.09, 0.09, 0.1)
-	base.material_override = base_mat
-	base.position = Vector3(0, -TILE_HEIGHT - 0.125 + 0.02, 0)
-	board.add_child(base)
+
+## Контуры всех гексов одной сеткой: у каждого кольцо по внутреннему краю.
+func _build_lines() -> void:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for h: Vector2i in tiles:
+		var center := _hex_center(h)
+		for i in 6:
+			var a := i * TAU / 6.0
+			var b := (i + 1) * TAU / 6.0
+			var dir_a := Vector3(sin(a), 0.0, cos(a)) * RADIUS
+			var dir_b := Vector3(sin(b), 0.0, cos(b)) * RADIUS
+			var inner := 1.0 - LINE_WIDTH
+			for corner: Vector3 in [dir_a, dir_b, dir_a * inner, dir_a * inner, dir_b, dir_b * inner]:
+				st.add_vertex(center + corner)
+	var lines := MeshInstance3D.new()
+	lines.mesh = st.commit()
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.albedo_color = LINE_COLOR
+	lines.material_override = mat
+	lines.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	board.add_child(lines)
+
+
+## Трава: пятна шума, без отдельных травинок — с камеры боя их не разглядеть.
+func _build_grass() -> void:
+	var noise := FastNoiseLite.new()
+	noise.seed = 7
+	noise.frequency = 0.012
+	noise.fractal_octaves = 5
+	var ramp := Gradient.new()
+	ramp.set_color(0, GRASS_DARK)
+	ramp.set_color(1, GRASS_LIGHT)
+	var texture := NoiseTexture2D.new()
+	texture.width = 1024
+	texture.height = 1024
+	texture.seamless = true
+	texture.noise = noise
+	texture.color_ramp = ramp
+	var mat := StandardMaterial3D.new()
+	mat.albedo_texture = texture
+	mat.roughness = 1.0
+	mat.uv1_scale = Vector3.ONE * GROUND_SIZE / 16.0  # один повтор на 16 метров
+	var plane := PlaneMesh.new()
+	plane.size = Vector2.ONE * GROUND_SIZE
+	var ground := MeshInstance3D.new()
+	ground.mesh = plane
+	ground.material_override = mat
+	ground.position.y = -TILE_HEIGHT * 2.0
+	board.add_child(ground)
 
 
 func _build_hud() -> void:
@@ -754,21 +799,15 @@ func _paint() -> void:
 			strength = INSPECT_RANGE  # чужой ход — справка, ярко только у текущего
 		center = cells[_inspected]
 	for h: Vector2i in tiles:
-		var mat: StandardMaterial3D = tiles[h].material_override
-		var color: Color = tiles[h].get_meta("base")
-		var glow := Color.BLACK  # свечение: подсветка не должна зависеть от цвета солнца
+		var color := Color(tint, 0.0)
 		if shown.has(h) and h != center:
-			color = color.lerp(tint, strength)
-			glow = tint * 0.14 * strength / 0.65
+			color.a = strength
 			if h == _hovered:
-				color = color.lerp(tint, 0.5)
-				glow = tint * 0.3
+				color.a = lerpf(strength, 1.0, 0.5)
 		if h == _attack_from:
-			color = color.lerp(TARGET, 0.55)
-			glow = TARGET * 0.32
-		mat.albedo_color = color
-		mat.emission_enabled = glow != Color.BLACK
-		mat.emission = glow
+			color = Color(TARGET, 0.8)
+		tiles[h].visible = color.a > 0.0
+		tiles[h].material_override.albedo_color = color
 
 
 func _process(delta: float) -> void:
