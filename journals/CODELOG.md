@@ -658,3 +658,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/scenes/battle_test.gd`: `COLS` 11, `ROWS` 7, `START_ROWS`, `MOVES`, `CAMERA_CLOSE` 0.92, `CREATURE_SCALE` 1.2, `_pan_by()`: два пальца, стрелки, правая кнопка.
 - `pipelines/creature-recolor/`: путь без T-позы основной, `geometry` не использовать; `retexture.py`: докачка, `alignment`, виды от двух.
 - Команды: `.venv/bin/python pipelines/creature-recolor/retexture.py militiaman creatures/militiaman/concept/views-concept concept-v2 original_image` (20 кредитов), `python3 -I pipelines/creature-recolor/extract_textures.py militiaman concept-v2`.
+
+### 2026-11-04 Задача 81: подсветка противника
+
+- `game/scenes/battle_test.gd`: `ENEMY_RANGE` 0.18, свечение пропорционально.

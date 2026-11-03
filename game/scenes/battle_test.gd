@@ -22,6 +22,7 @@ const TILE_COLOR := Color(0.78, 0.78, 0.78)  # белое матовое пол�
 const PLAYER_TURN := Color(0.25, 0.55, 1.0)
 const ENEMY_TURN := Color(1.0, 0.25, 0.2)
 const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсором — можно ударить
+const ENEMY_RANGE := 0.18  # насколько гексы хода противника окрашены в красный
 const NO_HEX := Vector2i(999, 999)
 const QUEUE_ICON := 44.0  # размер пиктограммы в шкале инициативы
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
@@ -741,18 +742,21 @@ func _range_of(c: Creature) -> Dictionary:
 func _paint() -> void:
 	var shown := reachable
 	var tint := PLAYER_TURN
+	var strength := 0.65
 	var center: Variant = cells[active] if active else null
 	if _inspected:
 		shown = _range_of(_inspected)
 		tint = ENEMY_TURN if sides[1].has(_inspected) else PLAYER_TURN
+		if sides[1].has(_inspected):
+			strength = ENEMY_RANGE  # ход противника — справка, тусклее своего
 		center = cells[_inspected]
 	for h: Vector2i in tiles:
 		var mat: StandardMaterial3D = tiles[h].material_override
 		var color: Color = tiles[h].get_meta("base")
 		var glow := Color.BLACK  # свечение: подсветка не должна зависеть от цвета солнца
 		if shown.has(h) and h != center:
-			color = color.lerp(tint, 0.65)
-			glow = tint * 0.14
+			color = color.lerp(tint, strength)
+			glow = tint * 0.14 * strength / 0.65
 			if h == _hovered:
 				color = color.lerp(tint, 0.5)
 				glow = tint * 0.3
