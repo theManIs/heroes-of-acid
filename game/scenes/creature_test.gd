@@ -79,6 +79,7 @@ const PLAYER_TURN := Color(0.25, 0.55, 1.0)
 const ENEMY_TURN := Color(1.0, 0.25, 0.2)
 const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсором — можно ударить
 const SWORD := preload("res://scenes/sword_cursor.gd")
+const BOW := preload("res://scenes/bow_cursor.gd")
 const NO_HEX := Vector2i(999, 999)
 const CAMERA_REF_RADIUS := 0.445  # радиус гекса, под который выставлялась камера (кадр упыря)
 const HEX_RADIUS := 0.6  # поле одно для всех существ; дальность удара добирается выпадом
@@ -109,6 +110,7 @@ var _enemy_shots := 0  # противник-стрелок чередует ст
 var _targeted := false  # на противнике зелёная обводка
 var _attack_from := Vector2i(999, 999)  # гекс, с которого будет удар (выбран сектором под курсором)
 var sword: Control
+var bow: Control
 var _cam_base := Vector3.ZERO  # камера общего плана
 var _cam_look := Vector3.ZERO
 var _zoom := 0.0  # 0 — общий план, 1 — вплотную
@@ -348,6 +350,11 @@ func _build_hud() -> void:
 	sword.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sword.visible = false
 	hud.add_child(sword)
+	bow = Control.new()
+	bow.set_script(BOW)
+	bow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bow.visible = false
+	hud.add_child(bow)
 
 	# Слева — пиктограммы существ: клик меняет проверяемое существо.
 	var roster := VBoxContainer.new()
@@ -660,6 +667,11 @@ func _process(delta: float) -> void:
 		var b := camera.unproject_position(_hex_center(_hex_of(enemy)))
 		sword.position = mouse
 		sword.rotation = (b - a).angle()
+	bow.visible = targeted and _ranged()
+	if bow.visible:
+		# Наконечник в курсоре, лук смотрит от стрелка к противнику.
+		bow.position = mouse
+		bow.rotation = (camera.unproject_position(enemy.position) - camera.unproject_position(player.position)).angle()
 	var text := ""
 	match turn:
 		Turn.PLAYER:
@@ -694,6 +706,9 @@ func _shoot(prefix: String) -> void:
 
 ## Кадры стрелка: выстрел и бросок в полёте, потом реакция цели.
 func _shoot_ranged(prefix: String) -> void:
+	Input.warp_mouse(camera.unproject_position(enemy.position + Vector3.UP * enemy.height * 0.5))
+	await get_tree().create_timer(0.3).timeout
+	get_viewport().get_texture().get_image().save_png(prefix + "-cursor.png")
 	_fire(player, enemy, "arrow", func() -> void: pass)
 	var arrow: Dictionary = CREATURES[tested].shots.arrow
 	await get_tree().create_timer(player.anim.get_animation(arrow.anim).length * arrow.release / arrow.rate * 0.8).timeout

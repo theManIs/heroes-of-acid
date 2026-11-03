@@ -537,3 +537,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/scenes/creature_test.gd`: запись `lantern-archer`, `shots`, `_fire()`, кнопка «Бросить фонарь», стартовое существо `lantern-archer`, кадры `_shoot_ranged`.
 - `game/tools/pose_sheet.*`: новый, лист поз и замер шага; `icon_shot.gd`: `--id`, голова через `bone_tip`.
 - Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/stage2.py lantern-archer` (65 кредитов, 1050 → 985), `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py lantern-archer`, `godot --headless --path game --import`.
+
+### 2026-11-03 Задача 56: курсор лука
+
+- `game/scenes/bow_cursor.gd`: новый, по образцу `sword_cursor.gd`.
+- `game/scenes/creature_test.gd`: `bow`, показывается над целью у стрелка; кадр `-cursor` в `_shoot_ranged`.
