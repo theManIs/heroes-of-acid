@@ -580,12 +580,10 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Гекс атаки — от гекса, а не от модели: 6 треугольников гекса противника, продлённых за его
 ## края; в какой клин на земле попадает точка под курсором, с того соседнего гекса и бьём.
 ## Тело существа только перекрывает эти клинья на экране. Сторона занята, за краем поля
-## или вне хода — ближайшая по углу доступная. Если уже стоим рядом с противником, не двигаемся.
+## или вне хода — ближайшая по углу доступная. Стоим рядом с противником — свой гекс один из вариантов.
 func _attack_hex(screen: Vector2) -> Vector2i:
 	var target := _hex_of(enemy)
 	var mine := _hex_of(player)
-	if _hex_distance(mine, target) == 1:
-		return mine  # уже рядом: бьём с места
 	var center := _hex_center(target)
 	var ground := _ground_point(screen)
 	var pointer := Vector2(ground.x - center.x, ground.z - center.z)

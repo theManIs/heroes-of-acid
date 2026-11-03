@@ -594,3 +594,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `creatures/lantern-archer/mixamo/`: `Standing Dodge Right.fbx`, `Standing Dodge Backward.fbx`, записи в `clips.json`.
 - `game/scenes/creature_test.gd`: `defend` → `dodge_right`, `defend_len` 0.5, `defend_pin` false; убраны кнопка и `_skip()`.
 - Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py lantern-archer`, `godot --headless --path game --import`.
+
+### 2026-11-04 Задача 69: удар с другого гекса вплотную
+
+- `game/scenes/creature_test.gd`, `game/scenes/battle_test.gd`: из `_attack_hex` убран ранний возврат для стоящего рядом.

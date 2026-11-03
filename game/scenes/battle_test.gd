@@ -616,11 +616,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Гекс атаки — как в арене: в какой клин вокруг гекса противника попадает точка под курсором,
 ## с того соседнего гекса и бьём. Сторона занята или вне хода — ближайшая по углу доступная.
-## Если уже стоим рядом с противником, не двигаемся.
+## Стоим рядом с противником — свой гекс один из вариантов.
 func _attack_hex(screen: Vector2, enemy: Creature) -> Vector2i:
 	var target: Vector2i = cells[enemy]
-	if _hex_distance(cells[active], target) == 1:
-		return cells[active]  # уже рядом: бьём с места
 	var center := _hex_center(target)
 	var ground := _ground_point(screen)
 	var pointer := Vector2(ground.x - center.x, ground.z - center.z)
