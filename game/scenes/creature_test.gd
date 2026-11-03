@@ -733,4 +733,8 @@ func _shoot_ranged(prefix: String) -> void:
 	_fire(player, enemy, "arrow", func() -> void: pass)
 	await get_tree().create_timer(3.5).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-dead.png")
+	_reset()
+	await get_tree().create_timer(1.0).timeout
+	print("после «Заново»: сдвиг модели врага ", enemy.model.position - enemy._model_base)
+	get_viewport().get_texture().get_image().save_png(prefix + "-reset.png")
 	get_tree().quit()

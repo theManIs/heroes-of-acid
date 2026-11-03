@@ -547,3 +547,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/creature_test.gd`: `hurt_calm`, `hurt_calm_by` в записи существа, вызов `scale_bones` для клипа реакции.
 - `game/tools/pose_sheet.gd`: то же при съёмке листа.
+
+### 2026-11-03 Задача 58: «Заново» после смерти
+
+- `game/scenes/creature.gd`: `revive()` возвращает `model.position` к `_model_base`.
+- `game/scenes/creature_test.gd`: кадр `-reset` и вывод сдвига в `_shoot_ranged`.

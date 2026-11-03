@@ -545,6 +545,7 @@ func revive() -> void:
 	hits = 0
 	if dead:
 		dead = false
+		model.position = _model_base  # _pin_hip держал таз падающего над гексом и сдвинул модель
 		_play("idle")
 
 
