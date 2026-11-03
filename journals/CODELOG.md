@@ -662,3 +662,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 81: подсветка противника
 
 - `game/scenes/battle_test.gd`: `ENEMY_RANGE` 0.18, свечение пропорционально.
+
+### 2026-11-04 Задача 82: стрелка под мечом
+
+- `game/scenes/battle_test.gd`, `creature_test.gd`: `Input.mouse_mode` скрыт и при видимом мече.

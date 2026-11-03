@@ -753,7 +753,7 @@ func _process(delta: float) -> void:
 		sword.rotation = (b - a).angle()
 	bow.visible = targeted and _ranged()
 	bow.position = mouse
-	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN if bow.visible else Input.MOUSE_MODE_VISIBLE  # лук заменяет курсор
+	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN if bow.visible or sword.visible else Input.MOUSE_MODE_VISIBLE  # лук и меч заменяют курсор
 	var text := ""
 	match turn:
 		Turn.PLAYER:

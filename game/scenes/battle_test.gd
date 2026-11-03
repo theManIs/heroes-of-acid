@@ -809,7 +809,7 @@ func _process(delta: float) -> void:
 		bow.mode = active.shot_mode
 	bow.visible = shooter and targeted != null
 	bow.position = mouse
-	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN if bow.visible else Input.MOUSE_MODE_VISIBLE  # лук заменяет курсор
+	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN if bow.visible or sword.visible else Input.MOUSE_MODE_VISIBLE  # лук и меч заменяют курсор
 	status.text = _status_text(inspected, from)
 
 
