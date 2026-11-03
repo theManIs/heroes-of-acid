@@ -560,3 +560,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 60: руки при получении удара
 
 - `game/scenes/creature_test.gd`: `hurt_calm_by` 0.0 → 0.25.
+
+### 2026-11-04 Задача 61: курсор лука
+
+- `game/scenes/bow_cursor.gd`: сдвиг рисунка, центр в точке курсора.
+- `game/scenes/creature_test.gd`: без поворота, `Input.mouse_mode` скрывает системный курсор, пока виден лук.

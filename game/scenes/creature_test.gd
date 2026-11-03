@@ -684,10 +684,8 @@ func _process(delta: float) -> void:
 		sword.position = mouse
 		sword.rotation = (b - a).angle()
 	bow.visible = targeted and _ranged()
-	if bow.visible:
-		# Наконечник в курсоре, лук смотрит от стрелка к противнику.
-		bow.position = mouse
-		bow.rotation = (camera.unproject_position(enemy.position) - camera.unproject_position(player.position)).angle()
+	bow.position = mouse
+	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN if bow.visible else Input.MOUSE_MODE_VISIBLE  # лук заменяет курсор
 	var text := ""
 	match turn:
 		Turn.PLAYER:
