@@ -63,7 +63,7 @@ const CREATURES := {
 		"hurt": "hit_to_head", "hurt_len": 0.0, "idle": "idle",
 		"defend": "hit_to_side", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.4, "defend_pin": false,  # уклон вбок, анимация с файла вампира
 		"defend_calm": ["L_Clavicle", "L_Upperarm", "L_UpperarmTwist01", "L_UpperarmTwist02", "L_Forearm", "L_ForearmTwist01", "L_ForearmTwist02", "L_Hand"], "defend_calm_by": 0.25,  # левая рука со щитом: четверть размаха
-		"bone_turn": {"R_Forearm": 30.0, "R_Hand": 30.0},  # локоть и кисть подвёрнуты: лезвие смотрит на врага, а не вбок
+		"bone_turn": {"R_Forearm": 30.0, "R_Hand": Vector2(30.0, -30.0)},  # локоть и кисть подвёрнуты: лезвие смотрит на врага; кисть наклонена: рукоять круче
 		"size": 1.85,
 	},
 	"flesh-golem": {

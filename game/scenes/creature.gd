@@ -487,8 +487,9 @@ func scale_bones(anim_name: String, bones: Array, amount: float) -> void:
 			a.track_set_key_value(t, k, rest.slerp(a.track_get_key_value(t, k), amount))
 
 
-## Постоянно подвернуть кости во всех анимациях: кость -> градусы вокруг вертикали позы покоя.
-## Для руки в T-позе это сгиб локтя и поворот кисти вперёд; потомки кости следуют за ней.
+## Постоянно подвернуть кости во всех анимациях: кость -> градусы вокруг осей позы покоя.
+## Число — вокруг вертикали: для руки в T-позе это сгиб локтя и поворот кисти вперёд.
+## Vector2(вертикаль, ось руки): вторая — наклон кисти, рукоять встаёт круче, а лезвие смотрит туда же. Потомки кости следуют за ней.
 func turn_bones(turns: Dictionary) -> void:
 	if turns.is_empty():
 		return
@@ -498,7 +499,9 @@ func turn_bones(turns: Dictionary) -> void:
 		if index < 0:
 			continue
 		var rest := skeleton.get_bone_global_rest(index).basis.get_rotation_quaternion()
-		var turn := rest.inverse() * Quaternion(Vector3.UP, deg_to_rad(turns[bone])) * rest
+		var degrees: Vector2 = turns[bone] if turns[bone] is Vector2 else Vector2(turns[bone], 0.0)
+		var around := Quaternion(Vector3.UP, deg_to_rad(degrees.x)) * Quaternion(Vector3.BACK, deg_to_rad(degrees.y))
+		var turn := rest.inverse() * around * rest
 		var path := NodePath("%s:%s" % [root_path, bone])
 		for anim_name in anim.get_animation_list():
 			var a := anim.get_animation(anim_name)

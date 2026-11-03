@@ -609,3 +609,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/creature.gd`: `turn_bones()`, постоянный поворот кости вокруг вертикали позы покоя во всех анимациях.
 - `game/scenes/creature_test.gd`: `bone_turn` у ополченца; вызов в `_make` тоже в `battle_test.gd` и `tools/pose_sheet.gd`.
+
+### 2026-11-04 Задача 72: рукоять ополченца круче
+
+- `game/scenes/creature.gd`: `turn_bones` принимает `Vector2(вертикаль, ось руки)`.
+- `game/scenes/creature_test.gd`: `R_Hand` у ополченца `Vector2(30, -30)`.
