@@ -28,6 +28,10 @@ const TARGET := Color(0.3, 0.95, 0.35)  # противник под курсор
 const RANGE_ALPHA := 0.18  # заливка гексов хода: трава видна сквозь неё
 const NO_HEX := Vector2i(999, 999)
 const QUEUE_ICON := 44.0  # размер пиктограммы в шкале инициативы
+const QUEUE_GAP := 6  # расстояние между элементами шкалы
+const QUEUE_MARGIN := 1.0  # рамка вокруг пиктограммы
+const QUEUE_NOW := 0.5  # какая доля карты видна на этом ходу
+const QUEUE_NEXT := 1.0 / 3.0  # какая доля карты видна на следующем ходу
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
 const CAMERA_FOV := 20.0  # узкий угол и камера дальше: дальние ряды почти не мельче ближних
 const CAMERA_CLOSE := 0.853  # ближе, чем нужно с запасом сверху: все существа в кадре
@@ -415,7 +419,7 @@ func _build_hud() -> void:
 	queue_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	queue_bar.offset_top = 8
 	queue_bar.alignment = BoxContainer.ALIGNMENT_CENTER
-	queue_bar.add_theme_constant_override("separation", 6)
+	queue_bar.add_theme_constant_override("separation", QUEUE_GAP)
 	queue_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(queue_bar)
 
@@ -447,15 +451,22 @@ func _show_queue() -> void:
 	queue_bar.add_child(_queue_slot(active, true))
 	for c: Creature in _queue:
 		if c.can_be_hit():
-			queue_bar.add_child(_queue_slot(c, false))
+			queue_bar.add_child(_queue_slot(c, false, QUEUE_NOW))
 	if _waiting.any(func(c: Creature) -> bool: return c.can_be_hit()):
 		queue_bar.add_child(_queue_label("Ждут"))
+		var waiting: Array[Creature] = []
 		for i in range(_waiting.size() - 1, -1, -1):
 			if _waiting[i].can_be_hit():
-				queue_bar.add_child(_queue_slot(_waiting[i], false))
+				waiting.append(_waiting[i])
+		_add_stack(waiting, QUEUE_NOW)
 	queue_bar.add_child(_queue_label("Ход %d" % (round_no + 1)))
-	for c in _round_order():
-		queue_bar.add_child(_queue_slot(c, false))
+	_add_stack(_round_order(), QUEUE_NEXT)
+
+
+## Стопка карт после подписи: верхняя видна целиком, из-под неё выглядывают остальные.
+func _add_stack(cards: Array[Creature], shown: float) -> void:
+	for i in cards.size():
+		queue_bar.add_child(_queue_slot(cards[i], false, 1.0 if i == 0 else shown))
 
 
 func _queue_label(text: String) -> Label:
@@ -466,13 +477,14 @@ func _queue_label(text: String) -> Label:
 
 
 ## Пиктограмма в шкале: рамка цвета стороны, у того, кто ходит сейчас, — крупнее.
-func _queue_slot(c: Creature, current: bool) -> Control:
+## shown — какая доля карты видна справа из-под предыдущей: ближняя по очереди лежит сверху.
+func _queue_slot(c: Creature, current: bool, shown := 1.0) -> Control:
 	var frame := PanelContainer.new()
 	var box := StyleBoxFlat.new()
 	box.bg_color = Color(0.1, 0.1, 0.12, 0.85)
 	box.border_color = PLAYER_TURN if sides[0].has(c) else ENEMY_TURN
-	box.set_border_width_all(3)
-	box.set_content_margin_all(3)
+	box.set_border_width_all(int(QUEUE_MARGIN))
+	box.set_content_margin_all(QUEUE_MARGIN)
 	frame.add_theme_stylebox_override("panel", box)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -482,7 +494,17 @@ func _queue_slot(c: Creature, current: bool) -> Control:
 	icon.custom_minimum_size = Vector2.ONE * (QUEUE_ICON * 1.3 if current else QUEUE_ICON)
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_child(icon)
-	return frame
+	frame.z_index = -queue_bar.get_child_count()  # чем дальше по очереди, тем ниже
+	if shown >= 1.0:
+		return frame
+	var full := QUEUE_ICON + QUEUE_MARGIN * 2.0
+	var slot := Control.new()  # шкала отводит только видимую часть, карта уходит под предыдущую
+	slot.custom_minimum_size = Vector2(full * shown - QUEUE_GAP, full)
+	slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.position.x = slot.custom_minimum_size.x - full
+	slot.add_child(frame)
+	return slot
 
 
 # --- Ход боя ---
