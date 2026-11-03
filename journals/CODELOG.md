@@ -622,3 +622,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 74: короткий удар ополченца
 
 - `game/scenes/creature_test.gd`: `attack_from` 0.0 → 0.17.
+
+### 2026-11-04 Имя Фонарщик
+
+- `game/scenes/creature_test.gd`: `name` → «Фонарщик»; описание, README и задачи. `id` и папки `lantern-archer` прежние.

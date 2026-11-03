@@ -9,7 +9,7 @@ extends Node3D
 const TESTED := "lantern-archer"  # с кого начинать
 const CREATURES := {
 	"lantern-archer": {
-		"name": "Лучник", "icon": "res://assets/creatures/lantern-archer/icon.png",
+		"name": "Фонарщик", "icon": "res://assets/creatures/lantern-archer/icon.png",
 		"scene": "res://assets/creatures/lantern-archer/lantern-archer.glb",  # риг Tripo со spec: mixamo, анимации Mixamo (пайплайн creature-tripo-mixamo)
 		"extra": ["res://assets/creatures/lantern-archer/anims/idle.glb", "res://assets/creatures/lantern-archer/anims/walk.glb",
 			"res://assets/creatures/lantern-archer/anims/fall.glb", "res://assets/creatures/lantern-archer/anims/hurt.glb",
