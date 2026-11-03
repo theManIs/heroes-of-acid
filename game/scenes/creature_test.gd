@@ -20,10 +20,10 @@ const CREATURES := {
 			"mixamorig_RightShoulder", "mixamorig_RightArm", "mixamorig_RightForeArm", "mixamorig_RightHand"], "hurt_calm_by": 0.25,  # руки: четверть размаха, клип поднимает их перед собой
 		"size": 1.8, "walk_speed": 1.7,  # по замеру стопы в pose_sheet
 		# Дальний бой: стреляет с места. kind — снаряд, hand — откуда летит, release — доля клипа в момент выпуска,
-		# title — подпись режима огня, rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, м.
+		# title — подпись режима огня, rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, доля расстояния до цели.
 		"shots": {
-			"arrow": {"title": "лук", "anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 11.0, "arc": 0.15},
-			"lantern": {"title": "фонарь", "anim": "throw", "hand": "RightHand", "release": 0.37, "rate": 1.0, "speed": 5.0, "arc": 0.7},
+			"arrow": {"title": "лук", "anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 11.0, "arc": 0.12},
+			"lantern": {"title": "фонарь", "anim": "throw", "hand": "RightHand", "release": 0.37, "rate": 1.0, "speed": 5.0, "arc": 0.14},
 		},
 	},
 	"ghoul": {

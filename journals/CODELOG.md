@@ -582,3 +582,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/scenes/creature_test.gd`: кнопка режима вместо «Бросить фонарь», `_fire()` без вида снаряда, `title` в `shots`.
 - `game/scenes/battle_test.gd`: иконка `FIRE_MODE`, `_fire()`, `_switch_mode()`, стрелок ИИ, курсор, `MOVES` и `START_ROWS` на 6 существ, `hurt_calm` и `walk_speed` в `_make`.
 - `game/scenes/action_icon.gd`: `FIRE_MODE`, лук и фонарь; `game/scenes/bow_cursor.gd`: курсор-фонарь.
+
+### 2026-11-04 Задача 66: дуга стрелы
+
+- `game/scenes/creature_test.gd`: `arc` — доля расстояния: стрела 0.12, фонарь 0.14.
+- `game/scenes/creature.gd`: `fire_shot` умножает `arc` на расстояние.

@@ -527,7 +527,7 @@ func fire_shot(target: Creature, parent: Node) -> float:
 	fire(target, shot.anim, shot.release, shot.rate, func() -> void:
 		var from := bone_tip(shot.hand)
 		var seconds: float = from.distance_to(to) / shot.speed
-		Projectile.launch(parent, kind, from, to, seconds, shot.arc)
+		Projectile.launch(parent, kind, from, to, seconds, shot.arc * from.distance_to(to))
 		target.take_hit(seconds))
 	return anim.get_animation(shot.anim).length * shot.release / shot.rate + bone_tip(shot.hand).distance_to(to) / shot.speed
 
