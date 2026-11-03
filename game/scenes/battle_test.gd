@@ -27,7 +27,8 @@ const NO_HEX := Vector2i(999, 999)
 const QUEUE_ICON := 44.0  # размер пиктограммы в шкале инициативы
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
 const CAMERA_FOV := 30.0  # узкий угол и камера дальше: дальние ряды почти не мельче ближних
-const CAMERA_CLOSE := 0.681  # ближе, чем нужно для всего поля: край поля смотрим прокруткой
+const CAMERA_CLOSE := 0.782  # ближе, чем нужно с запасом сверху: все существа в кадре
+const CAMERA_SHIFT := 0.7  # поле выше в кадре, метров: нижние углы не прячутся за край
 const CREATURE_SCALE := 1.2  # существа крупнее гекса: так их лучше видно, соседи могут перекрывать друг друга
 const PAN_GESTURE := 0.05  # чувствительность прокрутки двумя пальцами
 const PAN_KEYS := 6.0  # скорость прокрутки стрелками, метров в секунду
@@ -146,6 +147,7 @@ func _place_camera() -> void:
 		if points.all(func(p: Vector3) -> bool: return camera.is_position_in_frustum(p)):
 			break
 		dist += 0.25
+	_cam_look.z += CAMERA_SHIFT
 	_cam_base = _cam_look + dir * dist * CAMERA_CLOSE
 	_apply_zoom()
 
