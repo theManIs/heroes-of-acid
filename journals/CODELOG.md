@@ -565,3 +565,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/bow_cursor.gd`: сдвиг рисунка, центр в точке курсора.
 - `game/scenes/creature_test.gd`: без поворота, `Input.mouse_mode` скрывает системный курсор, пока виден лук.
+
+### 2026-11-04 Задача 62: правая рука от фонаря
+
+- `pipelines/creature-tripo-mixamo/build_clips.py`: `_arm_out`, отведение правой руки в позе покоя.
+- `creatures/lantern-archer/mixamo/clips.json`: `{"arm": 5, "fore": 12}`.
+- Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py lantern-archer`, `godot --headless --path game --import`.

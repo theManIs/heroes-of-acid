@@ -1,4 +1,5 @@
 {
+  "_arm_out": {"arm": 5, "fore": 12},
   "Unarmed Idle 01.fbx": {"name": "idle"},
   "Sneak Walk.fbx": {"name": "walk"},
   "Standing Aim Recoil.fbx": {"name": "shoot"},

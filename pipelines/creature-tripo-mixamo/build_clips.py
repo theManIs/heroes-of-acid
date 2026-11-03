@@ -8,6 +8,7 @@
 Имена костей совпадают, но оси и позы покоя у рига Tripo и клипа Mixamo разные, поэтому повороты
 переносятся не локально, а как отклонение кости от покоя в мировых осях.
 Кости левой кисти и пальцев: кисть модели уже сжата на луке, клип сжимает её второй раз, поэтому пальцы не трогаем.
+"_arm_out" в clips.json — постоянно отвести правую руку от тела, градусы: {"arm": плечо, "fore": предплечье и кисть сверх плеча}.
 """
 
 import json
@@ -146,6 +147,14 @@ def retarget(rig_doc, rig, clip_path, name, cfg):
     fwd, left = rig.frame()
     # Кисть с луком: у модели лук стоит вертикально при опущенной ладони, а в клипе рука держит лук большим пальцем вверх.
     grip = qaxis(left, math.radians(cfg.get("grip", 90)))
+    # Отведение правой руки: поворот в позе покоя, от опущенной руки уводит её в сторону от тела.
+    away = unit(cross(tuple(-c for c in left), (0.0, 1.0, 0.0)))
+    arm_out = cfg.get("arm_out", {})
+    outs = {PREFIX + "RightArm": qaxis(away, math.radians(arm_out.get("arm", 0)))}
+    fore = qaxis(away, math.radians(arm_out.get("arm", 0) + arm_out.get("fore", 0)))
+    for bone in rig.order:
+        if bone.startswith(PREFIX + "RightForeArm") or bone.startswith(PREFIX + "RightHand"):
+            outs[bone] = fore
     src_hip = src.rest_of("Hips")
     rig_hip = rig.rest_of("Hips")
     height = rig_hip[1][1] / src_hip[1][1]
@@ -169,7 +178,8 @@ def retarget(rig_doc, rig, clip_path, name, cfg):
             else:
                 delta = qmul(src.world(i_src, pose)[0], qinv(src.rest[i_src][0]))
                 delta = qmul(qmul(align, delta), qinv(align))
-                world = qmul(delta, qmul(grip, rest_rig)) if bone == PREFIX + "LeftHand" else qmul(delta, rest_rig)
+                pre = grip if bone == PREFIX + "LeftHand" else outs.get(bone, (0, 0, 0, 1))
+                world = qmul(delta, qmul(pre, rest_rig))
             worlds[bone] = world
             parent_world = worlds.get(parent_name) or (rig.rest[parent][0] if parent is not None else (0, 0, 0, 1))
             out[bone].append(qnorm(qmul(qinv(parent_world), world)))
@@ -243,7 +253,9 @@ def main(creature_id):
     rig.path = base / "tripo" / "rig.glb"
     print("вперёд, влево:", rig.frame())
     clips = json.loads((base / "mixamo" / "clips.json").read_text())
+    arm_out = clips.pop("_arm_out", {})
     for fbx, cfg in clips.items():
+        cfg["arm_out"] = arm_out
         glb = tmp / (cfg["name"] + ".glb")
         if not glb.exists():
             subprocess.run(["blender", "-b", "--python", str(HERE / "fbx2glb.py"), "--", str(base / "mixamo" / fbx), str(glb)],
