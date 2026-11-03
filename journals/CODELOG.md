@@ -703,3 +703,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 91: одна заливка хода
 
 - `game/scenes/battle_test.gd`: `INSPECT_RANGE` → `RANGE_ALPHA` 0.18; `strength` убран из `_paint()`.
+
+### 2026-11-04 Задача 92: поле 12×10
+
+- `game/scenes/battle_test.gd`: `COLS` 12, `ROWS` 10, `START_ROWS` `[0, 2, 4, 5, 7, 9]`, `CAMERA_CLOSE` 0.904 (те же 26,4 м).

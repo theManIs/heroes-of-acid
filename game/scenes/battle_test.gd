@@ -1,5 +1,5 @@
 extends Node3D
-## Тест боя: поле 11×11, все существа слева против всех справа. Два пальца, стрелки или правая кнопка — двигать камеру.
+## Тест боя: поле 12×10, все существа слева против всех справа. Два пальца, стрелки или правая кнопка — двигать камеру.
 ## Игровой ход: каждое существо ходит один раз, порядок — по инициативе, он показан в шкале сверху.
 ## Твоя сторона — левая: клик по подсвеченному гексу — идти (дальность своя у каждого, MOVES), клик по противнику — подойти и ударить.
 ## Запуск: godot --path game res://scenes/battle_test.tscn
@@ -9,9 +9,9 @@ const ARENA := preload("res://scenes/creature_test.gd")  # записи суще
 const SWORD := preload("res://scenes/sword_cursor.gd")
 const BOW := preload("res://scenes/bow_cursor.gd")
 const ACTION_ICON := preload("res://scenes/action_icon.gd")
-const COLS := 11
-const ROWS := 11
-const START_ROWS: Array[int] = [0, 2, 4, 6, 8, 10]  # ряды, где стоят существа в начале боя
+const COLS := 12
+const ROWS := 10
+const START_ROWS: Array[int] = [0, 2, 4, 5, 7, 9]  # ряды, где стоят существа в начале боя
 const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3}  # гексов за ход: чем массивнее, тем меньше
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
@@ -30,7 +30,7 @@ const NO_HEX := Vector2i(999, 999)
 const QUEUE_ICON := 44.0  # размер пиктограммы в шкале инициативы
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
 const CAMERA_FOV := 20.0  # узкий угол и камера дальше: дальние ряды почти не мельче ближних
-const CAMERA_CLOSE := 0.839  # ближе, чем нужно с запасом сверху: все существа в кадре
+const CAMERA_CLOSE := 0.904  # ближе, чем нужно с запасом сверху: все существа в кадре
 const CAMERA_SHIFT := 0.2  # поле выше в кадре, метров: нижние углы не прячутся за край
 const CREATURE_SCALE := 1.2  # существа крупнее гекса: так их лучше видно, соседи могут перекрывать друг друга
 const PAN_GESTURE := 0.05  # чувствительность прокрутки двумя пальцами
