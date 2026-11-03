@@ -791,6 +791,8 @@ func _process(delta: float) -> void:
 	var shooter := turn == Turn.PLAYER and active.ranged()
 	var from := _attack_hex(mouse, targeted) if targeted and not shooter else NO_HEX
 	var inspected := enemy if enemy else _ally_under(mouse)
+	if turn == Turn.BUSY:  # гекс уже новый, а существо ещё идёт
+		inspected = null
 	if h != _hovered or from != _attack_from or inspected != _inspected:
 		_hovered = h
 		_attack_from = from

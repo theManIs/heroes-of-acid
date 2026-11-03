@@ -683,3 +683,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 86: нижние углы поля
 
 - `game/scenes/battle_test.gd`: `CAMERA_CLOSE` 0.782 (17,4 м), `CAMERA_SHIFT` 0.7 в `_place_camera()`.
+
+### 2026-11-04 Задача 87: подсветка во время ходьбы
+
+- `game/scenes/battle_test.gd`: в `_process` при `Turn.BUSY` существо под курсором не показывает дальность.
