@@ -632,3 +632,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/scenes/creature_test.gd`: `variants` в записи существа, `_pick_variant()`, `_variant_column()`, `ROMAN`.
 - `game/scenes/creature.gd`: `set_textures()`.
 - `pipelines/creature-recolor/retexture.py`: новая текстура по 4 видам с записью входа и результата.
+
+### 2026-11-04 Задача 76: новая текстура Фонарщика
+
+- `pipelines/creature-recolor/extract_textures.py`: новый; `retexture.py`: выбор модели по расширению.
+- `game/assets/creatures/lantern-archer/generations/final-v1/`: `albedo.jpg`, `normal.jpg`, `orm.png`.
+- `game/scenes/creature_test.gd`: `variants`, последняя — по умолчанию; `battle_test.gd`, `tools/icon_shot.gd`: финальная генерация.
+- Команды: `.venv/bin/python pipelines/creature-recolor/retexture.py lantern-archer creatures/lantern-archer/concept/views-final final-v1` (20 кредитов, 985 → 965), `python3 -I pipelines/creature-recolor/extract_textures.py lantern-archer final-v1`.

@@ -10,6 +10,9 @@ const TESTED := "lantern-archer"  # с кого начинать
 const CREATURES := {
 	"lantern-archer": {
 		"name": "Фонарщик", "icon": "res://assets/creatures/lantern-archer/icon.png",
+		# Генерации: цифры в этой сцене, для просмотра. Последняя — финальная, она идёт в сцену боя и на пиктограмму.
+		"variants": [{"title": "первая, зелёный плащ"}, {"title": "финальный концепт", "textures": {"albedo": "res://assets/creatures/lantern-archer/generations/final-v1/albedo.jpg", "normal": "res://assets/creatures/lantern-archer/generations/final-v1/normal.jpg", "orm": "res://assets/creatures/lantern-archer/generations/final-v1/normal.jpg
+orm.png"}}],
 		"scene": "res://assets/creatures/lantern-archer/lantern-archer.glb",  # риг Tripo со spec: mixamo, анимации Mixamo (пайплайн creature-tripo-mixamo)
 		"extra": ["res://assets/creatures/lantern-archer/anims/idle.glb", "res://assets/creatures/lantern-archer/anims/walk.glb",
 			"res://assets/creatures/lantern-archer/anims/fall.glb", "res://assets/creatures/lantern-archer/anims/hurt.glb",
@@ -173,14 +176,14 @@ func _make() -> Creature:
 ## Показанная генерация существа. Запись в "variants": "scene" — своя модель с ригом, "textures" — другие текстуры на той же модели.
 func _current_variant() -> Dictionary:
 	var variants: Array = CREATURES[tested].get("variants", [])
-	return variants[_variant.get(tested, 0)] if not variants.is_empty() else {}
+	return variants[_variant.get(tested, variants.size() - 1)] if not variants.is_empty() else {}
 
 
 ## Выбрать генерацию: цифра рядом с пиктограммой, заодно выбирает и само существо.
 func _pick_variant(id: String, index: int) -> void:
 	if turn == Turn.BUSY or turn == Turn.ENEMY:
 		return
-	if id == tested and _variant.get(id, 0) == index:
+	if id == tested and _variant.get(id, CREATURES[id].variants.size() - 1) == index:
 		return
 	_variant[id] = index
 	_show_variants()
@@ -194,7 +197,7 @@ func _show_variants() -> void:
 	for id: String in _variant_buttons:
 		var buttons: Array = _variant_buttons[id]
 		for i in buttons.size():
-			buttons[i].button_pressed = i == _variant.get(id, 0)
+			buttons[i].button_pressed = i == _variant.get(id, buttons.size() - 1)
 
 
 ## Сменить проверяемое существо: сцена и поле те же, пересоздаются только бойцы.
@@ -470,7 +473,7 @@ func _variant_column(id: String) -> Control:
 		number.text = ROMAN[i]
 		number.tooltip_text = variants[i].get("title", "")
 		number.toggle_mode = true
-		number.button_pressed = i == 0
+		number.button_pressed = i == variants.size() - 1
 		number.custom_minimum_size = Vector2(32, 28)
 		number.focus_mode = Control.FOCUS_NONE
 		number.pressed.connect(_pick_variant.bind(id, i))

@@ -96,6 +96,8 @@ func _make(id: String) -> Creature:
 	add_child(c)
 	var cfg: Dictionary = ARENA.CREATURES[id]
 	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
+	if cfg.has("variants"):  # финальная генерация — последняя
+		c.set_textures(cfg.variants[-1].get("textures", {}))
 	c.defend_anim = cfg.defend
 	c.defend_from = cfg.defend_from
 	c.defend_len = cfg.defend_len

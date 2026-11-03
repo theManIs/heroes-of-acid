@@ -75,18 +75,25 @@ async def main(creature_id: str, views_dir: str, name: str) -> None:
         task = await client.wait_for_task(state["task_id"], verbose=True)
         if task.status != TaskStatus.SUCCESS:
             sys.exit(f"Текстура: {task.status.value} {task.error_msg or ''}")
-        state["seconds"] = round(time.monotonic() - t0)
+        state.setdefault("seconds", round(time.monotonic() - t0))
         files = await client.download_task_models(await client.get_task(state["task_id"]), str(out))
-        Path(next(p for p in files.values() if p)).rename(out / "model.glb")
+        # В ответе может быть и рендер: модель выбираем по расширению, рендер сохраняем отдельно.
+        for path in filter(None, files.values()):
+            Path(path).rename(out / ("model.glb" if str(path).endswith(".glb") else "render.webp"))
         after = (await client.get_balance()).balance
     if "credits" not in state:
         state["credits"] = before - after
     state_path.write_text(json.dumps(state, indent=2))
 
+    if not (out / "model.glb").exists():
+        sys.exit("Модель не скачалась")
     log = tripo / "generations" / "README.md"
     if not log.exists():
         log.write_text("# Генерации\n\n| Имя | Что на входе | Исходная модель | Задача | Настройки | Кредиты |\n|---|---|---|---|---|---|\n")
     with log.open("a") as f:
+        if name in log.read_text():
+            print("Строка уже в журнале")
+            return
         f.write(f"| `{name}` | `{views_dir}` (копии в папке генерации) | `{source_task}` | `{state['task_id']}` | текстура {TEXTURE_VERSION}, {QUALITY} | {state['credits']} |\n")
     print(f"Готово за {state['seconds']} с, кредиты: {before} → {after}")
 

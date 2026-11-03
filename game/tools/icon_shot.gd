@@ -35,6 +35,8 @@ func _shoot(id: String, cfg: Dictionary) -> void:
 	var c := Creature.new()
 	add_child(c)
 	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
+	if cfg.has("variants"):
+		c.set_textures(cfg.variants[-1].get("textures", {}))
 	c.face(Vector3(0, 0, 10))
 	c.rotation.y = c._yaw
 	await get_tree().create_timer(1.2).timeout
