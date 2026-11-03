@@ -5,8 +5,24 @@ extends Node3D
 ## Отладка: godot --path game -- --shot=<префикс> — кадр арены <префикс>-arena.png.
 
 # Проверяемое существо: оба бойца — оно. Новое существо — добавить запись в CREATURES; выбор — пиктограммы слева.
-const TESTED := "militiaman"  # с кого начинать
+const TESTED := "lantern-archer"  # с кого начинать
 const CREATURES := {
+	"lantern-archer": {
+		"name": "Лучник", "icon": "res://assets/creatures/lantern-archer/icon.png",
+		"scene": "res://assets/creatures/lantern-archer/lantern-archer.glb",  # риг Tripo со spec: mixamo, анимации Mixamo (пайплайн creature-tripo-mixamo)
+		"extra": ["res://assets/creatures/lantern-archer/anims/idle.glb", "res://assets/creatures/lantern-archer/anims/walk.glb",
+			"res://assets/creatures/lantern-archer/anims/fall.glb", "res://assets/creatures/lantern-archer/anims/hurt.glb",
+			"res://assets/creatures/lantern-archer/anims/shoot.glb", "res://assets/creatures/lantern-archer/anims/throw.glb"],
+		"attack": "shoot", "attack_from": 0.0,
+		"hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "defend": "hurt", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.3,
+		"size": 1.8, "walk_speed": 1.7,  # по замеру стопы в pose_sheet
+		# Дальний бой: стреляет с места. kind — снаряд, hand — откуда летит, release — доля клипа в момент выпуска,
+		# rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, м.
+		"shots": {
+			"arrow": {"anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 11.0, "arc": 0.15},
+			"lantern": {"anim": "throw", "hand": "RightHand", "release": 0.37, "rate": 1.0, "speed": 5.0, "arc": 0.7},
+		},
+	},
 	"ghoul": {
 		"name": "Упырь", "icon": "res://assets/creatures/ghoul/icon.png",
 		"scene": "res://assets/creatures/ghoul/ghoul.glb",
@@ -88,6 +104,8 @@ var tiles := {}  # Vector2i (осевые координаты) -> MeshInstance3
 var turn := Turn.PLAYER
 var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущего хода игрока
 var _hovered := Vector2i(999, 999)
+var _throw_button := Button.new()  # «Бросить фонарь»: только у стрелка
+var _enemy_shots := 0  # противник-стрелок чередует стрелы и бросок
 var _targeted := false  # на противнике зелёная обводка
 var _attack_from := Vector2i(999, 999)  # гекс, с которого будет удар (выбран сектором под курсором)
 var sword: Control
@@ -127,6 +145,7 @@ func _make() -> Creature:
 	c.defend_len = cfg.defend_len
 	c.defend_lead = cfg.defend_lead
 	c.hurt_len = cfg.hurt_len
+	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED)
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	if cfg.get("smoke", false):
@@ -143,7 +162,12 @@ func _switch(id: String) -> void:
 	enemy.queue_free()
 	player = _make()
 	enemy = _make()
+	_throw_button.visible = _ranged()
 	_reset()
+
+
+func _ranged() -> bool:
+	return CREATURES[tested].has("shots")
 
 
 func _fit_radius() -> void:
@@ -353,6 +377,11 @@ func _build_hud() -> void:
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	bar.add_theme_constant_override("separation", 10)
 	hud.add_child(bar)
+	_throw_button.text = "Бросить фонарь"
+	_throw_button.custom_minimum_size = Vector2(160, 48)
+	_throw_button.visible = _ranged()
+	_throw_button.pressed.connect(_throw_lantern)
+	bar.add_child(_throw_button)
 	for item in [["Защита", _defend], ["Пропустить ход", _skip], ["Заново", _reset]]:
 		var button := Button.new()
 		button.text = item[0]
@@ -421,6 +450,10 @@ func _start_enemy_turn() -> void:
 	reachable.clear()
 	_paint()
 	await get_tree().create_timer(0.6).timeout
+	if _ranged():
+		_enemy_shots += 1
+		_fire(enemy, player, "lantern" if _enemy_shots % 3 == 0 else "arrow", _start_player_turn)
+		return
 	var path := _approach(enemy, player)
 	_move_and_maybe_strike(enemy, player, path, _start_player_turn)
 
@@ -445,6 +478,31 @@ func _defend() -> void:
 func _skip() -> void:
 	if turn == Turn.PLAYER:
 		_start_enemy_turn()
+
+
+func _throw_lantern() -> void:
+	if turn == Turn.PLAYER and enemy.can_be_hit():
+		_fire(player, enemy, "lantern", _start_enemy_turn)
+
+
+## Выстрел или бросок с места: снаряд вылетает в момент выпуска, цель получает удар по его прилёте.
+func _fire(who: Creature, target: Creature, kind: String, next: Callable) -> void:
+	turn = Turn.BUSY
+	_targeted = false
+	who.set_outline(null)
+	target.set_outline(null)
+	reachable.clear()
+	_paint()
+	var shot: Dictionary = CREATURES[tested].shots[kind]
+	var clip: float = who.anim.get_animation(shot.anim).length
+	who.fire(target, shot.anim, shot.release, shot.rate, func() -> void:
+		var from := who.bone_tip(shot.hand)
+		var to := target.position + Vector3.UP * target.height * 0.6
+		var seconds: float = from.distance_to(to) / shot.speed
+		Projectile.launch(self, kind, from, to, seconds, shot.arc)
+		target.take_hit(seconds))
+	await get_tree().create_timer(clip * shot.release / shot.rate + 2.0).timeout
+	next.call()
 
 
 ## Путь к ближайшему свободному соседу цели; не дальше MOVE (тогда — часть пути).
@@ -474,7 +532,7 @@ func _move_and_maybe_strike(who: Creature, target: Creature, path: Array[Vector2
 	if not path.is_empty():
 		who.walk_path(_to_points(path))
 		await who.arrived
-	if _hex_distance(_hex_of(who), _hex_of(target)) == 1:
+	if _hex_distance(_hex_of(who), _hex_of(target)) == 1 and not _ranged():
 		who.strike(target, _hex_spacing(), OVERLAP)
 		await get_tree().create_timer(who.hit_delay() + 1.5).timeout  # попадание + реакция цели
 	else:
@@ -495,6 +553,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if turn != Turn.PLAYER or click == null or not click.pressed or click.button_index != MOUSE_BUTTON_LEFT:
 		return
 	if _on_enemy(click.position) or _hex_at(_ground_point(click.position)) == _hex_of(enemy):
+		if _ranged():
+			if enemy.can_be_hit():
+				_fire(player, enemy, "arrow", _start_enemy_turn)
+			return
 		var from := _attack_hex(click.position)
 		if from != NO_HEX and enemy.can_be_hit():
 			_move_and_maybe_strike(player, enemy, reachable[from], _start_enemy_turn)  # свой гекс — пустой путь
@@ -586,7 +648,7 @@ func _process(delta: float) -> void:
 		_targeted = targeted
 		enemy.set_outline(TARGET if targeted else null)
 	var h := NO_HEX if over_enemy else _hex_under(mouse)  # противник заслоняет гексы за собой
-	var from := _attack_hex(mouse) if targeted else NO_HEX
+	var from := _attack_hex(mouse) if targeted and not _ranged() else NO_HEX
 	if h != _hovered or from != _attack_from:
 		_hovered = h
 		_attack_from = from
@@ -601,14 +663,14 @@ func _process(delta: float) -> void:
 	var text := ""
 	match turn:
 		Turn.PLAYER:
-			text = "Твой ход: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % MOVE
+			text = "Твой ход: гекс — идти (до %d), противник — выстрелить, «Бросить фонарь», «Защита» — ждать удара" % MOVE if _ranged() else "Твой ход: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % MOVE
 		Turn.ENEMY, Turn.BUSY:
 			text = "Ход…" if turn == Turn.BUSY else "Ход противника"
 		Turn.OVER:
 			text = "Победа!" if enemy.dead else "Поражение."
 	if over_enemy:
 		text = "Противник: удары %d/%d" % [enemy.hits, Creature.HITS_TO_KILL]
-		if targeted and from == NO_HEX:
+		if targeted and from == NO_HEX and not _ranged():
 			text += ". Не дотянуться: нет свободной стороны в пределах хода"
 	status.text = text
 
@@ -616,6 +678,9 @@ func _process(delta: float) -> void:
 func _shoot(prefix: String) -> void:
 	await get_tree().create_timer(0.8).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-arena.png")
+	if _ranged():
+		_shoot_ranged(prefix)
+		return
 	# Упырь вплотную бьёт голема: кадр в момент попадания.
 	enemy.position = _hex_center(_hex_of(player) + Vector2i(1, 0))
 	player.defending = true  # кадр показывает защиту
@@ -624,4 +689,30 @@ func _shoot(prefix: String) -> void:
 	get_viewport().get_texture().get_image().save_png(prefix + "-hit.png")
 	await get_tree().create_timer(1.0).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-hit2.png")
+	get_tree().quit()
+
+
+## Кадры стрелка: выстрел и бросок в полёте, потом реакция цели.
+func _shoot_ranged(prefix: String) -> void:
+	_fire(player, enemy, "arrow", func() -> void: pass)
+	var arrow: Dictionary = CREATURES[tested].shots.arrow
+	await get_tree().create_timer(player.anim.get_animation(arrow.anim).length * arrow.release / arrow.rate * 0.8).timeout
+	get_viewport().get_texture().get_image().save_png(prefix + "-aim.png")
+	await get_tree().create_timer(0.25).timeout
+	get_viewport().get_texture().get_image().save_png(prefix + "-arrow.png")
+	await get_tree().create_timer(2.5).timeout
+	_fire(player, enemy, "lantern", func() -> void: pass)
+	var lantern: Dictionary = CREATURES[tested].shots.lantern
+	await get_tree().create_timer(player.anim.get_animation(lantern.anim).length * lantern.release / lantern.rate + 0.35).timeout
+	get_viewport().get_texture().get_image().save_png(prefix + "-lantern.png")
+	await get_tree().create_timer(0.8).timeout
+	get_viewport().get_texture().get_image().save_png(prefix + "-burst.png")
+	await get_tree().create_timer(2.5).timeout
+	player.walk_path(_to_points([_hex_of(player) + Vector2i(1, 0)]))
+	await get_tree().create_timer(0.45).timeout
+	get_viewport().get_texture().get_image().save_png(prefix + "-walk.png")
+	await player.arrived
+	_fire(player, enemy, "arrow", func() -> void: pass)
+	await get_tree().create_timer(3.5).timeout
+	get_viewport().get_texture().get_image().save_png(prefix + "-dead.png")
 	get_tree().quit()

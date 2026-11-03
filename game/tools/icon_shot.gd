@@ -1,6 +1,6 @@
 extends Node3D
 ## Пиктограммы существ: каждое в стойке idle, лицом в камеру, снимок головы и торса 256×256.
-## Запуск: godot --path game res://tools/icon_shot.tscn — пишет game/assets/creatures/<id>/icon.png.
+## Запуск: godot --path game res://tools/icon_shot.tscn [-- --id=<существо>] — пишет game/assets/creatures/<id>/icon.png.
 
 const ARENA := preload("res://scenes/creature_test.gd")
 const SIZE := 256
@@ -21,8 +21,13 @@ func _ready() -> void:
 	add_child(sun)
 	camera.fov = 30.0
 	add_child(camera)
+	var only := ""  # -- --id=<существо>: снять только его
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--id="):
+			only = arg.trim_prefix("--id=")
 	for id: String in ARENA.CREATURES:
-		await _shoot(id, ARENA.CREATURES[id])
+		if only == "" or only == id:
+			await _shoot(id, ARENA.CREATURES[id])
 	get_tree().quit()
 
 
@@ -35,7 +40,7 @@ func _shoot(id: String, cfg: Dictionary) -> void:
 	await get_tree().create_timer(1.2).timeout
 	# Голова и плечи: фокус чуть ниже головы (у сутулых голова впереди и низко), камера чуть сверху и сбоку.
 	var top := c.size_top()
-	var head := c.to_global(c.to_local(c.bone_world(c.skeleton.find_bone("Head"))))
+	var head := c.bone_tip("Head")
 	# Подстройка кадра на существо: icon_up — сдвиг фокуса (доля роста), icon_dist — отъезд камеры.
 	var focus := head + Vector3(0, top * cfg.get("icon_up", -0.08), 0)
 	camera.position = focus + Vector3(0.35, 0.2, 1.0).normalized() * top * cfg.get("icon_dist", 1.15)

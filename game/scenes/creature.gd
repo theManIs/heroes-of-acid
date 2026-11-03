@@ -22,6 +22,7 @@ const RECOIL := 0.3  # после попадания рука сразу воз�
 const RECOIL_BLEND := 0.35
 const HITS_TO_KILL := 3  # пока вместо здоровья: столько ударов выдерживает существо
 const OUTLINE_WIDTH := 0.025  # толщина обводки по контуру, метров
+const HIP_NAMES := ["Hip", "mixamorig_Hips"]  # кость таза: скелет Tripo и скелет Mixamo
 
 var model: Node3D
 var skeleton: Skeleton3D
@@ -29,6 +30,7 @@ var anim: AnimationPlayer
 var dead := false
 var walking := false
 var walk_rate := 1.0  # ускорение ходьбы: анимация и движение вместе, чтобы ноги не скользили
+var walk_speed := WALK_SPEED  # метров в секунду при walk_rate 1: своя у клипов другой длины шага
 var impact := 0.5  # момент попадания, доля проигрываемой части удара
 var _strike_id := 0
 var reach := 1.0  # вынос кулака вперёд в момент попадания, метров
@@ -151,7 +153,7 @@ func _adapt_track(a: Animation, t: int, source: Skeleton3D, bone: String) -> voi
 ## циклические — по среднему, разовые — по первому ключу (движение внутри анимации сохраняется).
 func _align_hips() -> void:
 	var idle := anim.get_animation("idle")
-	var hip_track := NodePath("%s:Hip" % anim.get_node(anim.root_node).get_path_to(skeleton))
+	var hip_track := NodePath("%s:%s" % [anim.get_node(anim.root_node).get_path_to(skeleton), skeleton.get_bone_name(_hip())])
 	var idle_track := idle.find_track(hip_track, Animation.TYPE_POSITION_3D)
 	if idle_track < 0:
 		return
@@ -177,9 +179,16 @@ func _align_hips() -> void:
 ## После выравнивания таз в idle стоит не над началом координат (у голема — 0,27 м вбок):
 ## двигаем модель так, чтобы таз был над точкой существа, иначе тела противников разъезжаются.
 func _center_on_hip() -> void:
-	var hip := to_local(bone_world(skeleton.find_bone("Hip")))
+	var hip := to_local(bone_world(_hip()))
 	_model_base -= Vector3(hip.x, 0.0, hip.z)
 	model.position = _model_base
+
+
+func _hip() -> int:
+	for bone: String in HIP_NAMES:
+		if skeleton.find_bone(bone) >= 0:
+			return skeleton.find_bone(bone)
+	return 0
 
 
 ## Передняя поверхность тела от точки существа: половина толщины тела.
@@ -188,7 +197,7 @@ func front() -> float:
 
 
 func _measure_rest() -> void:
-	_hip_bone = skeleton.find_bone("Hip")
+	_hip_bone = _hip()
 	var top := -INF
 	_rest_min_y = INF
 	for i in skeleton.get_bone_count():
@@ -497,6 +506,30 @@ func strike(target: Creature, distance: float, overlap: float) -> void:
 		tween.tween_property(model, "position:x", _model_base.x, RECOIL + RECOIL_BLEND).set_trans(Tween.TRANS_SINE)
 
 
+## Дальняя атака с места: сыграть клип и в момент выпуска (release, доля длины) вызвать on_release.
+## rate — скорость клипа: короткие клипы выстрела замедляем, чтобы было видно прицеливание.
+func fire(target: Creature, anim_name: String, release: float, rate: float, on_release: Callable) -> void:
+	face(target.position)
+	target.face(position)
+	walking = false
+	_strike_id += 1
+	var id := _strike_id
+	anim.play(anim_name, BLEND, rate)
+	await get_tree().create_timer(anim.get_animation(anim_name).length * release / rate).timeout
+	on_release.call()
+	await get_tree().create_timer(RECOIL / rate).timeout
+	if id == _strike_id and not dead and anim.current_animation == anim_name:
+		anim.play("idle", RECOIL_BLEND)
+
+
+## Положение кости по концу имени (кисть любого скелета): "LeftHand", "RightHand".
+func bone_tip(suffix: String) -> Vector3:
+	for i in skeleton.get_bone_count():
+		if skeleton.get_bone_name(i).ends_with(suffix):
+			return bone_world(i)
+	return global_position + Vector3.UP * height * 0.6
+
+
 func can_be_hit() -> bool:
 	return not dead and hits < HITS_TO_KILL
 
@@ -579,5 +612,5 @@ func _physics_process(delta: float) -> void:
 		_play("idle")
 		arrived.emit()
 		return
-	position += to.normalized() * minf(WALK_SPEED * walk_rate * delta, to.length())
+	position += to.normalized() * minf(walk_speed * walk_rate * delta, to.length())
 	face(_target)

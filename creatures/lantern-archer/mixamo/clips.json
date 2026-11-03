@@ -1,0 +1,8 @@
+{
+  "Unarmed Idle 01.fbx": {"name": "idle"},
+  "Sneak Walk.fbx": {"name": "walk"},
+  "Standing Aim Recoil.fbx": {"name": "shoot"},
+  "Throw.fbx": {"name": "throw"},
+  "Hit Reaction.fbx": {"name": "hurt"},
+  "Dying.fbx": {"name": "fall"}
+}

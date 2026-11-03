@@ -4,3 +4,4 @@ screens/
 builds/
 .DS_Store
 __pycache__/
+creatures/*/mixamo/glb/

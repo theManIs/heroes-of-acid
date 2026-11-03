@@ -528,3 +528,12 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `battle_test.gd`: заполняющий свет перенесён к камере (-28°, -25°), плитки темнее (0,62), чтобы поле не пересвечивалось.
 
 - `battle_test.gd`: `TILE_COLOR` 0,62 → 0,78.
+
+### 2026-11-03 Задача 54: лучник, пайплайн creature-tripo-mixamo
+
+- `pipelines/creature-tripo-mixamo/`: `stage2.py` (4 вида → модель → риг `spec: mixamo`), `fbx2glb.py`, `build_clips.py` (перенос клипов от покоя в мировых осях), README.
+- `game/scenes/creature.gd`: `HIP_NAMES`/`_hip()`, `walk_speed`, `fire()`, `bone_tip()`.
+- `game/scenes/projectile.gd`: новый, стрела и фонарь по дуге, вспышка.
+- `game/scenes/creature_test.gd`: запись `lantern-archer`, `shots`, `_fire()`, кнопка «Бросить фонарь», стартовое существо `lantern-archer`, кадры `_shoot_ranged`.
+- `game/tools/pose_sheet.*`: новый, лист поз и замер шага; `icon_shot.gd`: `--id`, голова через `bone_tip`.
+- Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/stage2.py lantern-archer` (65 кредитов, 1050 → 985), `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py lantern-archer`, `godot --headless --path game --import`.
