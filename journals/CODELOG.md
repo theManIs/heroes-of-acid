@@ -556,3 +556,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-03 Задача 59: снимок идущей игры
 
 - `game/scenes/creature_test.gd`: `_check_shot_request()`, только в отладочной сборке.
+
+### 2026-11-04 Задача 60: руки при получении удара
+
+- `game/scenes/creature_test.gd`: `hurt_calm_by` 0.0 → 0.25.

@@ -17,7 +17,7 @@ const CREATURES := {
 		"attack": "shoot", "attack_from": 0.0,
 		"hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "defend": "hurt", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.3,
 		"hurt_calm": ["mixamorig_LeftShoulder", "mixamorig_LeftArm", "mixamorig_LeftForeArm", "mixamorig_LeftHand",
-			"mixamorig_RightShoulder", "mixamorig_RightArm", "mixamorig_RightForeArm", "mixamorig_RightHand"], "hurt_calm_by": 0.0,  # руки замёрзли в стойке: клип поднимает их перед собой
+			"mixamorig_RightShoulder", "mixamorig_RightArm", "mixamorig_RightForeArm", "mixamorig_RightHand"], "hurt_calm_by": 0.25,  # руки: четверть размаха, клип поднимает их перед собой
 		"size": 1.8, "walk_speed": 1.7,  # по замеру стопы в pose_sheet
 		# Дальний бой: стреляет с места. kind — снаряд, hand — откуда летит, release — доля клипа в момент выпуска,
 		# rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, м.
