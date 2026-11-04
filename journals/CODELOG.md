@@ -737,3 +737,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/project.godot`: `window/stretch/mode="canvas_items"`, `window/stretch/aspect="expand"`.
 - Проверка: временный зонд разворачивал окно и сверял все гексы с курсором, 120 из 120; после проверки удалён.
+
+### 2026-11-04 Задача 100: текстура земли
+
+- `pipelines/ground-fal/`: `generate.py`, `make_tile.gd`, README; `game/assets/ground/grass.png`.
+- `game/scenes/battle_test.gd`: `_build_grass()` на шейдере: текстура с повтором 6 м, большие пятна шума, `GRASS_TINT`.

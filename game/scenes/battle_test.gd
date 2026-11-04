@@ -19,8 +19,23 @@ const TILE_HEIGHT := 0.01  # заливка гекса плоская, лежи�
 const LINE_WIDTH := 0.03  # толщина контура гекса, метров
 const LINE_COLOR := Color(1.0, 1.0, 0.9, 0.4)
 const RADIUS := 0.6
-const GRASS_DARK := Color(0.23, 0.33, 0.15)
-const GRASS_LIGHT := Color(0.36, 0.47, 0.22)
+const GRASS_TILE := 6.0  # сторона повтора текстуры травы, метров
+const GRASS_PATCH := 37.0  # сторона повтора больших пятен, прячут повтор текстуры, метров
+const GRASS_SHADER := """
+shader_type spatial;
+uniform sampler2D grass: source_color, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform sampler2D patches: repeat_enable, filter_linear_mipmap;
+uniform vec3 tint;
+uniform float tile;
+uniform float patch;
+uniform float size;
+void fragment() {
+	vec2 metres = UV * size;
+	ALBEDO = texture(grass, metres / tile).rgb * tint * mix(0.72, 1.08, texture(patches, metres / patch).r);
+	ROUGHNESS = 1.0;
+}
+"""
+const GRASS_TINT := Color(0.52, 0.62, 0.46)  # приглушить: существа и контуры должны читаться лучше земли
 const GROUND_SIZE := 80.0  # шире любого кадра, с прокруткой тоже
 const PLAYER_TURN := Color(0.25, 0.55, 1.0)
 const ENEMY_TURN := Color(1.0, 0.25, 0.2)
@@ -347,25 +362,28 @@ func _build_lines() -> void:
 	board.add_child(lines)
 
 
-## Трава: пятна шума, без отдельных травинок — с камеры боя их не разглядеть.
+## Трава: рисованная текстура, большие пятна шума прячут её повтор.
 func _build_grass() -> void:
 	var noise := FastNoiseLite.new()
 	noise.seed = 7
 	noise.frequency = 0.012
 	noise.fractal_octaves = 5
-	var ramp := Gradient.new()
-	ramp.set_color(0, GRASS_DARK)
-	ramp.set_color(1, GRASS_LIGHT)
-	var texture := NoiseTexture2D.new()
-	texture.width = 1024
-	texture.height = 1024
-	texture.seamless = true
-	texture.noise = noise
-	texture.color_ramp = ramp
-	var mat := StandardMaterial3D.new()
-	mat.albedo_texture = texture
-	mat.roughness = 1.0
-	mat.uv1_scale = Vector3.ONE * GROUND_SIZE / 16.0  # один повтор на 16 метров
+	var patches := NoiseTexture2D.new()
+	patches.width = 512
+	patches.height = 512
+	patches.seamless = true
+	patches.generate_mipmaps = true
+	patches.noise = noise
+	var shader := Shader.new()
+	shader.code = GRASS_SHADER
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	mat.set_shader_parameter("grass", load("res://assets/ground/grass.png"))
+	mat.set_shader_parameter("patches", patches)
+	mat.set_shader_parameter("tint", Vector3(GRASS_TINT.r, GRASS_TINT.g, GRASS_TINT.b))
+	mat.set_shader_parameter("tile", GRASS_TILE)
+	mat.set_shader_parameter("patch", GRASS_PATCH)
+	mat.set_shader_parameter("size", GROUND_SIZE)
 	var plane := PlaneMesh.new()
 	plane.size = Vector2.ONE * GROUND_SIZE
 	var ground := MeshInstance3D.new()

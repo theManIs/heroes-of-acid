@@ -1,0 +1,8 @@
+{
+  "endpoint": "fal-ai/gpt-image-1.5",
+  "prompt": "A seamless tileable ground texture for a 3D game: short meadow grass with subtle variation, seen exactly straight down, orthographic, no perspective and no horizon. Hand-painted stylized look with visible soft brush strokes, muted olive and moss greens with a few faint patches of dry grass. Even flat lighting with no shadows. The pattern is uniform across the whole square and continues past all four edges. No objects, no flowers, no stones, no paths, no border, no vignette, no text.",
+  "image_size": "1024x1024",
+  "quality": "high",
+  "num_images": 1,
+  "output_format": "png"
+}
