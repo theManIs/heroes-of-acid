@@ -779,3 +779,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 111: витрина списком
 
 - `game/scenes/showcase.gd`: все существа на одной сцене по два в ряд, подписи над головами, прокрутка колесом, двумя пальцами и стрелками; `SCENES.md`.
+
+### 2026-11-04 Задача 112: витрина квадратами
+
+- `game/scenes/showcase.gd`, `showcase.tscn`: корень Control; у каждого существа SubViewport со своим миром в рамке, сетка в два столбца в ScrollContainer.
+- `pipelines/creature-quadruped/model.py`: модель через Tripo API с лимитом 20 000.
