@@ -808,3 +808,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/showcase.gd`: `_process` выключает отрисовку квадратов за кадром, сглаживание убрано, в режиме `--shot` печатается FPS. Действует и на лабораторию.
 - Замер в скрытом окне: 60 до и после, с `--disable-vsync` тоже; разницу показать не удалось.
+
+### 2026-11-04 Задача 116: донор хаски
+
+- `creatures/hound/donors/husky/`; `game/assets/creatures/hound/lab/hound-on-husky.glb`; `game/scenes/hound_lab.gd`: варианты хаски, размер сетки со скелетом без трансформа узла.
+- Команда: `blender -b --python pipelines/creature-quadruped/bind_donor.py -- creatures/hound/donors/husky/husky.glb creatures/hound/tripo/hound-small.glb creatures/hound/donors/husky/hound-on-husky.glb`.

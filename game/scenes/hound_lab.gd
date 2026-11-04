@@ -7,6 +7,12 @@ const LAB := "res://assets/creatures/hound/lab/"
 const HEIGHT := 1.3
 const CAMERA_SIZE := 1.6  # собака длиннее, чем выше
 const VARIANTS := [
+	["Хаски: стойка", "hound-on-husky.glb", "Idle"],
+	["Хаски: укус", "hound-on-husky.glb", "Attack"],
+	["Хаски: ходьба", "hound-on-husky.glb", "Walk"],
+	["Хаски: бег", "hound-on-husky.glb", "Gallop"],
+	["Хаски: реакция", "hound-on-husky.glb", "Idle_HitReact_Left"],
+	["Хаски: смерть", "hound-on-husky.glb", "Death"],
 	["Лисица, веса со сшитой копии: озирается", "hound-on-fox-welded.glb", "Survey"],
 	["Лисица, веса со сшитой копии: ходьба", "hound-on-fox-welded.glb", "Walk"],
 	["Лисица, веса со сшитой копии: бег", "hound-on-fox-welded.glb", "Run"],
@@ -34,7 +40,7 @@ func _make_variant(grid: GridContainer, title: String, path: String, only := "")
 	var box := AABB()
 	var first := true
 	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
-		var part := mesh.global_transform * mesh.get_aabb()
+		var part := mesh.get_aabb() if mesh.skin else mesh.global_transform * mesh.get_aabb()  # сетка со скелетом: трансформ узла не действует, у хаски он с масштабом 100
 		box = part if first else box.merge(part)
 		first = false
 	var fit := HEIGHT / box.size.y
