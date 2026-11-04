@@ -14,6 +14,8 @@ const CAMERA_DIR := Vector3(0.55, 0.35, 1.0)  # сбоку и немного с�
 const FRAME := 1.35  # сколько высот существа входит в кадр
 const FRAME_COLOR := Color(0.72, 0.58, 0.3)
 const GRASS_TINT := Color(0.52, 0.62, 0.46)
+const HOUND := "res://assets/creatures/hound/hound-walk.glb"  # скелет не гуманоидный: пока просто играем анимацию файла
+const HOUND_HEIGHT := 1.3
 
 var _shot := ""
 
@@ -43,6 +45,7 @@ func _ready() -> void:
 	grid.add_theme_constant_override("h_separation", GAP)
 	grid.add_theme_constant_override("v_separation", GAP)
 	margin.add_child(grid)
+	_make_hound_cell(grid)
 	for id: String in ARENA.CREATURES:
 		_make_cell(id, grid)
 	if _shot != "":
@@ -52,9 +55,8 @@ func _ready() -> void:
 		get_tree().quit()
 
 
-## Квадрат: рамка, свой мир с существом и подпись внизу.
-func _make_cell(id: String, grid: GridContainer) -> void:
-	var cfg: Dictionary = ARENA.CREATURES[id]
+## Рамка со своим миром и камерой на существо заданной высоты; подпись добавляет вызывающий.
+func _make_frame(grid: GridContainer, size: float) -> Dictionary:
 	var frame := PanelContainer.new()
 	var box := StyleBoxFlat.new()
 	box.bg_color = Color.BLACK
@@ -77,9 +79,51 @@ func _make_cell(id: String, grid: GridContainer) -> void:
 	var camera := Camera3D.new()
 	camera.fov = CAMERA_FOV
 	view.add_child(camera)
-	var look := Vector3(0, cfg.size * 0.5, 0)
-	camera.position = look + CAMERA_DIR.normalized() * cfg.size * FRAME * 0.5 / tan(deg_to_rad(CAMERA_FOV * 0.5))
+	var look := Vector3(0, size * 0.5, 0)
+	camera.position = look + CAMERA_DIR.normalized() * size * FRAME * 0.5 / tan(deg_to_rad(CAMERA_FOV * 0.5))
 	camera.look_at_from_position(camera.position, look)
+	return {"frame": frame, "view": view}
+
+
+func _make_label(frame: Control) -> Label:
+	var label := Label.new()
+	label.add_theme_font_size_override("font_size", 24)
+	label.add_theme_constant_override("outline_size", 6)
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.size_flags_vertical = Control.SIZE_SHRINK_END
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(label)
+	return label
+
+
+## Собака: класс Creature пока рассчитан на гуманоидов, поэтому модель и её анимация напрямую.
+func _make_hound_cell(grid: GridContainer) -> void:
+	var cell := _make_frame(grid, HOUND_HEIGHT * 1.8)  # длиннее, чем выше: камера дальше
+	var model: Node3D = load(HOUND).instantiate()
+	cell.view.add_child(model)
+	var box := AABB()
+	var first := true
+	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		var part := mesh.global_transform * mesh.get_aabb()
+		box = part if first else box.merge(part)
+		first = false
+	var fit := HOUND_HEIGHT / box.size.y
+	model.scale = Vector3.ONE * fit
+	model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * fit
+	var player: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
+	var clip: String = player.get_animation_list()[0]
+	player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
+	player.play(clip)
+	_make_label(cell.frame).text = "Собака: ходьба"
+
+
+## Квадрат: рамка, свой мир с существом и подпись внизу.
+func _make_cell(id: String, grid: GridContainer) -> void:
+	var cfg: Dictionary = ARENA.CREATURES[id]
+	var cell := _make_frame(grid, cfg.size)
+	var view: SubViewport = cell.view
+	var frame: Control = cell.frame
 	var unit := Creature.new()
 	view.add_child(unit)
 	unit.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
@@ -97,14 +141,7 @@ func _make_cell(id: String, grid: GridContainer) -> void:
 	unit.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	unit.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
 	unit.face(unit.position + Vector3.BACK + Vector3.RIGHT)
-	var label := Label.new()
-	label.add_theme_font_size_override("font_size", 24)
-	label.add_theme_constant_override("outline_size", 6)
-	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.size_flags_vertical = Control.SIZE_SHRINK_END
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	frame.add_child(label)
+	var label := _make_label(frame)
 	_cycle(unit, cfg, label)
 
 
