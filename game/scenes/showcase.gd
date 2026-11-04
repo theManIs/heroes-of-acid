@@ -14,6 +14,15 @@ const CAMERA_DIR := Vector3(0.55, 0.35, 1.0)  # сбоку и немного с�
 const FRAME := 1.35  # сколько высот существа входит в кадр
 const FRAME_COLOR := Color(0.72, 0.58, 0.3)
 const GRASS_TINT := Color(0.52, 0.62, 0.46)
+const ANIMS := "res://assets/animations/"
+const NEW_CREATURES := {  # ещё не в бою: в записи ARENA.CREATURES они попали бы и туда
+	"houndmaster": {
+		"name": "Псарь", "scene": "res://assets/creatures/houndmaster/houndmaster.glb", "size": 2.0,
+		"extra": [ANIMS + "idle.glb", ANIMS + "walk.glb", ANIMS + "fall.glb", ANIMS + "box_01.glb", ANIMS + "hit_to_head.glb", ANIMS + "hit_to_side.glb"],
+		"attack": "box_01", "attack_from": 0.0, "hurt": "hit_to_head", "hurt_len": 0.0, "idle": "idle",
+		"defend": "hit_to_side", "defend_from": 0.0, "defend_len": 0.0,
+	},
+}
 
 var _shot := ""
 var columns := 2
@@ -23,6 +32,8 @@ var _views: Array = []  # пары квадрат и его мир: мир за 
 
 func _ready() -> void:
 	var grid := _build_page()
+	for id: String in NEW_CREATURES:
+		_make_cell(id, grid)
 	for id: String in ARENA.CREATURES:
 		_make_cell(id, grid)
 	_finish()
@@ -116,7 +127,7 @@ func _make_label(frame: Control) -> Label:
 
 ## Квадрат: рамка, свой мир с существом и подпись внизу.
 func _make_cell(id: String, grid: GridContainer) -> void:
-	var cfg: Dictionary = ARENA.CREATURES[id]
+	var cfg: Dictionary = NEW_CREATURES[id] if NEW_CREATURES.has(id) else ARENA.CREATURES[id]
 	var cell := _make_frame(grid, cfg.size)
 	var view: SubViewport = cell.view
 	var frame: Control = cell.frame

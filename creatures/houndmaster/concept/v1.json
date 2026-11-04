@@ -1,0 +1,8 @@
+{
+  "endpoint": "fal-ai/gpt-image-1.5",
+  "prompt": "A huge intimidating bald medieval dog handler, dark fantasy strategy game character, saturated realism, hand-painted game character concept. Massive broad shoulders, thick arms, stern scarred face with a heavy brow, grey cloth scarf around the neck, dark navy-blue quilted gambeson with short sleeves and a diamond stitch pattern, wide brown leather belt, baggy light-grey trousers, tall black leather boots, large dark leather work gloves reaching the elbows.\n\nFull body, front view, strict symmetrical T-pose: arms fully horizontal at shoulder height, straight out to the sides, legs apart with a clear gap between them, feet flat. The whole figure fits inside the frame with wide empty margin on all sides. No weapon, nothing held in the hands, nothing overlapping the body, no cloth hanging between the legs. Plain neutral light-grey background, soft even studio lighting, no cast shadows, no text, no ground.",
+  "image_size": "1536x1024",
+  "quality": "high",
+  "num_images": 1,
+  "output_format": "png"
+}

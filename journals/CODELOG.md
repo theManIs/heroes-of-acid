@@ -821,3 +821,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Витрина собаки
 
 - `game/scenes/hound_lab.gd`: 8 квадратов из `hound.glb`, 4 столбца; `showcase.gd`: собака убрана, `columns`, `cell_size`.
+
+### 2026-11-04 Задача 109: псарь
+
+- `creatures/houndmaster/`; `game/assets/creatures/houndmaster/houndmaster.glb`; `game/scenes/showcase.gd`: `NEW_CREATURES`.
+- Команда: `.venv/bin/python pipelines/creature/stage2_tripo.py houndmaster` (65 кредитов API).
