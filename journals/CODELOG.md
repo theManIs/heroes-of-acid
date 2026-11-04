@@ -799,3 +799,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `pipelines/creature-quadruped/bind_donor.py`: подгонка костей, веса на сшитой копии с переносом; `creatures/hound/donors/fox/`; варианты в `game/scenes/hound_lab.gd`.
 - Команда: `blender -b --python pipelines/creature-quadruped/bind_donor.py -- creatures/hound/donors/fox/fox.glb creatures/hound/tripo/hound-small.glb creatures/hound/donors/fox/hound-on-fox-welded.glb`.
+
+### 2026-11-04 Лаборатория: замирание клипов
+
+- `game/scenes/hound_lab.gd`: `_play_all` включает повтор клипа, иначе он стоял на последнем кадре до следующего запуска.

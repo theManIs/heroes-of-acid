@@ -49,6 +49,8 @@ func _make_variant(grid: GridContainer, title: String, path: String, only := "")
 
 func _play_all(player: AnimationPlayer, title: String, label: Label, only: String) -> void:
 	var clips: Array = [only] if only != "" else Array(player.get_animation_list())
+	for clip in clips:
+		player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR  # из файла приходят без повтора: клип замирал на последнем кадре
 	while true:
 		for clip in clips:
 			label.text = "%s (%s)" % [title, clip]
