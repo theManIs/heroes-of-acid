@@ -1,7 +1,24 @@
+# Godot: кэш и служебное. *.import, *.uid и export_presets.cfg храним в git
+.godot/
+.mono/
+data_*/
+mono_crash.*
+
+# Секреты
 .env
+.env.*
+
+# Python
 .venv/
+__pycache__/
+
+# Система и временное
+.DS_Store
+*.tmp
+
+# Локальные скрины и сборки
 screens/
 builds/
-.DS_Store
-__pycache__/
+
+# Исходники Mixamo, скачиваются заново
 creatures/*/mixamo/glb/

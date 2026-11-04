@@ -759,3 +759,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 104: новые преграды
 
 - Новые модели `rock-ridge`, `dead-tree-v2`, старые удалены; `game/scenes/battle_test.gd`: масштаб одинаковый по осям, `sink`, `_tint()` убран.
+
+### 2026-11-04 Задача 105: `.gitignore`
+
+- `.gitignore` по разделам, добавлены `.mono/`, `data_*/`, `mono_crash.*`, `.env.*`, `*.tmp`; `game/.gitignore` удалён; `game/scenes/action_icon.gd.uid` добавлен в git.
