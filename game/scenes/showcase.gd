@@ -84,6 +84,10 @@ func _show_unit() -> void:
 	unit.defend_from = cfg.defend_from
 	unit.defend_len = cfg.defend_len
 	unit.hurt_len = cfg.hurt_len
+	unit.turn_bones(cfg.get("bone_turn", {}))  # поза рук и оружия, как в бою
+	unit.defend_pin = cfg.get("defend_pin", true)
+	unit.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
+	unit.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
 	unit.face(unit.position + Vector3.RIGHT)
 	var look := Vector3(0, cfg.size * 0.5, 0)
 	var dist: float = cfg.size * FRAME * 0.5 / tan(deg_to_rad(CAMERA_FOV * 0.5))
