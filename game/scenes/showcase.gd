@@ -1,42 +1,56 @@
 extends Node3D
-## Витрина: существо стоит на траве и по кругу показывает всё, что умеет, как в окне покупки в Героях.
-## Стрелки влево и вправо или клик — другое существо.
+## Витрина: существа по два в ряд, каждое по кругу показывает всё, что умеет, как в окне покупки в Героях.
+## Колесо, два пальца или стрелки — прокрутка списка.
 ## Запуск: godot --path game res://scenes/showcase.tscn
-## Отладка: -- --id=<существо> --shot=<префикс> — кадры <префикс>-<анимация>.png за один круг, потом выход.
+## Отладка: -- --shot=<префикс> — кадр <префикс>-list.png, потом выход.
 
 const ARENA := preload("res://scenes/creature_test.gd")  # записи существ: модели и анимации
 const PAUSE := 1.2  # стойка между анимациями, секунд
 const WALK_TIME := 3.0  # сколько идёт на месте, секунд
 const CAMERA_FOV := 25.0
-const CAMERA_DIR := Vector3(0.45, 0.45, 1.0)  # сбоку и немного сверху
-const FRAME := 1.5  # сколько высот существа входит в кадр
+const CAMERA_DIR := Vector3(0.0, 0.5, 1.0)  # спереди и немного сверху
+const CAMERA_DIST := 13.0
+const COLUMN := 2.2  # от центра до существа по ширине, метров
+const ROW := 4.4  # шаг рядов, метров
+const SCROLL_WHEEL := 0.6  # метров за щелчок колеса
+const SCROLL_GESTURE := 0.08  # чувствительность двух пальцев
+const SCROLL_KEYS := 6.0  # метров в секунду
 
 var camera := Camera3D.new()
-var title := Label.new()
-var ids: Array = ARENA.CREATURES.keys()
-var index := 0
-var unit: Creature
-var _round := 0  # смена существа обрывает прежний круг
+var _scroll := ROW * 0.5  # в кадре два ряда: смотрим между ними
+var _scroll_max := 0.0
 var _shot := ""
 
 
 func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--id="):
-			index = maxi(ids.find(arg.trim_prefix("--id=")), 0)
-		elif arg.begins_with("--shot="):
+		if arg.begins_with("--shot="):
 			_shot = arg.trim_prefix("--shot=")
 	_build_world()
 	camera.fov = CAMERA_FOV
 	add_child(camera)
-	var hud := CanvasLayer.new()
-	add_child(hud)
-	title.position = Vector2(24, 16)
-	title.add_theme_font_size_override("font_size", 28)
-	title.add_theme_constant_override("outline_size", 6)
-	title.add_theme_color_override("font_outline_color", Color.BLACK)
-	hud.add_child(title)
-	_show_unit()
+	var ids: Array = ARENA.CREATURES.keys()
+	for i in ids.size():
+		var spot := Vector3(-COLUMN if i % 2 == 0 else COLUMN, 0.0, i / 2 * ROW)
+		_show_unit(ids[i], spot)
+	_scroll_max = maxf(_scroll, ((ids.size() - 1) / 2 - 0.5) * ROW)
+	_apply_scroll()
+	if _shot != "":
+		await get_tree().create_timer(2.0).timeout
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png(_shot + "-list.png")
+		get_tree().quit()
+
+
+func _apply_scroll() -> void:
+	var look := Vector3(0.0, 0.8, _scroll)
+	camera.position = look + CAMERA_DIR.normalized() * CAMERA_DIST
+	camera.look_at(look)
+
+
+func _scroll_by(amount: float) -> void:
+	_scroll = clampf(_scroll + amount, ROW * 0.5, _scroll_max)
+	_apply_scroll()
 
 
 func _build_world() -> void:
@@ -67,13 +81,11 @@ func _build_world() -> void:
 	add_child(ground)
 
 
-func _show_unit() -> void:
-	_round += 1
-	if unit:
-		unit.queue_free()
-	var cfg: Dictionary = ARENA.CREATURES[ids[index]]
-	unit = Creature.new()
+func _show_unit(id: String, spot: Vector3) -> void:
+	var cfg: Dictionary = ARENA.CREATURES[id]
+	var unit := Creature.new()
 	add_child(unit)
+	unit.position = spot
 	unit.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
 	if cfg.has("variants"):
 		unit.set_textures(cfg.variants[-1].get("textures", {}))
@@ -88,64 +100,54 @@ func _show_unit() -> void:
 	unit.defend_pin = cfg.get("defend_pin", true)
 	unit.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	unit.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
-	unit.face(unit.position + Vector3.RIGHT)
-	var look := Vector3(0, cfg.size * 0.5, 0)
-	var dist: float = cfg.size * FRAME * 0.5 / tan(deg_to_rad(CAMERA_FOV * 0.5))
-	camera.position = look + CAMERA_DIR.normalized() * dist
-	camera.look_at(look)
-	_cycle(cfg, _round)
+	unit.face(spot + Vector3.BACK)
+	var label := Label3D.new()
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.font_size = 40
+	label.pixel_size = 0.006
+	label.outline_size = 10
+	label.position = spot + Vector3(0.0, cfg.size + 0.25, 0.0)
+	label.no_depth_test = true  # подпись не прячется за соседним рядом
+	add_child(label)
+	_cycle(unit, cfg, label)
 
 
 ## Один круг: стойка, удар, ходьба, реакция, защита, смерть. Каждая запись: подпись, анимация, с какой доли, сколько секунд.
-func _cycle(cfg: Dictionary, id: int) -> void:
-	while id == _round:
-		var steps := [
-			["стойка", "idle", 0.0, PAUSE * 2.0],
-			["удар", cfg.attack, cfg.attack_from, 0.0],
-			["ходьба", "walk", 0.0, WALK_TIME],
-			["реакция на удар", cfg.hurt, 0.0, cfg.hurt_len],
-			["защита", cfg.defend, cfg.defend_from, cfg.defend_len],
-			["смерть", "fall", 0.0, 0.0],
-		]
+func _cycle(unit: Creature, cfg: Dictionary, label: Label3D) -> void:
+	var steps := [
+		["стойка", "idle", 0.0, PAUSE * 2.0],
+		["удар", cfg.attack, cfg.attack_from, 0.0],
+		["ходьба", "walk", 0.0, WALK_TIME],
+		["реакция на удар", cfg.hurt, 0.0, cfg.hurt_len],
+		["защита", cfg.defend, cfg.defend_from, cfg.defend_len],
+		["смерть", "fall", 0.0, 0.0],
+	]
+	while true:
 		for step: Array in steps:
 			if not unit.anim.has_animation(step[1]):
 				continue
-			title.text = "%s: %s" % [cfg.name, step[0]]
+			label.text = "%s: %s" % [cfg.name, step[0]]
 			unit.anim.play(step[1], 0.2)
 			unit.anim.seek(unit.anim.get_animation(step[1]).length * step[2], true)
 			var time: float = step[3] if step[3] > 0.0 else unit.anim.get_animation(step[1]).length * (1.0 - step[2])
-			await get_tree().create_timer(time * 0.5).timeout
-			if id != _round:
-				return
-			_save_shot(step[1])
-			await get_tree().create_timer(time * 0.5).timeout
-			if id != _round:
-				return
+			await get_tree().create_timer(time).timeout
 			if step[1] != "fall":
 				unit.anim.play("idle", 0.3)
 				await get_tree().create_timer(PAUSE).timeout
-				if id != _round:
-					return
 		await get_tree().create_timer(PAUSE).timeout
-		if _shot != "":
-			get_tree().quit()
-			return
 
 
-func _save_shot(anim_name: String) -> void:
-	if _shot != "":
-		await RenderingServer.frame_post_draw
-		get_viewport().get_texture().get_image().save_png("%s-%s.png" % [_shot, anim_name])
+func _process(delta: float) -> void:
+	var keys := Input.get_axis("ui_up", "ui_down")
+	if keys != 0.0:
+		_scroll_by(keys * SCROLL_KEYS * delta)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	var step := 0
-	if event.is_action_pressed("ui_right"):
-		step = 1
-	elif event.is_action_pressed("ui_left"):
-		step = -1
-	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		step = 1
-	if step != 0:
-		index = posmod(index + step, ids.size())
-		_show_unit()
+	var pan := event as InputEventPanGesture
+	if pan:
+		_scroll_by(pan.delta.y * SCROLL_GESTURE)
+		return
+	var click := event as InputEventMouseButton
+	if click and click.pressed and click.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		_scroll_by(SCROLL_WHEEL if click.button_index == MOUSE_BUTTON_WHEEL_DOWN else -SCROLL_WHEEL)

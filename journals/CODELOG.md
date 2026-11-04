@@ -775,3 +775,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 110: новая витрина
 
 - `game/scenes/showcase.gd` переписана: круг анимаций существа, стрелки и клик меняют существо; `game/assets/showcase/` и `pipelines/creature/build_showcase.sh` удалены; `SCENES.md`.
+
+### 2026-11-04 Задача 111: витрина списком
+
+- `game/scenes/showcase.gd`: все существа на одной сцене по два в ряд, подписи над головами, прокрутка колесом, двумя пальцами и стрелками; `SCENES.md`.
