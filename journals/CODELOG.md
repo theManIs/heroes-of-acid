@@ -784,3 +784,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/showcase.gd`, `showcase.tscn`: корень Control; у каждого существа SubViewport со своим миром в рамке, сетка в два столбца в ScrollContainer.
 - `pipelines/creature-quadruped/model.py`: модель через Tripo API с лимитом 20 000.
+
+### 2026-11-04 Задача 108: собака, скелеты
+
+- `pipelines/creature-quadruped/`: `concept.py`, `model.py`, `rig.py`, `bones.py`, `joints.py`, README; строка в `pipelines/README.md`.
+- `creatures/hound/`: концепт, модели, риги API и Studio, журнал `README.md`.
+- Команды: `.venv/bin/python pipelines/creature-quadruped/model.py hound creatures/hound/concept/v1.png`, `.venv/bin/python pipelines/creature-quadruped/rig.py hound`.

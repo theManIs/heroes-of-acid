@@ -1,0 +1,8 @@
+{
+  "endpoint": "fal-ai/gpt-image-1.5",
+  "prompt": "A huge terrifying dark fantasy war hound, the size of a small horse, massive muscular body, thick neck, broad heavy head with scarred muzzle and bared fangs, short coarse black-brown coat with old scars and torn ears, spiked iron collar. Saturated realism, realistic hand-painted game character concept. Full body strict side view facing left, standing still in a neutral square stance, all four legs straight, separated and fully visible with clear gaps between them, mouth slightly open, tail straight behind and not touching the legs. The whole animal fits inside the frame with wide empty margin on all sides. Plain neutral light-grey background, soft even studio lighting, no cast shadows, no ground, no text, nothing else in the image.",
+  "image_size": "1536x1024",
+  "quality": "high",
+  "num_images": 1,
+  "output_format": "png"
+}

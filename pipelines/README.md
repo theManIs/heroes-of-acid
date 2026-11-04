@@ -19,4 +19,5 @@
 | [`creature-recolor`](creature-recolor/README.md) | новая раскраска готового существа, модель и риг прежние | не меняется | не меняется | не меняются | кредиты Tripo, 20 за текстуру | основной |
 | [`ground-fal`](ground-fal/README.md) | текстура земли | gpt-image через fal | не нужен | не нужны | счёт fal | проба, задача 100 |
 | [`obstacle-fal`](obstacle-fal/README.md) | преграда на поле боя, статичная модель | Meshy через fal | не нужен | не нужны | счёт fal | проба, задача 101 |
+| [`creature-quadruped`](creature-quadruped/README.md) | существо на четырёх лапах | Tripo API | Tripo `quadruped`, сравнивается с Studio Other | ходьба Tripo, остальное не найдено | кредиты Tripo | проба, задача 108 |
 | [`3d-model`](3d-model/README.md) | то же, что `creature`, для других проектов | Tripo | Tripo | пресеты Tripo | кредиты Tripo | копия |
