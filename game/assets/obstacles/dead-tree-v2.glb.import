@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://beq8yb1cllvae"
-path="res://.godot/imported/dead-tree.glb-9453c3f00ac895c7dfa2be8d72bf6dce.scn"
+uid="uid://c7k1dd7ncxxjo"
+path="res://.godot/imported/dead-tree-v2.glb-175434ad52629049e92639febe26088b.scn"
 
 [deps]
 
-source_file="res://assets/obstacles/dead-tree.glb"
-dest_files=["res://.godot/imported/dead-tree.glb-9453c3f00ac895c7dfa2be8d72bf6dce.scn"]
+source_file="res://assets/obstacles/dead-tree-v2.glb"
+dest_files=["res://.godot/imported/dead-tree-v2.glb-175434ad52629049e92639febe26088b.scn"]
 
 [params]
 

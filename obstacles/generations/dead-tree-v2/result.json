@@ -1,0 +1,69 @@
+{
+  "animation_glb": null,
+  "animation_fbx": null,
+  "model_glb": {
+    "url": "https://v3b.fal.media/files/b/0ab10d26/jM_onCyqFBaW_rO6TA4e3_model.glb",
+    "content_type": "model/gltf-binary",
+    "file_name": "model.glb",
+    "file_size": 5759580
+  },
+  "thumbnail": {
+    "url": "https://v3b.fal.media/files/b/0ab10d28/LJQc4yuX953t1lUG_QXXu_preview.png",
+    "content_type": "image/png",
+    "file_name": "preview.png",
+    "file_size": 69732
+  },
+  "model_urls": {
+    "glb": {
+      "url": "https://v3b.fal.media/files/b/0ab10d26/jM_onCyqFBaW_rO6TA4e3_model.glb",
+      "content_type": "model/gltf-binary",
+      "file_name": "model.glb",
+      "file_size": 5759580
+    },
+    "fbx": {
+      "url": "https://v3b.fal.media/files/b/0ab10d27/dnj3PpDnPSXKBNdJDUfMJ_model.fbx",
+      "content_type": "application/vnd.autodesk.fbx",
+      "file_name": "model.fbx",
+      "file_size": 5547468
+    },
+    "obj": {
+      "url": "https://v3b.fal.media/files/b/0ab10d27/LQgUezkx8z1Ndw7KbONit_model.obj",
+      "content_type": "model/obj",
+      "file_name": "model.obj",
+      "file_size": 3326280
+    },
+    "usdz": {
+      "url": "https://v3b.fal.media/files/b/0ab10d27/O4j44cteSh_ofpuH5a9yu_model.usdz",
+      "content_type": "model/vnd.usdz+zip",
+      "file_name": "model.usdz",
+      "file_size": 6121766
+    },
+    "blend": null,
+    "stl": {
+      "url": "https://v3b.fal.media/files/b/0ab10d28/2POB8aapuVCcbe7JnYfw6_model.stl",
+      "content_type": "model/stl",
+      "file_name": "model.stl",
+      "file_size": 1564634
+    }
+  },
+  "texture_urls": [
+    {
+      "base_color": {
+        "url": "https://v3b.fal.media/files/b/0ab10d28/2bfshhgHzB_hV10TV00uX_texture_0.png",
+        "content_type": "image/png",
+        "file_name": "texture_0.png",
+        "file_size": 8706020
+      },
+      "metallic": null,
+      "normal": null,
+      "roughness": null
+    }
+  ],
+  "seed": 73374981,
+  "prompt": "A small dead tree with a twisted dark trunk and several bare crooked branches, no leaves, about as tall as a man, cracked black bark, no cut surface, dark fantasy game asset, realistic hand-painted textures, muted natural colors, matte surface, single object on flat ground, flat base, no ground plane, no pedestal, no glow",
+  "actual_prompt": null,
+  "rigged_character_glb": null,
+  "rigged_character_fbx": null,
+  "basic_animations": null,
+  "rig_task_id": null
+}

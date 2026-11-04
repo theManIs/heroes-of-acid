@@ -13,12 +13,11 @@ const COLS := 12
 const ROWS := 10
 const START_ROWS: Array[int] = [0, 2, 4, 5, 7, 9]  # ряды, где стоят существа в начале боя
 const OBSTACLES := [  # преграда занимает свои гексы: ни встать, ни пройти; cells — колонка и ряд каждого
-	{"id": "boulder", "turn": 0.0, "cells": [Vector2i(4, 4), Vector2i(5, 4), Vector2i(6, 4), Vector2i(4, 5), Vector2i(5, 5)]},
-	{"id": "dead-tree", "turn": 2.1, "cells": [Vector2i(7, 7)]},
+	{"id": "rock-ridge", "turn": 0.0, "cells": [Vector2i(5, 4), Vector2i(6, 4), Vector2i(5, 5)]},
+	{"id": "dead-tree-v2", "turn": 2.1, "cells": [Vector2i(7, 7)], "sink": 0.1},  # sink — доля высоты под землёй: прячет подставку модели
 ]
-const OBSTACLE_OVER := 1.25  # насколько модель шире занятых гексов: не выглядит вписанной в сетку
-const OBSTACLE_HEIGHT := 1.6  # выше не бывает, метров: не закрывает существ в ряду за ней
-const OBSTACLE_TINT := {"boulder": Color(0.5, 0.5, 0.48)}  # модель вышла слишком светлой для поля
+const OBSTACLE_OVER := 1.15  # насколько модель шире занятых гексов: не выглядит вписанной в сетку
+const OBSTACLE_HEIGHT := 2.0  # выше не бывает, метров: не закрывает существ в ряду за ней
 const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3}  # гексов за ход: чем массивнее, тем меньше
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
@@ -358,24 +357,13 @@ func _build_obstacles() -> void:
 		var model: Node3D = load("res://assets/obstacles/%s.glb" % item.id).instantiate()
 		pivot.add_child(model)
 		var box := _bounds(model, Transform3D.IDENTITY)
-		var fit_x := (high.x - low.x + RADIUS * sqrt(3.0)) * OBSTACLE_OVER / box.size.x
-		var fit_z := (high.z - low.z + RADIUS * 2.0) * OBSTACLE_OVER / box.size.z
-		var fit_y := minf((fit_x + fit_z) * 0.5, OBSTACLE_HEIGHT / box.size.y)
-		model.scale = Vector3(fit_x, fit_y, fit_z)
-		model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * model.scale
-		if OBSTACLE_TINT.has(item.id):
-			_tint(model, OBSTACLE_TINT[item.id])
-
-
-func _tint(node: Node, color: Color) -> void:
-	var mesh := node as MeshInstance3D
-	if mesh:
-		for i in mesh.mesh.get_surface_count():
-			var mat: StandardMaterial3D = mesh.mesh.surface_get_material(i).duplicate()
-			mat.albedo_color = color
-			mesh.set_surface_override_material(i, mat)
-	for child in node.get_children():
-		_tint(child, color)
+		if item.cells.size() > 1 and box.size.z > box.size.x:  # длинной стороной вдоль занятых гексов
+			pivot.rotation.y += PI * 0.5
+			box = AABB(box.position, Vector3(box.size.z, box.size.y, box.size.x))
+		var fit := minf((high.x - low.x + RADIUS * sqrt(3.0)) * OBSTACLE_OVER / box.size.x, (high.z - low.z + RADIUS * 2.0) * OBSTACLE_OVER / box.size.z)
+		model.scale = Vector3.ONE * minf(fit, OBSTACLE_HEIGHT / box.size.y)
+		var bounds := _bounds(model, Transform3D.IDENTITY)
+		model.position -= Vector3(bounds.get_center().x, bounds.position.y + bounds.size.y * item.get("sink", 0.0), bounds.get_center().z)
 
 
 ## Габариты модели в её собственных координатах.

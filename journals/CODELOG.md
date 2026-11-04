@@ -755,3 +755,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 103: преграды разного размера
 
 - `game/scenes/battle_test.gd`: у `OBSTACLES` список `cells`; модель растягивается по занятым гексам; `OBSTACLE_OVER`.
+
+### 2026-11-04 Задача 104: новые преграды
+
+- Новые модели `rock-ridge`, `dead-tree-v2`, старые удалены; `game/scenes/battle_test.gd`: масштаб одинаковый по осям, `sink`, `_tint()` убран.

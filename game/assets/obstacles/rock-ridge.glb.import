@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://7k80d3v4peea"
-path="res://.godot/imported/boulder.glb-913ec381c001609a4ba716c5811e9cde.scn"
+uid="uid://drsv2m3k8caar"
+path="res://.godot/imported/rock-ridge.glb-171e366df7bbf3a6b59120f61519ee1c.scn"
 
 [deps]
 
-source_file="res://assets/obstacles/boulder.glb"
-dest_files=["res://.godot/imported/boulder.glb-913ec381c001609a4ba716c5811e9cde.scn"]
+source_file="res://assets/obstacles/rock-ridge.glb"
+dest_files=["res://.godot/imported/rock-ridge.glb-171e366df7bbf3a6b59120f61519ee1c.scn"]
 
 [params]
 
