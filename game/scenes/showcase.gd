@@ -14,6 +14,17 @@ const CAMERA_DIR := Vector3(0.55, 0.35, 1.0)  # сбоку и немного с�
 const FRAME := 1.35  # сколько высот существа входит в кадр
 const FRAME_COLOR := Color(0.72, 0.58, 0.3)
 const GRASS_TINT := Color(0.52, 0.62, 0.46)
+const HOUND := "res://assets/creatures/hound/hound.glb"
+const HOUND_HEIGHT := 1.3
+const HOUND_CAMERA := 1.6  # собака длиннее, чем выше
+const HOUND_CLIPS := [  # подпись, клип, сколько секунд (0 — один раз целиком)
+	["стоит, дышит", "idle_breathe", 0.0], ["стоит, поводит головой", "idle_look_around", 0.0],
+	["отклик: нюхает землю", "fidget_sniff_ground", 0.0], ["укус: бросок головой", "bite_lunge", 0.0],
+	["ходьба", "walk", 3.0], ["бег", "run", 3.0],
+	["реакция: голову отбросило влево", "hurt_head_left", 0.0], ["реакция: голову отбросило вправо", "hurt_head_right", 0.0],
+	["защита: опускает голову", "defend_lower_head", 0.0],
+	["прыжок на бегу", "jump_leap", 0.0], ["приземление", "jump_land", 0.0], ["смерть: падает на бок", "death_fall_on_side", 0.0],
+]
 
 var _shot := ""
 var _views: Array = []  # пары квадрат и его мир: мир за кадром не рисуем
@@ -21,6 +32,7 @@ var _views: Array = []  # пары квадрат и его мир: мир за 
 
 func _ready() -> void:
 	var grid := _build_page()
+	_make_hound_cell(grid)
 	for id: String in ARENA.CREATURES:
 		_make_cell(id, grid)
 	_finish()
@@ -110,6 +122,35 @@ func _make_label(frame: Control) -> Label:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_child(label)
 	return label
+
+
+## Собака: Creature пока рассчитан на гуманоидов, поэтому модель и её клипы напрямую.
+func _make_hound_cell(grid: GridContainer) -> void:
+	var cell := _make_frame(grid, HOUND_CAMERA)
+	var model: Node3D = load(HOUND).instantiate()
+	cell.view.add_child(model)
+	var box: AABB = model.find_children("*", "MeshInstance3D", true, false)[0].get_aabb()
+	var fit := HOUND_HEIGHT / box.size.y
+	model.scale = Vector3.ONE * fit
+	model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * fit
+	var player: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
+	for step: Array in HOUND_CLIPS:
+		if step[2] > 0.0:
+			player.get_animation(step[1]).loop_mode = Animation.LOOP_LINEAR
+	_hound_cycle(player, _make_label(cell.frame))
+
+
+func _hound_cycle(player: AnimationPlayer, label: Label) -> void:
+	while true:
+		for step: Array in HOUND_CLIPS:
+			label.text = "Собака: " + step[0]
+			player.play(step[1], 0.2)
+			await get_tree().create_timer(step[2] if step[2] > 0.0 else player.get_animation(step[1]).length).timeout
+			if step[1] == "death_fall_on_side":
+				await get_tree().create_timer(PAUSE).timeout
+			elif step[2] == 0.0:
+				player.play("idle_breathe", 0.3)
+				await get_tree().create_timer(PAUSE * 0.5).timeout
 
 
 ## Квадрат: рамка, свой мир с существом и подпись внизу.

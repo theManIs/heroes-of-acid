@@ -813,3 +813,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `creatures/hound/donors/husky/`; `game/assets/creatures/hound/lab/hound-on-husky.glb`; `game/scenes/hound_lab.gd`: варианты хаски, размер сетки со скелетом без трансформа узла.
 - Команда: `blender -b --python pipelines/creature-quadruped/bind_donor.py -- creatures/hound/donors/husky/husky.glb creatures/hound/tripo/hound-small.glb creatures/hound/donors/husky/hound-on-husky.glb`.
+
+### 2026-11-04 Задача 117: клипы собаки
+
+- `pipelines/creature-quadruped/name_clips.py`, `contact_sheet.gd`; `game/assets/creatures/hound/hound.glb`; `game/scenes/showcase.gd`: первый квадрат — собака, все клипы по кругу с подписями.
