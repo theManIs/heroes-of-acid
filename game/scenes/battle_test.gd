@@ -14,10 +14,10 @@ const ROWS := 10
 const START_ROWS: Array[int] = [0, 2, 4, 5, 7, 9]  # ряды, где стоят существа в начале боя
 const OBSTACLES := [  # преграды занимают гекс: ни встать, ни пройти; at — колонка и ряд
 	{"id": "boulder", "at": Vector2i(4, 2), "turn": 0.4}, {"id": "dead-tree", "at": Vector2i(7, 1), "turn": 2.1},
-	{"id": "acid-barrel", "at": Vector2i(5, 5), "turn": 1.0}, {"id": "boulder", "at": Vector2i(8, 6), "turn": 3.6},
-	{"id": "dead-tree", "at": Vector2i(3, 7), "turn": 5.0}, {"id": "acid-barrel", "at": Vector2i(6, 8), "turn": 4.2},
+	{"id": "dead-tree", "at": Vector2i(5, 5), "turn": 1.0}, {"id": "boulder", "at": Vector2i(8, 6), "turn": 3.6},
+	{"id": "dead-tree", "at": Vector2i(3, 7), "turn": 5.0}, {"id": "boulder", "at": Vector2i(6, 8), "turn": 4.2},
 ]
-const OBSTACLE_WIDTH := {"boulder": 1.7, "dead-tree": 2.3, "acid-barrel": 1.5}  # ширина преграды, в радиусах гекса
+const OBSTACLE_WIDTH := {"boulder": 1.7, "dead-tree": 2.3}  # ширина преграды, в радиусах гекса
 const OBSTACLE_HEIGHT := 1.6  # выше не бывает, метров: не закрывает существ в ряду за ней
 const OBSTACLE_TINT := {"boulder": Color(0.5, 0.5, 0.48)}  # модель вышла слишком светлой для поля
 const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3}  # гексов за ход: чем массивнее, тем меньше

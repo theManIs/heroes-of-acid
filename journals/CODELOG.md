@@ -747,3 +747,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `pipelines/obstacle-fal/`; `obstacles/generations/{boulder,dead-tree,acid-barrel}/`; `game/assets/obstacles/*.glb`.
 - `game/scenes/battle_test.gd`: `OBSTACLES`, `obstacles`, `_build_obstacles()`, `_bounds()`, `_tint()`; `_paths_from()` не пускает на преграды.
+
+### 2026-11-04 Задача 102: без бочек
+
+- `game/scenes/battle_test.gd`: в `OBSTACLES` пень и валун вместо бочек; модель `acid-barrel` удалена.
