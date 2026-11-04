@@ -9,4 +9,6 @@
 3. Риг и ходьба: `.venv/bin/python pipelines/creature-quadruped/rig.py <id> [версия]`.
 4. Что внутри файла: `bones.py`, `joints.py`.
 
+5. Привязка к скелету донора с анимациями: `blender -b --python pipelines/creature-quadruped/bind_donor.py -- <донор.glb> <наша.glb> <выход.glb>`. Метод проверен на лисице.
+
 **Не решено:** стойка, укус, реакция, смерть. Text to Motion в Studio генерирует движение человека и к собаке не применяется. Общие пресеты API на риге `quadruped` отклоняются. Бесплатная выгрузка из Studio анимаций не содержит.

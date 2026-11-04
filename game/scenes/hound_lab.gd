@@ -7,6 +7,12 @@ const LAB := "res://assets/creatures/hound/lab/"
 const HEIGHT := 1.3
 const CAMERA_SIZE := 1.6  # собака длиннее, чем выше
 const VARIANTS := [
+	["Лисица, веса со сшитой копии: озирается", "hound-on-fox-welded.glb", "Survey"],
+	["Лисица, веса со сшитой копии: ходьба", "hound-on-fox-welded.glb", "Walk"],
+	["Лисица, веса со сшитой копии: бег", "hound-on-fox-welded.glb", "Run"],
+	["Скелет лисицы: озирается", "hound-on-fox.glb", "Survey"],
+	["Скелет лисицы: ходьба", "hound-on-fox.glb", "Walk"],
+	["Скелет лисицы: бег", "hound-on-fox.glb", "Run"],
 	["API quadruped: ходьба", "api-walk.glb"],
 	["API quadruped: без анимации", "api-rig.glb"],
 	["Studio Other: без анимации, выгрузка Free", "studio-other.glb"],
@@ -17,11 +23,11 @@ const VARIANTS := [
 func _ready() -> void:
 	var grid := _build_page()
 	for variant: Array in VARIANTS:
-		_make_variant(grid, variant[0], LAB + variant[1])
+		_make_variant(grid, variant[0], LAB + variant[1], variant[2] if variant.size() > 2 else "")
 	_finish()
 
 
-func _make_variant(grid: GridContainer, title: String, path: String) -> void:
+func _make_variant(grid: GridContainer, title: String, path: String, only := "") -> void:
 	var cell := _make_frame(grid, CAMERA_SIZE)
 	var model: Node3D = load(path).instantiate()
 	cell.view.add_child(model)
@@ -38,11 +44,11 @@ func _make_variant(grid: GridContainer, title: String, path: String) -> void:
 	label.text = title
 	var player: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
 	if player and not player.get_animation_list().is_empty():
-		_play_all(player, title, label)
+		_play_all(player, title, label, only)
 
 
-func _play_all(player: AnimationPlayer, title: String, label: Label) -> void:
-	var clips := player.get_animation_list()
+func _play_all(player: AnimationPlayer, title: String, label: Label, only: String) -> void:
+	var clips: Array = [only] if only != "" else Array(player.get_animation_list())
 	while true:
 		for clip in clips:
 			label.text = "%s (%s)" % [title, clip]
