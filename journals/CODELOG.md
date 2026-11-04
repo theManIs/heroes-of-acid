@@ -751,3 +751,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 102: без бочек
 
 - `game/scenes/battle_test.gd`: в `OBSTACLES` пень и валун вместо бочек; модель `acid-barrel` удалена.
+
+### 2026-11-04 Задача 103: преграды разного размера
+
+- `game/scenes/battle_test.gd`: у `OBSTACLES` список `cells`; модель растягивается по занятым гексам; `OBSTACLE_OVER`.

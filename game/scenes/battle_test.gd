@@ -12,12 +12,11 @@ const ACTION_ICON := preload("res://scenes/action_icon.gd")
 const COLS := 12
 const ROWS := 10
 const START_ROWS: Array[int] = [0, 2, 4, 5, 7, 9]  # ряды, где стоят существа в начале боя
-const OBSTACLES := [  # преграды занимают гекс: ни встать, ни пройти; at — колонка и ряд
-	{"id": "boulder", "at": Vector2i(4, 2), "turn": 0.4}, {"id": "dead-tree", "at": Vector2i(7, 1), "turn": 2.1},
-	{"id": "dead-tree", "at": Vector2i(5, 5), "turn": 1.0}, {"id": "boulder", "at": Vector2i(8, 6), "turn": 3.6},
-	{"id": "dead-tree", "at": Vector2i(3, 7), "turn": 5.0}, {"id": "boulder", "at": Vector2i(6, 8), "turn": 4.2},
+const OBSTACLES := [  # преграда занимает свои гексы: ни встать, ни пройти; cells — колонка и ряд каждого
+	{"id": "boulder", "turn": 0.0, "cells": [Vector2i(4, 4), Vector2i(5, 4), Vector2i(6, 4), Vector2i(4, 5), Vector2i(5, 5)]},
+	{"id": "dead-tree", "turn": 2.1, "cells": [Vector2i(7, 7)]},
 ]
-const OBSTACLE_WIDTH := {"boulder": 1.7, "dead-tree": 2.3}  # ширина преграды, в радиусах гекса
+const OBSTACLE_OVER := 1.25  # насколько модель шире занятых гексов: не выглядит вписанной в сетку
 const OBSTACLE_HEIGHT := 1.6  # выше не бывает, метров: не закрывает существ в ряду за ней
 const OBSTACLE_TINT := {"boulder": Color(0.5, 0.5, 0.48)}  # модель вышла слишком светлой для поля
 const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3}  # гексов за ход: чем массивнее, тем меньше
@@ -345,18 +344,25 @@ func _build_board() -> void:
 
 func _build_obstacles() -> void:
 	for item: Dictionary in OBSTACLES:
-		var h := _cell(item.at.x, item.at.y)
-		obstacles[h] = true
-		var pivot := Node3D.new()  # поворот вокруг центра гекса
-		pivot.position = _hex_center(h)
+		var low := Vector3.INF
+		var high := -Vector3.INF
+		for at: Vector2i in item.cells:
+			var h := _cell(at.x, at.y)
+			obstacles[h] = true
+			low = low.min(_hex_center(h))
+			high = high.max(_hex_center(h))
+		var pivot := Node3D.new()  # поворот вокруг середины занятых гексов
+		pivot.position = (low + high) * 0.5
 		pivot.rotation.y = item.turn
 		board.add_child(pivot)
 		var model: Node3D = load("res://assets/obstacles/%s.glb" % item.id).instantiate()
 		pivot.add_child(model)
 		var box := _bounds(model, Transform3D.IDENTITY)
-		var fit := minf(RADIUS * OBSTACLE_WIDTH[item.id] / maxf(box.size.x, box.size.z), OBSTACLE_HEIGHT / box.size.y)
-		model.scale = Vector3.ONE * fit
-		model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * fit
+		var fit_x := (high.x - low.x + RADIUS * sqrt(3.0)) * OBSTACLE_OVER / box.size.x
+		var fit_z := (high.z - low.z + RADIUS * 2.0) * OBSTACLE_OVER / box.size.z
+		var fit_y := minf((fit_x + fit_z) * 0.5, OBSTACLE_HEIGHT / box.size.y)
+		model.scale = Vector3(fit_x, fit_y, fit_z)
+		model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * model.scale
 		if OBSTACLE_TINT.has(item.id):
 			_tint(model, OBSTACLE_TINT[item.id])
 
