@@ -16,6 +16,7 @@ const FRAME_COLOR := Color(0.72, 0.58, 0.3)
 const GRASS_TINT := Color(0.52, 0.62, 0.46)
 
 var _shot := ""
+var _views: Array = []  # пары квадрат и его мир: мир за кадром не рисуем
 
 
 func _ready() -> void:
@@ -53,9 +54,17 @@ func _build_page() -> GridContainer:
 	return grid
 
 
+func _process(_delta: float) -> void:
+	var screen := get_viewport_rect()
+	for pair: Array in _views:
+		var shown: bool = pair[0].get_global_rect().intersects(screen)
+		pair[1].render_target_update_mode = SubViewport.UPDATE_ALWAYS if shown else SubViewport.UPDATE_DISABLED
+
+
 func _finish() -> void:
 	if _shot != "":
-		await get_tree().create_timer(2.0).timeout
+		await get_tree().create_timer(4.0).timeout
+		print("FPS ", Engine.get_frames_per_second())
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(_shot + "-list.png")
 		get_tree().quit()
@@ -79,8 +88,8 @@ func _make_frame(grid: GridContainer, size: float) -> Dictionary:
 	var view := SubViewport.new()
 	view.own_world_3d = true
 	view.handle_input_locally = false
-	view.msaa_3d = Viewport.MSAA_4X
 	holder.add_child(view)
+	_views.append([holder, view])
 	_build_world(view)
 	var camera := Camera3D.new()
 	camera.fov = CAMERA_FOV
