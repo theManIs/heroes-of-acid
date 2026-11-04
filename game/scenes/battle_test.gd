@@ -12,6 +12,14 @@ const ACTION_ICON := preload("res://scenes/action_icon.gd")
 const COLS := 12
 const ROWS := 10
 const START_ROWS: Array[int] = [0, 2, 4, 5, 7, 9]  # ряды, где стоят существа в начале боя
+const OBSTACLES := [  # преграды занимают гекс: ни встать, ни пройти; at — колонка и ряд
+	{"id": "boulder", "at": Vector2i(4, 2), "turn": 0.4}, {"id": "dead-tree", "at": Vector2i(7, 1), "turn": 2.1},
+	{"id": "acid-barrel", "at": Vector2i(5, 5), "turn": 1.0}, {"id": "boulder", "at": Vector2i(8, 6), "turn": 3.6},
+	{"id": "dead-tree", "at": Vector2i(3, 7), "turn": 5.0}, {"id": "acid-barrel", "at": Vector2i(6, 8), "turn": 4.2},
+]
+const OBSTACLE_WIDTH := {"boulder": 1.7, "dead-tree": 2.3, "acid-barrel": 1.5}  # ширина преграды, в радиусах гекса
+const OBSTACLE_HEIGHT := 1.6  # выше не бывает, метров: не закрывает существ в ряду за ней
+const OBSTACLE_TINT := {"boulder": Color(0.5, 0.5, 0.48)}  # модель вышла слишком светлой для поля
 const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3}  # гексов за ход: чем массивнее, тем меньше
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
@@ -74,6 +82,7 @@ var board := Node3D.new()
 var camera := Camera3D.new()
 var status := Label.new()
 var tiles := {}  # Vector2i (осевые координаты) -> MeshInstance3D
+var obstacles := {}  # Vector2i -> true: гексы, занятые преградами
 var turn := Turn.PLAYER
 var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущего хода игрока
 var sword: Control
@@ -242,7 +251,7 @@ func _hex_at(point: Vector3) -> Vector2i:
 
 ## Кратчайшие пути от from по свободным гексам: гекс -> путь без стартового гекса. Мёртвые не мешают.
 func _paths_from(from: Vector2i) -> Dictionary:
-	var blocked := {}
+	var blocked := obstacles.duplicate()
 	for side in sides:
 		for c: Creature in side:
 			if c.can_be_hit():
@@ -331,6 +340,51 @@ func _build_board() -> void:
 			tiles[h] = tile
 	_build_lines()
 	_build_grass()
+	_build_obstacles()
+
+
+func _build_obstacles() -> void:
+	for item: Dictionary in OBSTACLES:
+		var h := _cell(item.at.x, item.at.y)
+		obstacles[h] = true
+		var pivot := Node3D.new()  # поворот вокруг центра гекса
+		pivot.position = _hex_center(h)
+		pivot.rotation.y = item.turn
+		board.add_child(pivot)
+		var model: Node3D = load("res://assets/obstacles/%s.glb" % item.id).instantiate()
+		pivot.add_child(model)
+		var box := _bounds(model, Transform3D.IDENTITY)
+		var fit := minf(RADIUS * OBSTACLE_WIDTH[item.id] / maxf(box.size.x, box.size.z), OBSTACLE_HEIGHT / box.size.y)
+		model.scale = Vector3.ONE * fit
+		model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * fit
+		if OBSTACLE_TINT.has(item.id):
+			_tint(model, OBSTACLE_TINT[item.id])
+
+
+func _tint(node: Node, color: Color) -> void:
+	var mesh := node as MeshInstance3D
+	if mesh:
+		for i in mesh.mesh.get_surface_count():
+			var mat: StandardMaterial3D = mesh.mesh.surface_get_material(i).duplicate()
+			mat.albedo_color = color
+			mesh.set_surface_override_material(i, mat)
+	for child in node.get_children():
+		_tint(child, color)
+
+
+## Габариты модели в её собственных координатах.
+func _bounds(node: Node3D, parent: Transform3D) -> AABB:
+	var xf := parent * node.transform
+	var box := AABB()
+	var mesh := node as MeshInstance3D
+	if mesh:
+		box = xf * mesh.get_aabb()
+	for child in node.get_children():
+		if child is Node3D:
+			var part := _bounds(child, xf)
+			if part.size != Vector3.ZERO:
+				box = part if box.size == Vector3.ZERO else box.merge(part)
+	return box
 
 
 ## Контуры всех гексов одной сеткой: общая граница двух гексов рисуется один раз, иначе она вдвое толще внешней.
