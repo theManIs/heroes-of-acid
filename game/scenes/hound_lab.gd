@@ -1,64 +1,50 @@
 extends "res://scenes/showcase.gd"
-## Лаборатория собаки на время работы над пайплайном: одна модель с разными скелетами и анимациями, квадратами как в витрине.
-## Новый вариант — строка в VARIANTS. Анимации файла играют по кругу, нет анимаций — стоит в позе файла.
+## Витрина собаки: каждая анимация в своём квадрате, все сразу на экране.
 ## Запуск: godot --path game res://scenes/hound_lab.tscn
 
-const LAB := "res://assets/creatures/hound/lab/"
+const HOUND := "res://assets/creatures/hound/hound.glb"
+const IDLE := "idle_breathe"
 const HEIGHT := 1.3
 const CAMERA_SIZE := 1.6  # собака длиннее, чем выше
-const VARIANTS := [
-	["Хаски: стойка", "hound-on-husky.glb", "Idle"],
-	["Хаски: укус", "hound-on-husky.glb", "Attack"],
-	["Хаски: ходьба", "hound-on-husky.glb", "Walk"],
-	["Хаски: бег", "hound-on-husky.glb", "Gallop"],
-	["Хаски: реакция", "hound-on-husky.glb", "Idle_HitReact_Left"],
-	["Хаски: смерть", "hound-on-husky.glb", "Death"],
-	["Лисица, веса со сшитой копии: озирается", "hound-on-fox-welded.glb", "Survey"],
-	["Лисица, веса со сшитой копии: ходьба", "hound-on-fox-welded.glb", "Walk"],
-	["Лисица, веса со сшитой копии: бег", "hound-on-fox-welded.glb", "Run"],
-	["Скелет лисицы: озирается", "hound-on-fox.glb", "Survey"],
-	["Скелет лисицы: ходьба", "hound-on-fox.glb", "Walk"],
-	["Скелет лисицы: бег", "hound-on-fox.glb", "Run"],
-	["API quadruped: ходьба", "api-walk.glb"],
-	["API quadruped: без анимации", "api-rig.glb"],
-	["Studio Other: без анимации, выгрузка Free", "studio-other.glb"],
-	["Без рига", "no-rig.glb"],
+const HOLD := 1.0  # пауза между повторами разовой анимации, секунд
+const CLIPS := [  # подпись, клип, идёт без остановки
+	["Стойка", IDLE, true], ["Ходьба", "walk", true], ["Бег", "run", true], ["Укус", "bite_lunge", false],
+	["Реакция на удар", "hurt_head_left", false], ["Защита", "defend_lower_head", false],
+	["Смерть", "death_fall_on_side", false], ["Отклик", "fidget_sniff_ground", false],
 ]
 
 
 func _ready() -> void:
+	columns = 4
+	cell_size = 380
 	var grid := _build_page()
-	for variant: Array in VARIANTS:
-		_make_variant(grid, variant[0], LAB + variant[1], variant[2] if variant.size() > 2 else "")
+	for clip: Array in CLIPS:
+		_make_clip_cell(grid, clip[0], clip[1], clip[2])
 	_finish()
 
 
-func _make_variant(grid: GridContainer, title: String, path: String, only := "") -> void:
+func _make_clip_cell(grid: GridContainer, title: String, clip: String, endless: bool) -> void:
 	var cell := _make_frame(grid, CAMERA_SIZE)
-	var model: Node3D = load(path).instantiate()
+	var model: Node3D = load(HOUND).instantiate()
 	cell.view.add_child(model)
-	var box := AABB()
-	var first := true
-	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
-		var part := mesh.get_aabb() if mesh.skin else mesh.global_transform * mesh.get_aabb()  # сетка со скелетом: трансформ узла не действует, у хаски он с масштабом 100
-		box = part if first else box.merge(part)
-		first = false
+	var box: AABB = model.find_children("*", "MeshInstance3D", true, false)[0].get_aabb()  # сетка со скелетом: трансформ узла не действует
 	var fit := HEIGHT / box.size.y
 	model.scale = Vector3.ONE * fit
 	model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * fit
-	var label := _make_label(cell.frame)
-	label.text = title
+	_make_label(cell.frame).text = title
 	var player: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
-	if player and not player.get_animation_list().is_empty():
-		_play_all(player, title, label, only)
+	player.get_animation(IDLE).loop_mode = Animation.LOOP_LINEAR
+	if endless:
+		player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
+		player.play(clip)
+	else:
+		_repeat(player, clip)
 
 
-func _play_all(player: AnimationPlayer, title: String, label: Label, only: String) -> void:
-	var clips: Array = [only] if only != "" else Array(player.get_animation_list())
-	for clip in clips:
-		player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR  # из файла приходят без повтора: клип замирал на последнем кадре
+func _repeat(player: AnimationPlayer, clip: String) -> void:
 	while true:
-		for clip in clips:
-			label.text = "%s (%s)" % [title, clip]
-			player.play(clip, 0.2)
-			await get_tree().create_timer(player.get_animation(clip).length * 2.0).timeout
+		player.play(clip, 0.2)
+		await get_tree().create_timer(player.get_animation(clip).length).timeout
+		if not clip.begins_with("death"):
+			player.play(IDLE, 0.3)
+		await get_tree().create_timer(HOLD).timeout

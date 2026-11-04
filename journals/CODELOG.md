@@ -817,3 +817,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 117: клипы собаки
 
 - `pipelines/creature-quadruped/name_clips.py`, `contact_sheet.gd`; `game/assets/creatures/hound/hound.glb`; `game/scenes/showcase.gd`: первый квадрат — собака, все клипы по кругу с подписями.
+
+### 2026-11-04 Витрина собаки
+
+- `game/scenes/hound_lab.gd`: 8 квадратов из `hound.glb`, 4 столбца; `showcase.gd`: собака убрана, `columns`, `cell_size`.

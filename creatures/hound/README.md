@@ -130,3 +130,7 @@ Studio и API считаются отдельно. На момент запис�
 | `jump_leap` | Gallop_Jump | прыжок на бегу |
 | `jump_land` | Jump_ToIdle | приземление и переход в стойку |
 | `death_fall_on_side` | Death | падает на бок |
+
+## Витрина собаки
+
+`game/scenes/hound_lab.tscn` теперь показывает только 8 выбранных анимаций из `hound.glb`. Варианты сравнения скелетов из сцены убраны, файлы остались: `game/assets/creatures/hound/lab/`, код прежней лаборатории в истории git (коммит `ea2dd4e`). В запасе в `hound.glb`: `idle_look_around`, `hurt_head_right`, `jump_leap`, `jump_land`.
