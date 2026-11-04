@@ -790,3 +790,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `pipelines/creature-quadruped/`: `concept.py`, `model.py`, `rig.py`, `bones.py`, `joints.py`, README; строка в `pipelines/README.md`.
 - `creatures/hound/`: концепт, модели, риги API и Studio, журнал `README.md`.
 - Команды: `.venv/bin/python pipelines/creature-quadruped/model.py hound creatures/hound/concept/v1.png`, `.venv/bin/python pipelines/creature-quadruped/rig.py hound`.
+
+### 2026-11-04 Задача 113: лаборатория собаки
+
+- `game/scenes/hound_lab.gd`, `hound_lab.tscn`: наследует витрину, варианты в `VARIANTS`; `showcase.gd` разбит на `_build_page()`, `_finish()`, `_make_frame()`, `_make_label()`, собака из общей витрины убрана; `pipelines/creature-quadruped/presets.py`.

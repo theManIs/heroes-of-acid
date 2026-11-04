@@ -14,13 +14,18 @@ const CAMERA_DIR := Vector3(0.55, 0.35, 1.0)  # сбоку и немного с�
 const FRAME := 1.35  # сколько высот существа входит в кадр
 const FRAME_COLOR := Color(0.72, 0.58, 0.3)
 const GRASS_TINT := Color(0.52, 0.62, 0.46)
-const HOUND := "res://assets/creatures/hound/hound-walk.glb"  # скелет не гуманоидный: пока просто играем анимацию файла
-const HOUND_HEIGHT := 1.3
 
 var _shot := ""
 
 
 func _ready() -> void:
+	var grid := _build_page()
+	for id: String in ARENA.CREATURES:
+		_make_cell(id, grid)
+	_finish()
+
+
+func _build_page() -> GridContainer:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--shot="):
@@ -45,9 +50,10 @@ func _ready() -> void:
 	grid.add_theme_constant_override("h_separation", GAP)
 	grid.add_theme_constant_override("v_separation", GAP)
 	margin.add_child(grid)
-	_make_hound_cell(grid)
-	for id: String in ARENA.CREATURES:
-		_make_cell(id, grid)
+	return grid
+
+
+func _finish() -> void:
 	if _shot != "":
 		await get_tree().create_timer(2.0).timeout
 		await RenderingServer.frame_post_draw
@@ -95,27 +101,6 @@ func _make_label(frame: Control) -> Label:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_child(label)
 	return label
-
-
-## Собака: класс Creature пока рассчитан на гуманоидов, поэтому модель и её анимация напрямую.
-func _make_hound_cell(grid: GridContainer) -> void:
-	var cell := _make_frame(grid, HOUND_HEIGHT * 1.8)  # длиннее, чем выше: камера дальше
-	var model: Node3D = load(HOUND).instantiate()
-	cell.view.add_child(model)
-	var box := AABB()
-	var first := true
-	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
-		var part := mesh.global_transform * mesh.get_aabb()
-		box = part if first else box.merge(part)
-		first = false
-	var fit := HOUND_HEIGHT / box.size.y
-	model.scale = Vector3.ONE * fit
-	model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * fit
-	var player: AnimationPlayer = model.find_child("AnimationPlayer", true, false)
-	var clip: String = player.get_animation_list()[0]
-	player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
-	player.play(clip)
-	_make_label(cell.frame).text = "Собака: ходьба"
 
 
 ## Квадрат: рамка, свой мир с существом и подпись внизу.

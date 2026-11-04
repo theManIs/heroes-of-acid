@@ -57,3 +57,24 @@ Studio и API считаются отдельно. На момент запис�
 ## В игре
 
 - `game/assets/creatures/hound/hound-walk.glb`: копия API-файла с ходьбой, показана первым квадратом витрины напрямую, без класса `Creature`.
+
+## Что пишут про анимации четвероногих (проверено 2026-11-04)
+
+- Форумы: обсуждений Text to Motion на четвероногих не нашёл.
+- Блог Tripo про животных: только пресеты, режим Text to Motion там не упомянут; экспорт со скелетом и анимациями через «Export Skeleton». Блог называет тип Quadruped, в интерфейсе Studio его нет, есть Other.
+- Документация API: для ригов `v2.5` и `v3.0` «16 universal presets»; для всех типов ригов перечислены `preset:idle`, `run`, `slash`, `hurt`, `fall` и другие, для четвероногих явно назван только `preset:quadruped:walk`. На собаке проверено, см. ниже.
+- Meshy на fal: риг только для гуманоидов. Meshy на своём сайте: тип Quadruped Dog, анимаций для него меньше, список не найден.
+
+## Проба общих пресетов на риге `quadruped`
+
+Через `pipelines/creature-quadruped/presets.py`, риг `v3.0-20260909`. Все отклонены с ответом `Invalid input parameter`, кредиты не списаны, номера задач в `tripo/tripo_state.json`:
+
+`preset:idle`, `preset:slash`, `preset:hurt`, `preset:fall`, `preset:run`, `preset:turn`, `preset:jump` (и партия из первых четырёх).
+
+Вывод: на этом риге из API работает только `preset:quadruped:walk`. **Стойки, атаки, реакции и смерти у собаки нет.** Пока может только стоять неподвижно в позе модели.
+
+## Лаборатория
+
+`game/scenes/hound_lab.tscn`, файлы в `game/assets/creatures/hound/lab/`, новый вариант — строка в `VARIANTS`.
+
+Кадр: у выгрузки Studio собака повёрнута иначе и шире кадра: файл из Studio с другой ориентацией и масштабом. Сетка цела.
