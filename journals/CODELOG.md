@@ -763,3 +763,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 105: `.gitignore`
 
 - `.gitignore` по разделам, добавлены `.mono/`, `data_*/`, `mono_crash.*`, `.env.*`, `*.tmp`; `game/.gitignore` удалён; `game/scenes/action_icon.gd.uid` добавлен в git.
+
+### 2026-11-04 Задача 106: поле 13×10
+
+- `game/scenes/battle_test.gd`: `COLS` 13, `CAMERA_CLOSE` 0.920 (26,9 м), `cells` преград сдвинуты на колонку.
