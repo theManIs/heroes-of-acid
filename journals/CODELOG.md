@@ -767,3 +767,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-04 Задача 106: поле 13×10
 
 - `game/scenes/battle_test.gd`: `COLS` 13, `CAMERA_CLOSE` 0.920 (26,9 м), `cells` преград сдвинуты на колонку.
+
+### 2026-11-04 Задача 107: поле 12×9, камера по полю
+
+- `game/scenes/battle_test.gd`: `ROWS` 9, `START_ROWS`, `cells` преград; `_place_camera()` ищет наименьшее расстояние, при котором поле и головы дальнего ряда в кадре, и смотрит в середину допустимого; `CAMERA_SIDE`, `CAMERA_HEAD`, `CAMERA_SHIFT_X` -0.26, `_aim_camera()`; `CAMERA_CLOSE`, `CAMERA_SHIFT`, `CAMERA_LOOK` убраны.

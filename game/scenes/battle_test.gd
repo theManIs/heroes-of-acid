@@ -1,5 +1,5 @@
 extends Node3D
-## Тест боя: поле 13×10, все существа слева против всех справа. Два пальца, стрелки или правая кнопка — двигать камеру.
+## Тест боя: поле 12×9, все существа слева против всех справа. Два пальца, стрелки или правая кнопка — двигать камеру.
 ## Игровой ход: каждое существо ходит один раз, порядок — по инициативе, он показан в шкале сверху.
 ## Твоя сторона — левая: клик по подсвеченному гексу — идти (дальность своя у каждого, MOVES), клик по противнику — подойти и ударить.
 ## Запуск: godot --path game res://scenes/battle_test.tscn
@@ -9,12 +9,12 @@ const ARENA := preload("res://scenes/creature_test.gd")  # записи суще
 const SWORD := preload("res://scenes/sword_cursor.gd")
 const BOW := preload("res://scenes/bow_cursor.gd")
 const ACTION_ICON := preload("res://scenes/action_icon.gd")
-const COLS := 13
-const ROWS := 10
-const START_ROWS: Array[int] = [0, 2, 4, 5, 7, 9]  # ряды, где стоят существа в начале боя
+const COLS := 12
+const ROWS := 9
+const START_ROWS: Array[int] = [0, 2, 3, 5, 6, 8]  # ряды, где стоят существа в начале боя
 const OBSTACLES := [  # преграда занимает свои гексы: ни встать, ни пройти; cells — колонка и ряд каждого
-	{"id": "rock-ridge", "turn": 0.0, "cells": [Vector2i(6, 4), Vector2i(7, 4), Vector2i(6, 5)]},
-	{"id": "dead-tree-v2", "turn": 2.1, "cells": [Vector2i(8, 7)], "sink": 0.1},  # sink — доля высоты под землёй: прячет подставку модели
+	{"id": "rock-ridge", "turn": 0.0, "cells": [Vector2i(5, 3), Vector2i(6, 3), Vector2i(6, 4)]},
+	{"id": "dead-tree-v2", "turn": 2.1, "cells": [Vector2i(8, 6)], "sink": 0.1},  # sink — доля высоты под землёй: прячет подставку модели
 ]
 const OBSTACLE_OVER := 1.15  # насколько модель шире занятых гексов: не выглядит вписанной в сетку
 const OBSTACLE_HEIGHT := 2.0  # выше не бывает, метров: не закрывает существ в ряду за ней
@@ -56,10 +56,9 @@ const QUEUE_NEXT := 1.0 / 3.0  # какая доля карты видна на 
 const QUEUE_HOVER := 18.0  # скорость раскрытия карты под курсором
 const CAMERA_DIR := Vector3(0, 1.0, 1.0)  # камера под 45° к земле
 const CAMERA_FOV := 20.0  # узкий угол и камера дальше: дальние ряды почти не мельче ближних
-const CAMERA_CLOSE := 0.920  # ближе, чем нужно с запасом сверху: все существа в кадре
-const CAMERA_LOOK := Vector3(0, 0.5, 0)  # куда смотрит камера до сдвига
-const CAMERA_SHIFT := 0.2  # поле выше в кадре, метров: нижние углы не прячутся за край
-const CAMERA_SHIFT_X := 0.26  # рядов чётное число, нижний сдвинут вправо на четверть гекса: по нему и центруем
+const CAMERA_SIDE := 0.45  # запас по бокам поля, метров: крайние существа шире своих гексов
+const CAMERA_HEAD := 2.2  # рост существа в дальнем ряду, метров: голова тоже в кадре
+const CAMERA_SHIFT_X := -0.26  # крайние ряды сдвинуты влево на четверть гекса: по ним и центруем
 const CREATURE_SCALE := 1.2  # существа крупнее гекса: так их лучше видно, соседи могут перекрывать друг друга
 const PAN_GESTURE := 0.05  # чувствительность прокрутки двумя пальцами
 const PAN_KEYS := 6.0  # скорость прокрутки стрелками, метров в секунду
@@ -101,7 +100,7 @@ var _shot := ""
 var _cam_base := Vector3.ZERO  # камера общего плана
 var _pan := Vector3.ZERO  # сдвиг камеры над полем
 var _dragging := false  # правая кнопка зажата
-var _cam_look := CAMERA_LOOK
+var _cam_look := Vector3.ZERO
 var _zoom := 0.0  # 0 — общий план, 1 — вплотную
 var _zoom_target := 0.0
 var _zoom_focus := Vector3.ZERO  # на что смотрим при приближении
@@ -163,27 +162,32 @@ func _make(id: String) -> Creature:
 
 # --- Камера ---
 
-## Камера отъезжает, пока в кадр не войдёт всё поле с головами в дальнем ряду, затем подъезжает на CAMERA_CLOSE.
+## Поле главное: камера встаёт так близко, как только можно, чтобы всё поле вошло в кадр. Вызывается при каждом изменении окна.
 func _place_camera() -> void:
-	_cam_look = CAMERA_LOOK  # вызывается при каждом изменении окна: сдвиг не должен накапливаться
 	var off := _board_offset()
-	var points: Array[Vector3] = [
-		Vector3(-off.x - RADIUS, 2.8, -off.z - RADIUS), Vector3(off.x + RADIUS, 2.8, -off.z - RADIUS),
-		Vector3(-off.x - RADIUS, 0.0, off.z + RADIUS * 3.0), Vector3(off.x + RADIUS, 0.0, off.z + RADIUS * 3.0),
-	]
+	var side := off.x + RADIUS * sqrt(3.0) * 0.5 + CAMERA_SIDE
+	var far := -off.z - RADIUS
+	var near := off.z + RADIUS
+	var points: Array[Vector3] = [Vector3(-side + CAMERA_SHIFT_X, CAMERA_HEAD, far), Vector3(side + CAMERA_SHIFT_X, CAMERA_HEAD, far),
+		Vector3(-side + CAMERA_SHIFT_X, 0, near), Vector3(side + CAMERA_SHIFT_X, 0, near)]
 	var dir := CAMERA_DIR.normalized()
 	var dist := 4.0
-	while dist < 60.0:
-		_cam_base = _cam_look + dir * dist
-		camera.position = _cam_base
-		camera.look_at(_cam_look)
-		if points.all(func(p: Vector3) -> bool: return camera.is_position_in_frustum(p)):
-			break
-		dist += 0.25
-	_cam_look.z += CAMERA_SHIFT
-	_cam_look.x += CAMERA_SHIFT_X
-	_cam_base = _cam_look + dir * dist * CAMERA_CLOSE
+	var fit: Array[float] = []  # куда можно смотреть вдоль поля при этом расстоянии
+	while dist < 60.0 and fit.is_empty():
+		dist += 0.1
+		for step in 61:
+			var z := (step - 30) * 0.1
+			_aim_camera(Vector3(CAMERA_SHIFT_X, 0.0, z), dir * dist)
+			if points.all(func(p: Vector3) -> bool: return camera.is_position_in_frustum(p)):
+				fit.append(z)
+	_cam_look = Vector3(CAMERA_SHIFT_X, 0.0, (fit[0] + fit[-1]) * 0.5 if not fit.is_empty() else 0.0)  # посередине: запас поровну
+	_cam_base = _cam_look + dir * dist
 	_apply_zoom()
+
+
+func _aim_camera(look: Vector3, offset: Vector3) -> void:
+	camera.position = look + offset
+	camera.look_at(look)
 
 
 ## Щипок и колесо: камера едет к точке под курсором; отпустил пальцы — вернулась на общий план.
