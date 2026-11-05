@@ -99,7 +99,7 @@ static func build_horse(parent: Node) -> Array[Node3D]:
 ## Держится за кисть, но направление задаёт конь, а не клип: копьё не крутится в руке.
 const LANCE_LENGTH := 3.2
 const LANCE_BACK := 0.9  # сколько палки остаётся за кистью
-const LANCE_DOWN := 0.06  # наклон остриём вниз
+const LANCE_DOWN := 0.16  # наклон остриём вниз: цель ниже седла
 
 
 static func add_lance(parent: Node) -> MeshInstance3D:
@@ -117,9 +117,12 @@ static func add_lance(parent: Node) -> MeshInstance3D:
 	return lance
 
 
-static func place_lance(lance: MeshInstance3D, rider: Creature, mount: Node3D) -> void:
+## pitch и yaw — раскачивание на весу, градусы: длинная палка качается при движении.
+static func place_lance(lance: MeshInstance3D, rider: Creature, mount: Node3D, pitch := 0.0, yaw := 0.0) -> void:
 	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_RightHand"))
-	var forward: Vector3 = (mount.global_basis * Vector3(1.0, -LANCE_DOWN, 0.0)).normalized()
+	var local := Vector3(1.0, -LANCE_DOWN, 0.0).normalized()
+	local = local.rotated(Vector3.BACK, deg_to_rad(pitch)).rotated(Vector3.UP, deg_to_rad(yaw))
+	var forward: Vector3 = (mount.global_basis * local).normalized()
 	var side := forward.cross(Vector3.UP).normalized()
 	# Цилиндр Godot вытянут по Y: ось копья — Y, базис правый (z = x × y).
 	lance.global_transform = Transform3D(Basis(side, forward, side.cross(forward)), hand + forward * (LANCE_LENGTH * 0.5 - LANCE_BACK))

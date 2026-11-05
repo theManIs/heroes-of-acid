@@ -82,7 +82,8 @@ func _make_ride_cell(grid: GridContainer, gait: Array) -> void:
 		# привстаёт на каждый второй шаг — облегчённая рысь. Без клипа «спокойно сидит».
 		var post: float = maxf(0.0, sin(phase * 0.5)) * gait[3] * 0.6 if gait[2] > 2.0 else 0.0
 		rider.position.y = seat_y + post
-		MOCK.place_lance(lance, rider, mount)
+		# Остриё запаздывает за толчком корпуса и чуть гуляет вбок.
+		MOCK.place_lance(lance, rider, mount, sin(phase - 0.9) * gait[3] * 30.0, sin(phase * 0.5 + 0.4) * gait[3] * 12.0)
 		for i in legs.size():
 			# Диагональные пары ног движутся вместе, как у рыси.
 			var pair := 1.0 if i == 0 or i == 3 else -1.0
@@ -149,5 +150,10 @@ func _make_charge_cell(grid: GridContainer) -> void:
 		for i in legs.size():
 			var pair := 1.0 if i < 2 else -1.0  # галоп: передние и задние вместе
 			legs[i].rotation.z = sin(phase) * deg_to_rad(32.0) * pair * speed
-		MOCK.place_lance(lance, rider, mount)
+		var jolt := 0.0
+		if time >= CHARGE_TIME and time < CHARGE_TIME + 0.5:
+			# Отдача от удара: остриё дёргается вверх и затухает.
+			var after := time - CHARGE_TIME
+			jolt = 6.0 * exp(-after * 7.0) * cos(after * 30.0)
+		MOCK.place_lance(lance, rider, mount, sin(phase - 0.9) * 2.6 * speed + jolt, sin(phase * 0.5 + 0.4) * 1.0 * speed)
 
