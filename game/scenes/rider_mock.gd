@@ -137,9 +137,24 @@ static func hand_frame(rider: Creature, hand_bone := "mixamorig_RightHand") -> B
 	return (sk.global_transform * sk.get_bone_global_pose(hand)).basis.orthonormalized()
 
 
+## Древко лежит в кулаке: вдоль линии костяшек (указательный — мизинец), через середину ладони.
+## Остриё — со стороны большого пальца: так держат палку, и так задуман клип (замах дубиной).
+static func _knuckles(rider: Creature, hand_bone: String) -> Vector3:
+	var side := hand_bone.trim_prefix("mixamorig_").trim_suffix("Hand")
+	var index: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_%sHandIndex1" % side))
+	var pinky: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_%sHandPinky1" % side))
+	return (index - pinky).normalized()
+
+
+static func _palm(rider: Creature, hand_bone: String) -> Vector3:
+	var side := hand_bone.trim_prefix("mixamorig_").trim_suffix("Hand")
+	var wrist: Vector3 = rider.bone_world(rider.skeleton.find_bone(hand_bone))
+	var middle: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_%sHandMiddle1" % side))
+	return wrist.lerp(middle, 0.75)
+
+
 static func calibrate_hand_lance(rider: Creature, mount: Node3D, hand_bone := "mixamorig_RightHand") -> Vector3:
-	var forward: Vector3 = (mount.global_basis * Vector3(1.0, -LANCE_DOWN, 0.0)).normalized()
-	return hand_frame(rider, hand_bone).inverse() * forward
+	return hand_frame(rider, hand_bone).inverse() * _knuckles(rider, hand_bone)
 
 
 ## Остриё не уходит на другую сторону от коня: поперечная часть направления
@@ -148,7 +163,7 @@ const LANCE_OUT := 0.12
 
 
 static func place_hand_lance(lance: MeshInstance3D, rider: Creature, local_dir: Vector3, hand_bone := "mixamorig_RightHand", mount: Node3D = null) -> void:
-	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone(hand_bone))
+	var hand: Vector3 = _palm(rider, hand_bone)
 	var forward := (hand_frame(rider, hand_bone) * local_dir).normalized()
 	if mount != null:
 		var out := 1.0 if hand_bone.contains("Right") else -1.0  # конь смотрит по +X: правая сторона — +Z
