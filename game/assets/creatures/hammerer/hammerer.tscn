@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/creatures/hammerer/body.glb" id="1"]
+[ext_resource type="Script" path="res://scenes/hammer_grip.gd" id="2"]
+
+[node name="Hammerer" type="Node3D"]
+
+[node name="Body" parent="." instance=ExtResource("1")]
+
+[node name="HammerGrip" type="Node3D" parent="."]
+script = ExtResource("2")

@@ -14,7 +14,8 @@ const CAMERA_DIR := Vector3(0.55, 0.35, 1.0)  # сбоку и немного с�
 const FRAME := 1.35  # сколько высот существа входит в кадр
 const FRAME_COLOR := Color(0.72, 0.58, 0.3)
 const GRASS_TINT := Color(0.52, 0.62, 0.46)
-const NEW_CREATURES := {"houndmaster": preload("res://scenes/houndmaster_config.gd").MASTER}
+const NEW_CREATURES := {"houndmaster": preload("res://scenes/houndmaster_config.gd").MASTER,
+	"hammerer": preload("res://scenes/hammerer_config.gd").UNIT}
 
 var _shot := ""
 var columns := 2

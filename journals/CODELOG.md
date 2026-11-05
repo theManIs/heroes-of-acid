@@ -958,3 +958,15 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Added views/left.png, back.png, right.png and exact prompts from the same ChatGPT conversation; source front attached to every request through native CUA.
 - Updated metadata, description, README and task stage; user acceptance pending, no paid 3D jobs submitted.
 - Commands: mkdir, cp, view_image for each PNG, Python metadata/journal updates, git add and git commit. No tests run.
+
+### 2026-11-05 13:14 — Hammerer model, weapon and Mixamo showcase (133)
+
+- Added Tripo body/model/rig sources and task states; paid IDs persisted before waiting. stage2.py now resumes an already submitted task.
+- Generated isolated hammer reference in the same Chrome ChatGPT conversation, saved exact prompt and reference index. weapon.py creates the static weapon; prepare_weapon.py aligns Blender Z-up for GLTF Y-up, centers shaft and normalizes length.
+- Downloaded Great Sword Pack through Chrome; selected eight FBXs and retained ZIP provenance. prepare_pack.py converts in one Blender session; build_clips.py applies ordinary hand settings, leg rest correction, horizontal hip pinning.
+- pack_model.py repacks textures to 1024 px without changing rig, bindings or geometry.
+- Added hammerer.tscn and hammer_grip.gd: dynamically instantiated weapon after body fitting, two palm centers define the rigid shaft, right wrist holds weapon when left hand releases.
+- Added hammerer_config.gd; gallery discovers pending showcase creatures from NEW_CREATURES; larger camera envelope for pole weapon. Battle and creature arena integration remain after showcase acceptance.
+- Updated task stage, README, pipeline index, SCENES and generation metadata.
+- Commands: stage2.py hammerer; weapon.py hammerer; Blender prepare_pack.py and prepare_weapon.py; build_clips.py hammerer; pack_model.py for body and hammer; Godot asset import, pose_sheet authoring renders, showcase launch with --creature=hammerer and snapshot. No automated tests run; manual acceptance is the user.
+- Result: body 19,938 triangles, 65 Mixamo bones, weapon 7,552 triangles; 105 Tripo credits (760 to 655); eight chosen clips, walk cadence measured 1.18 m/s.

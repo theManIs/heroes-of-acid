@@ -1,0 +1,4 @@
+*.log
+mixamo/pack/
+weapon/normalized.glb
+tripo/*-padded.png

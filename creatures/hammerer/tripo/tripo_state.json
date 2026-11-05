@@ -1,0 +1,17 @@
+{
+  "model": {
+    "task_id": "04cf02d1-043a-4284-9a04-150a3649c140",
+    "status": "success",
+    "seconds": 129
+  },
+  "rig_check": {
+    "task_id": "bebfa45b-3208-46cf-b463-2e15e215110c",
+    "status": "success",
+    "seconds": 1
+  },
+  "rig": {
+    "task_id": "02474588-0a94-4b64-8e5c-1c73f965156b",
+    "status": "success",
+    "seconds": 10
+  }
+}

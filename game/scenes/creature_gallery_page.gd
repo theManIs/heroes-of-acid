@@ -18,7 +18,7 @@ func _ready() -> void:
 			else:
 				_make_pair_cell(_grid, i)
 	else:
-		var cfg: Dictionary = ARENA.CREATURES[selected]
+		var cfg: Dictionary = ARENA.CREATURES.get(selected, NEW_CREATURES.get(selected, {}))
 		var actions := [["Стойка", "idle", 0.0, 0.0], ["Ходьба", "walk", 0.0, 0.0],
 			["Атака", cfg.attack, cfg.attack_from, 0.0], ["Реакция на удар", cfg.hurt, 0.0, cfg.hurt_len],
 			["Защита", cfg.defend, cfg.defend_from, cfg.defend_len], ["Смерть", "fall", 0.0, 0.0]]
@@ -44,7 +44,7 @@ func fit_cells() -> void:
 
 
 func _make_action(cfg: Dictionary, action: Array) -> void:
-	var cell := _make_frame(_grid, cfg.size * (1.2 if action[1] == "fall" else 1.0))
+	var cell := _make_frame(_grid, cfg.get("showcase_size", cfg.size) * (1.2 if action[1] == "fall" else 1.0))
 	var unit := Creature.new()
 	cell.view.add_child(unit)
 	unit.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)

@@ -9,7 +9,7 @@
     1122,
     1402
   ],
-  "status": "awaiting_views_approval",
+  "status": "concept_complete_showcase_ready",
   "prompt": "creatures/hammerer/concept/prompt-v2.md",
   "revisions": [
     {
@@ -35,7 +35,7 @@
         1122,
         1402
       ],
-      "status": "awaiting_user_approval"
+      "status": "approved_for_continuation_by_user"
     },
     {
       "view": "back",
@@ -46,7 +46,7 @@
         1122,
         1402
       ],
-      "status": "awaiting_user_approval"
+      "status": "approved_for_continuation_by_user"
     },
     {
       "view": "right",
@@ -57,7 +57,14 @@
         1122,
         1402
       ],
-      "status": "awaiting_user_approval"
+      "status": "approved_for_continuation_by_user"
     }
-  ]
+  ],
+  "intermediate_approval_waived_by_user": true,
+  "weapon": {
+    "reference": "references/hammerer/hammer-reference.png",
+    "prompt": "creatures/hammerer/weapon/prompt.md",
+    "model": "creatures/hammerer/weapon/hammer.glb",
+    "conversation_url": "https://chatgpt.com/c/6aec3ce7-5ab8-83eb-9811-e9e67607d702"
+  }
 }

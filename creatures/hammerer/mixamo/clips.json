@@ -1,0 +1,51 @@
+{
+  "_match_leg_rest": true,
+  "great sword idle.fbx": {
+    "name": "idle",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "great sword walk.fbx": {
+    "name": "walk",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "great sword run.fbx": {
+    "name": "run",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "great sword slash (3).fbx": {
+    "name": "attack",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "great sword impact (2).fbx": {
+    "name": "hurt",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "great sword blocking.fbx": {
+    "name": "defend",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "two handed sword death.fbx": {
+    "name": "fall",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "great sword idle (2).fbx": {
+    "name": "fidget",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  }
+}

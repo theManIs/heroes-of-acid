@@ -41,14 +41,18 @@ def pad_view(src: Path, dst: Path) -> None:
 
 async def run_step(client, state, state_path, name, start):
     if name not in state:
-        t0 = time.monotonic()
         task_id = await start()
-        print(f"{name}: задача {task_id}")
+        state[name] = {"task_id": task_id}
+        state_path.write_text(json.dumps(state, indent=2))
+    if state[name].get("status") != TaskStatus.SUCCESS.value:
+        t0 = time.monotonic()
+        task_id = state[name]["task_id"]
+        print(f"{name}: задача {task_id}", flush=True)
         task = await client.wait_for_task(task_id, verbose=True)
+        state[name].update(status=task.status.value, seconds=round(time.monotonic() - t0))
+        state_path.write_text(json.dumps(state, indent=2))
         if task.status != TaskStatus.SUCCESS:
             sys.exit(f"{name}: {task.status.value} {task.error_msg or ''}")
-        state[name] = {"task_id": task_id, "seconds": round(time.monotonic() - t0)}
-        state_path.write_text(json.dumps(state, indent=2))
     return state[name]["task_id"]
 
 

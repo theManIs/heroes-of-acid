@@ -22,8 +22,11 @@ func _ready() -> void:
 	title.add_theme_font_size_override("font_size", 26)
 	bar.add_child(title)
 	_ids = ["houndmaster-pair", "houndmaster", "hound"] + ARENA.CREATURES.keys()
+	for id: String in PAGE.NEW_CREATURES:
+		if not _ids.has(id):
+			_ids.append(id)
 	for id: String in _ids:
-		_selector.add_item({"houndmaster-pair": "Псарь с собакой", "houndmaster": "Псарь", "hound": "Собака"}.get(id, ARENA.CREATURES.get(id, {}).get("name", id)))
+		_selector.add_item({"houndmaster-pair": "Псарь с собакой", "houndmaster": "Псарь", "hound": "Собака"}.get(id, ARENA.CREATURES.get(id, PAGE.NEW_CREATURES.get(id, {})).get("name", id)))
 	_selector.custom_minimum_size = Vector2(300, 44)
 	_selector.item_selected.connect(_select)
 	bar.add_child(_selector)
