@@ -166,13 +166,13 @@ func _repeat_death_escape(unit: Creature, hound: Dictionary) -> void:
 	var direction := Vector3(-1.0, 0.0, -0.35).normalized()  # от псаря, за левый край кадра
 	var turn_time := 0.35
 	var run_time := 1.7
-	var reaction_time := 0.55
+	var reaction_time := player.get_animation("hurt_head_left").length
 	var fall_time := unit.anim.get_animation("fall").length
 	player.get_animation("run").loop_mode = Animation.LOOP_LINEAR
 	while true:
 		unit.dead = true
 		unit.anim.play("fall", 0.2)
-		player.play(HOUND_LAB.IDLE, 0.2)
+		player.play("hurt_head_left", 0.15)
 		await get_tree().create_timer(reaction_time).timeout
 		var turn := create_tween()
 		turn.tween_property(model, "rotation:y", atan2(direction.x, direction.z), turn_time)

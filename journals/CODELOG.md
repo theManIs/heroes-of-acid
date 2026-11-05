@@ -1040,3 +1040,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-05 18:49 — Pair footprint tint (135)
 
 - Removed creature-arena pair-only permanent blue/red footprint tint. Other creatures never had it; reachable-anchor and action footprint painting/path checks preserved. No tests run.
+
+### 2026-11-05 18:50 — Dog hurt before escape (140)
+
+- Lethal pair hit starts master fall and dog hurt_head_left together. Escape turn waits for actual dog hurt clip duration instead of 0.55 s. Updated paired gallery death sequence too. No dog death clip used; reset cancellation preserved. No tests run.

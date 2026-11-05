@@ -282,8 +282,10 @@ func die() -> void:
 		_bite.kill()
 		_bite = null
 	var away := Vector3(-1 if sin(_dog_yaw) > 0.0 else 1, 0, 0.35).normalized()
+	_dog_play("hurt_head_left")
+	var reaction_time := _dog_anim.get_animation("hurt_head_left").length
 	_escape = create_tween()
-	_escape.tween_interval(0.55)
+	_escape.tween_interval(reaction_time)
 	_escape.tween_property(_dog, "rotation:y", _dog.rotation.y + wrapf(atan2(away.x, away.z) - _dog.rotation.y, -PI, PI), 0.35)
 	_escape.tween_callback(_dog_play.bind("run"))
 	_escape.tween_property(_dog, "global_position", _dog.global_position + away * 12.0, 2.5)
