@@ -862,3 +862,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Добавлены `game/scenes/houndmaster_showcase.gd`, `.tscn`: наследует оформление витрины, сетка 4×2 с восемью клипами, циклические проигрываются постоянно, разовые повторяются через стойку; смерть включает `dead` для прижатия к земле.
 - Обновлены SCENES, TASKS и README псаря.
 - Команды: `godot --headless --path game --import`; `godot --path game --position 10000,10000 res://scenes/houndmaster_showcase.tscn -- --shot=...`; `git diff --check`. Импорт без ошибок, кадр с восемью квадратами просмотрен, FPS кадра 60.
+
+### 2026-11-05 Задача 123: исходная поза ног в переносе Mixamo
+
+- `build_clips.py`: qbetween, опция `_match_leg_rest`, согласование направлений бёдер/голеней/стоп до переноса отклонений, компенсация высоты таза. Опция выключена по умолчанию.
+- `creatures/houndmaster/mixamo/clips.json`: опция включена; пересобраны восемь GLB в `game/assets/creatures/houndmaster/anims/`. Риг и геометрия сохранены.
+- Обновлены TASKS, README существа, SELECTION, инструкция Mixamo и ARTIFACTS (60).
+- Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py houndmaster`; `godot --headless --path game --import`; `godot --path game --position 10000,10000 res://scenes/houndmaster_showcase.tscn -- --shot=...`; `git diff --check`. Импорт успешен, кадр восьми клипов просмотрен.

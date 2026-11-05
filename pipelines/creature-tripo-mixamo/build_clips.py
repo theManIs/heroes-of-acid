@@ -7,9 +7,10 @@
 
 Имена костей совпадают, но оси и позы покоя у рига Tripo и клипа Mixamo разные, поэтому повороты
 переносятся не локально, а как отклонение кости от покоя в мировых осях.
-Кости левой кисти и пальцев: кисть модели уже сжата на луке, клип сжимает её второй раз, поэтому пальцы не трогаем.
+По умолчанию для фонарщика пальцы левой кисти сохраняются: кисть уже сжата на луке.
 "hip_scale" у клипа в clips.json — доля смещения таза по земле.
 "keep_left_fingers": false и "grip": 0 — обычная левая кисть без поправок для лука.
+"_match_leg_rest": true — согласовать исходные направления сегментов ног с Mixamo.
 "_arm_out" в clips.json — постоянно отвести правую руку от тела, градусы: {"arm": плечо, "fore": предплечье и кисть сверх плеча}.
 """
 
@@ -82,6 +83,18 @@ def cross(a, b):
 def unit(v):
     n = math.sqrt(sum(c * c for c in v))
     return tuple(c / n for c in v)
+
+
+def qbetween(a, b):
+    """Кратчайший поворот одного направления в другое."""
+    a, b = unit(a), unit(b)
+    dot = sum(x * y for x, y in zip(a, b))
+    if dot < -0.999999:
+        axis = cross(a, (1.0, 0.0, 0.0))
+        if sum(c * c for c in axis) < 0.000001:
+            axis = cross(a, (0.0, 1.0, 0.0))
+        return qaxis(unit(axis), math.pi)
+    return qnorm((*cross(a, b), 1.0 + dot))
 
 
 class Skeleton:
@@ -161,6 +174,31 @@ def retarget(rig_doc, rig, clip_path, name, cfg):
     rig_hip = rig.rest_of("Hips")
     height = rig_hip[1][1] / src_hip[1][1]
 
+    leg_lift = 0.0
+    if cfg.get("match_leg_rest", False):
+        # Отклонение от T-позы само по себе оставляет исходный развод ног модели.
+        # Сначала согласуем направления сегментов в покое, затем добавим движение.
+        for side in ("Left", "Right"):
+            for joint, child in (("UpLeg", "Leg"), ("Leg", "Foot"), ("Foot", "ToeBase")):
+                bone, tip = PREFIX + side + joint, PREFIX + side + child
+                if not all(b in s.by_name for s in (rig, src) for b in (bone, tip)):
+                    raise ValueError(f"Нет сегмента ноги {bone} → {tip}")
+                original = tuple(b - a for a, b in zip(rig.rest[rig.by_name[bone]][1], rig.rest[rig.by_name[tip]][1]))
+                desired = qrot(align, tuple(b - a for a, b in zip(src.rest[src.by_name[bone]][1], src.rest[src.by_name[tip]][1])))
+                outs[bone] = qbetween(original, desired)
+        # Выпрямленная нога длиннее по вертикали: компенсируем это подъёмом таза.
+        rest_pose, rest_worlds = {}, {}
+        for bone in rig.order:
+            i = rig.by_name[bone]
+            parent = rig.parent.get(i)
+            parent_name = rig.nodes[parent].get("name") if parent is not None else None
+            world = qmul(outs.get(bone, (0, 0, 0, 1)), rig.rest[i][0])
+            parent_world = rest_worlds.get(parent_name) or (rig.rest[parent][0] if parent is not None else (0, 0, 0, 1))
+            rest_pose[i] = {"r": qmul(qinv(parent_world), world)}
+            rest_worlds[bone] = world
+        feet = [rig.by_name[PREFIX + side + joint] for side in ("Left", "Right") for joint in ("Foot", "ToeBase")]
+        leg_lift = min(rig.rest[i][1][1] for i in feet) - min(rig.world(i, rest_pose)[1][1] for i in feet)
+
     skip = {PREFIX + "LeftHand" + f + str(i) for f in ("Thumb", "Index", "Middle", "Ring", "Pinky") for i in (1, 2, 3, 4)}
     if not cfg.get("keep_left_fingers", True):
         skip.clear()
@@ -190,7 +228,7 @@ def retarget(rig_doc, rig, clip_path, name, cfg):
         hip_now = src.world(src.by_name[PREFIX + "Hips"], pose)[1]
         move = qrot(align, tuple((a - b) * height for a, b in zip(hip_now, src_hip[1])))
         keep = cfg.get("hip_scale", 1.0)  # уклоны Mixamo уносят тело на метры: ужать смещение по земле
-        move = (move[0] * keep, move[1], move[2] * keep)
+        move = (move[0] * keep, move[1] + leg_lift, move[2] * keep)
         i_hip = rig.by_name[PREFIX + "Hips"]
         pr, _, ps = rig.world(rig.parent[i_hip], {}) if i_hip in rig.parent else ((0, 0, 0, 1), None, 1.0)
         back = qrot(qinv(pr), tuple(c / ps for c in move))
@@ -260,8 +298,10 @@ def main(creature_id):
     print("вперёд, влево:", rig.frame())
     clips = json.loads((base / "mixamo" / "clips.json").read_text())
     arm_out = clips.pop("_arm_out", {})
+    match_leg_rest = clips.pop("_match_leg_rest", False)
     for fbx, cfg in clips.items():
         cfg["arm_out"] = arm_out
+        cfg["match_leg_rest"] = match_leg_rest
         glb = tmp / (cfg["name"] + ".glb")
         if not glb.exists():
             subprocess.run(["blender", "-b", "--python", str(HERE / "fbx2glb.py"), "--", str(base / "mixamo" / fbx), str(glb)],

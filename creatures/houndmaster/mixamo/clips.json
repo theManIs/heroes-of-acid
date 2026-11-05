@@ -1,4 +1,5 @@
 {
+  "_match_leg_rest": true,
   "Unarmed Idle.fbx": {
     "name": "idle",
     "grip": 0,
