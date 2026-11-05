@@ -286,6 +286,29 @@ def write(rig_doc, rig, name, times, rotations, hips, target):
                              + struct.pack("<I4s", len(blob), b"BIN\0") + bytes(blob))
 
 
+def finish_in_idle(times, rotations, hips, idle_path, recovery):
+    """Replace only the post-contact sword recovery with a smooth return to idle."""
+    doc, binary = read_glb(idle_path)
+    idle = {}
+    anim = doc["animations"][0]
+    for channel in anim["channels"]:
+        sampler = anim["samplers"][channel["sampler"]]
+        node = doc["nodes"][channel["target"]["node"]]["name"]
+        idle[(node, channel["target"]["path"])] = accessor(doc, binary, sampler["output"])[0]
+    cut = min(range(len(times)), key=lambda i: abs(times[i] - recovery["at"]))
+    end = times[cut]
+    count = max(1, round(recovery["duration"] * 30))
+    blends = [i / count for i in range(1, count + 1)]
+    blends = [v * v * (3 - 2 * v) for v in blends]
+    for bone, values in rotations.items():
+        start, target = values[cut], idle[(bone, "rotation")]
+        rotations[bone] = values[:cut + 1] + [qlerp(start, target, v) for v in blends]
+    target = idle[(PREFIX + "Hips", "translation")]
+    hips = hips[:cut + 1] + [tuple(a + (b - a) * v for a, b in zip(hips[cut], target)) for v in blends]
+    times = times[:cut + 1] + [end + recovery["duration"] * i / count for i in range(1, count + 1)]
+    return times, rotations, hips
+
+
 def main(creature_id):
     base = ROOT / "creatures" / creature_id
     out_dir = ROOT / "game" / "assets" / "creatures" / creature_id / "anims"
@@ -307,6 +330,8 @@ def main(creature_id):
             subprocess.run(["blender", "-b", "--python", str(HERE / "fbx2glb.py"), "--", str(base / "mixamo" / fbx), str(glb)],
                            check=True, capture_output=True)
         times, rotations, hips = retarget(rig_doc, rig, glb, cfg["name"], cfg)
+        if cfg.get("recovery"):
+            times, rotations, hips = finish_in_idle(times, rotations, hips, out_dir / "idle.glb", cfg["recovery"])
         write(rig_doc, rig, cfg["name"], times, rotations, hips, out_dir / (cfg["name"] + ".glb"))
         for alias in cfg.get("aliases", []):
             write(rig_doc, rig, alias, times, rotations, hips, out_dir / (alias + ".glb"))

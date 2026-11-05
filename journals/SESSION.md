@@ -2999,3 +2999,9 @@
 **User:** Approved 136–138; then required background extension control and diagnosis instead of foreground Chrome actions.
 
 **Assistant:** Background metadata works, but DOM, screenshot, navigation and close fail with timeoutMs error, also after runtime reset and on a fresh tab. Asked for Chrome restart following official docs. 136 awaits a suitable distinct clip; completed allied-only restriction for 137.
+
+### 2026-11-05 18:08
+
+**User:** Restarted Chrome and asked to retry background control.
+
+**Assistant:** Retried on existing and fresh bindings after runtime reset; same timeoutMs failure. Completed 138 recovery edit and marked 136/139 unfinished. Documented the reproducible failure; 137 committed allied-only.

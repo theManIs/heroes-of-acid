@@ -24,7 +24,7 @@
 | Папка | Задача | Модель | Риг | Анимации | Платим | Статус |
 |---|---|---|---|---|---|---|
 | [`creature`](creature/README.md) | существо-гуманоид | Tripo | Tripo, `spec: tripo` | пресеты Tripo, общая библиотека | кредиты Tripo | основной |
-| [`creature-tripo-mixamo`](creature-tripo-mixamo/README.md) | существо-гуманоид | Tripo, тело и при необходимости отдельное оружие | Tripo, `spec: mixamo` | Mixamo | кредиты Tripo | проба, задачи 54, 121 и 133; риг готовой модели, концепт через Chrome/CUA, двуручный хват отдельного молота; 136–137 — удар сверху и отклик по наведению |
+| [`creature-tripo-mixamo`](creature-tripo-mixamo/README.md) | существо-гуманоид | Tripo, тело и при необходимости отдельное оружие | Tripo, `spec: mixamo` | Mixamo | кредиты Tripo | проба, задачи 54, 121 и 133; риг готовой модели, концепт через Chrome/CUA, двуручный хват отдельного молота; 136 ожидает отдельного клипа; 137 — союзный отклик; 138 — возврат молота |
 | [`creature-fal-mixamo`](creature-fal-mixamo/README.md) | существо-гуманоид | fal, Meshy | fal, Meshy | Mixamo | счёт fal | ждёт, задача 55 |
 | [`creature-recolor`](creature-recolor/README.md) | новая раскраска готового существа, модель и риг прежние | не меняется | не меняется | не меняются | кредиты Tripo, 20 за текстуру | основной |
 | [`ground-fal`](ground-fal/README.md) | текстура земли | gpt-image через fal | не нужен | не нужны | счёт fal | проба, задача 100 |

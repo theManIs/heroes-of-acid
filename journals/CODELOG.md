@@ -1017,3 +1017,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-05 18:04 — Allied-only hover fidget (137)
 
 - Creature arena no longer invokes enemy hover fidget. Battle arena only invokes it for sides[0]. Shared animation and idle guard unchanged. Updated scene and pipeline descriptions. No tests run.
+
+### 2026-11-05 18:08 — Hammer recovery correction (138)
+
+- Added per-clip recovery in build_clips.py: keep original keys through 28/30 s, then smooth quaternion/hip interpolation to idle over 0.7 s. Removed the original post-contact upward sword recovery. Final length 1.6333 s; impact 0.56122449 preserves contact at 0.9167 s, reach unchanged.
+- Rebuilt attack and its temporary attack_point alias. 136 explicitly remains unfinished: alias is rejected by user, not a distinct vertical attack. Updated source selection and pipeline, including background-only browser requirement.
+- Commands: build_clips.py, Godot asset import, pose_sheet asset authoring render. No tests run; visual/manual acceptance is the user’s.

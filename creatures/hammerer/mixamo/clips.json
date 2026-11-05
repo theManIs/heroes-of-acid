@@ -25,7 +25,11 @@
     "hip_scale": 0.0,
     "aliases": [
       "attack_point"
-    ]
+    ],
+    "recovery": {
+      "at": 0.9333333333333333,
+      "duration": 0.7
+    }
   },
   "great sword impact (2).fbx": {
     "name": "hurt",
