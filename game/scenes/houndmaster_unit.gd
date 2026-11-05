@@ -6,7 +6,8 @@ const DOG_IDLE := "idle_breathe"
 const DOG_HEIGHT := 1.05
 const COMMAND_LEAD := 0.85
 const BITE_IMPACT := 0.45
-enum MovePhase { NONE, DOG, MASTER }
+enum MovePhase { NONE, DOG, MASTER, RAID_HOLD, RAID_OUT, RAID_BACK }
+signal dog_route_finished
 
 var _dog := Node3D.new()
 var _dog_model: Node3D
@@ -67,16 +68,20 @@ func walk_path(points: Array[Vector3]) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if _move_phase == MovePhase.DOG:
+	if _move_phase in [MovePhase.DOG, MovePhase.RAID_OUT, MovePhase.RAID_BACK]:
 		var to := _dog_route[0] - _dog.global_position
 		to.y = 0.0
 		if to.length() < 0.02:
 			_dog.global_position = _dog_route.pop_front()
 			if _dog_route.is_empty():
-				_move_phase = MovePhase.MASTER
 				_dog_play(DOG_IDLE)
-				# Сигнал arrived придёт от базового движения только после псаря.
-				super.walk_path(_master_route)
+				if _move_phase == MovePhase.DOG:
+					_move_phase = MovePhase.MASTER
+					# Сигнал arrived придёт от базового движения только после псаря.
+					super.walk_path(_master_route)
+				else:
+					_move_phase = MovePhase.RAID_HOLD
+					dog_route_finished.emit()
 			return
 		var heading := atan2(to.x, to.z)
 		_dog.rotation.y = rotate_toward(_dog.rotation.y, heading, TURN_SPEED * delta)
@@ -84,8 +89,10 @@ func _physics_process(delta: float) -> void:
 			# На повороте стоит, а не скользит боком с играющей ходьбой.
 			_dog_play(DOG_IDLE)
 			return
-		_dog_play("walk", walk_rate)
-		_dog.global_position += to.normalized() * minf(walk_speed * walk_rate * delta, to.length())
+		var running := _move_phase in [MovePhase.RAID_OUT, MovePhase.RAID_BACK]
+		_dog_play("run" if running else "walk", walk_rate)
+		var speed := walk_speed * walk_rate * (2.0 if running else 1.0)
+		_dog.global_position += to.normalized() * minf(speed * delta, to.length())
 		return
 	super._physics_process(delta)
 	if _move_phase == MovePhase.MASTER and not walking:
@@ -113,26 +120,78 @@ func hit_delay() -> float:
 
 
 func strike(target: Creature, _distance: float, _overlap: float) -> void:
+	# Совместимость с интерфейсом Creature для атаки уже стоящего рядом врага.
+	raid(target, [] as Array[Vector3], target.position)
+
+
+## Полная вылазка: команда, путь собаки, укус и обратный путь. Корень не двигается.
+## points и contact заданы в координатах родителя, как у walk_path.
+func raid(target: Creature, points: Array[Vector3], contact: Vector3) -> void:
 	if dead:
 		return
+	var epoch := _epoch
+	var home := _dog.global_position
+	var outbound: Array[Vector3] = []
+	for point in points:
+		outbound.append((get_parent() as Node3D).to_global(point) + _dog_offset)
+	_move_phase = MovePhase.RAID_HOLD
+	walking = false
+	_path.clear()
 	face(target.position)
 	target.face(position)
 	play_once(attack_anim)
-	target.take_hit(hit_delay())
-	var epoch := _epoch
+	_dog_play(DOG_IDLE)
 	await get_tree().create_timer(COMMAND_LEAD).timeout
 	if epoch != _epoch or dead or not is_instance_valid(target):
 		return
-	var home := global_position + _dog_offset
-	var goal := target.global_position + _dog_offset
-	var direction := (goal - home).normalized()
-	_dog.rotation.y = atan2(direction.x, direction.z)
-	_dog_play("bite_lunge")
+	if not outbound.is_empty():
+		_dog_route = outbound.duplicate()
+		_move_phase = MovePhase.RAID_OUT
+		await dog_route_finished
+		if epoch != _epoch or dead or not is_instance_valid(target):
+			return
+	var launch := _dog.global_position
+	var goal := (get_parent() as Node3D).to_global(contact)
+	var direction := (goal - launch).normalized()
+	var turn := wrapf(atan2(direction.x, direction.z) - _dog.rotation.y, -PI, PI)
+	var turn_time := maxf(0.01, absf(turn) / TURN_SPEED)
 	_bite = create_tween()
-	_bite.tween_property(_dog, "global_position", home + direction * maxf(0.0, home.distance_to(goal) - 1.05), BITE_IMPACT).set_trans(Tween.TRANS_SINE)
-	_bite.tween_property(_dog, "global_position", home, 0.65).set_trans(Tween.TRANS_SINE)
-	await _bite.finished
+	_bite.tween_property(_dog, "rotation:y", _dog.rotation.y + turn, turn_time)
+	await get_tree().create_timer(turn_time).timeout
+	if epoch != _epoch or dead or not is_instance_valid(target):
+		return
+	_dog_play("bite_lunge")
+	# Удар засчитывается у цели при контакте, после пробежки, а не при команде.
+	target.take_hit(BITE_IMPACT)
+	var reaction_end := Time.get_ticks_msec() + int((BITE_IMPACT + 1.5) * 1000.0)
+	_bite = create_tween()
+	_bite.tween_property(_dog, "global_position", launch + direction * maxf(0.0, launch.distance_to(goal) - 0.85), BITE_IMPACT).set_trans(Tween.TRANS_SINE)
+	_bite.tween_property(_dog, "global_position", launch, 0.65).set_trans(Tween.TRANS_SINE)
+	await get_tree().create_timer(BITE_IMPACT + 0.65).timeout
+	if epoch != _epoch or dead:
+		return
+	if is_instance_valid(_bite):
+		_bite.kill()
 	_bite = null
+	_dog.global_position = launch
+	_dog_play(DOG_IDLE)
+	if not outbound.is_empty():
+		_dog_route = outbound.duplicate()
+		_dog_route.reverse()
+		_dog_route.pop_front()  # уже стоим у конца маршрута после выпада
+		_dog_route.append(home)
+		_move_phase = MovePhase.RAID_BACK
+		await dog_route_finished
+		if epoch != _epoch or dead:
+			return
+	var recover := float(reaction_end - Time.get_ticks_msec()) / 1000.0
+	if recover > 0.0:
+		await get_tree().create_timer(recover).timeout
+		if epoch != _epoch or dead:
+			return
+	_dog.global_position = home
+	_move_phase = MovePhase.NONE
+	_dog_play(DOG_IDLE)
 
 
 func play_once(clip: String) -> void:
@@ -165,6 +224,8 @@ func take_hit(delay: float) -> void:
 func die() -> void:
 	if dead:
 		return
+	_epoch += 1
+	var cancel_route := _move_phase in [MovePhase.RAID_OUT, MovePhase.RAID_BACK]
 	_move_phase = MovePhase.NONE
 	_dog_route.clear()
 	_master_route.clear()
@@ -180,14 +241,19 @@ func die() -> void:
 	_escape.tween_callback(_dog_play.bind("run"))
 	_escape.tween_property(_dog, "global_position", _dog.global_position + away * 12.0, 2.5)
 	_escape.tween_callback(_dog.hide)
+	if cancel_route:
+		dog_route_finished.emit()
 
 
 func revive() -> void:
 	_epoch += 1
 	_strike_id += 1
+	var cancel_route := _move_phase in [MovePhase.RAID_OUT, MovePhase.RAID_BACK]
 	_move_phase = MovePhase.NONE
 	_dog_route.clear()
 	_master_route.clear()
+	if cancel_route:
+		dog_route_finished.emit()
 	walking = false
 	_path.clear()
 	for tween in [_escape, _bite]:

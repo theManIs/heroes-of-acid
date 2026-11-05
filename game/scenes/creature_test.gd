@@ -122,6 +122,7 @@ var tiles := {}  # Vector2i (осевые координаты) -> MeshInstance3
 var turn := Turn.PLAYER
 var _round := 0  # сброс отменяет ожидающие действия предыдущего боя
 var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущего хода игрока
+var _raid_reachable := {}  # позиции только собаки для вылазки без перемещения псаря
 var _hovered := Vector2i(999, 999)
 var _mode_button := Button.new()  # смена режима огня: только у стрелка
 var _enemy_shots := 0  # противник-стрелок чередует стрелы и бросок
@@ -338,6 +339,54 @@ func _formation_distance(a: Vector2i, b: Vector2i) -> int:
 		for y in _footprint(b):
 			distance = mini(distance, _hex_distance(x, y))
 	return distance
+
+
+func _dog_footprint(anchor: Vector2i) -> Array[Vector2i]:
+	return [anchor + Vector2i(-1, 1), anchor + Vector2i(0, 1)]
+
+
+## Во время вылазки свободны только два гекса собаки; псарь остаётся препятствием.
+## Виртуальный anchor нужен для центра между нижними клетками, псарь туда не идёт.
+func _dog_attack_paths(from: Vector2i, target: Vector2i) -> Dictionary:
+	var blocked := _footprint(target)
+	blocked.append(from)
+	var paths := {from: [] as Array[Vector2i]}
+	var queue: Array[Vector2i] = [from]
+	var attacks := {}
+	while not queue.is_empty():
+		var h: Vector2i = queue.pop_front()
+		var adjacent := false
+		for dog_hex in _dog_footprint(h):
+			for target_hex in _footprint(target):
+				if _hex_distance(dog_hex, target_hex) == 1:
+					adjacent = true
+		if adjacent:
+			attacks[h] = paths[h]
+		if paths[h].size() >= MOVE:
+			continue
+		for d in DIRS:
+			var n := h + d
+			if paths.has(n):
+				continue
+			var free := true
+			for dog_hex in _dog_footprint(n):
+				if not tiles.has(dog_hex) or blocked.has(dog_hex):
+					free = false
+			if not free:
+				continue
+			var path: Array[Vector2i] = paths[h].duplicate()
+			path.append(n)
+			paths[n] = path
+			queue.append(n)
+	return attacks
+
+
+func _shortest_raid(options: Dictionary) -> Vector2i:
+	var best := NO_HEX
+	for h: Vector2i in options:
+		if best == NO_HEX or options[h].size() < options[best].size():
+			best = h
+	return best
 
 
 func _hex_at(point: Vector3) -> Vector2i:
@@ -573,6 +622,7 @@ func _start_player_turn() -> void:
 	for h: Vector2i in paths:
 		if paths[h].size() <= MOVE:
 			reachable[h] = paths[h]
+	_raid_reachable = _dog_attack_paths(_hex_of(player), _hex_of(enemy)) if tested == "houndmaster-pair" else {}
 	_paint()
 
 
@@ -595,6 +645,12 @@ func _start_enemy_turn() -> void:
 		enemy.update_shot(_hex_distance(_hex_of(enemy), _hex_of(player)) == 1)
 		_fire(enemy, player, _start_player_turn)
 		return
+	if tested == "houndmaster-pair":
+		var options := _dog_attack_paths(_hex_of(enemy), _hex_of(player))
+		var destination := _shortest_raid(options)
+		if destination != NO_HEX:
+			_raid(enemy, player, options[destination], _start_player_turn)
+			return
 	var path := _approach(enemy, player)
 	_move_and_maybe_strike(enemy, player, path, _start_player_turn)
 
@@ -631,10 +687,46 @@ func _fire(who: Creature, target: Creature, next: Callable) -> void:
 		next.call()
 
 
+## Самостоятельная атака собаки: обе фигуры отрядов остаются на своих местах.
+func _raid(who: Creature, target: Creature, path: Array, next: Callable) -> void:
+	var round_id := _round
+	turn = Turn.BUSY
+	_targeted = false
+	_attack_from = NO_HEX
+	who.set_outline(null)
+	target.set_outline(null)
+	reachable.clear()
+	_paint()
+	var end: Vector2i = _hex_of(who) if path.is_empty() else path[-1]
+	var dog_center := _hex_center(end) + Vector3(0, 0, radius * 1.5)
+	var contact := _hex_of(target)
+	for h in _footprint(_hex_of(target)):
+		if dog_center.distance_squared_to(_hex_center(h)) < dog_center.distance_squared_to(_hex_center(contact)):
+			contact = h
+	var squad := who as HOUNDMASTER_UNIT
+	await squad.raid(target, _to_points(path), _hex_center(contact))
+	if round_id == _round:
+		next.call()
+
+
 ## Путь к ближайшему свободному соседу цели; не дальше MOVE (тогда — часть пути).
 func _approach(who: Creature, target: Creature) -> Array[Vector2i]:
 	var goal := _hex_of(target)
 	var start := _hex_of(who)
+	if tested == "houndmaster-pair":
+		# Если вылазка пока невозможна, ИИ переставляет отряд, заканчивая ход.
+		var placements := _paths_from(start, goal)
+		var chosen: Array[Vector2i] = []
+		var best_score := INF
+		for h: Vector2i in placements:
+			if placements[h].is_empty() or placements[h].size() > MOVE:
+				continue
+			var can_raid := not _dog_attack_paths(h, goal).is_empty()
+			var score := float(placements[h].size()) if can_raid else 100.0 + _formation_distance(h, goal)
+			if score < best_score:
+				chosen = placements[h]
+				best_score = score
+		return chosen
 	if _formation_distance(start, goal) == 1:
 		return []
 	var paths := _paths_from(start, goal)
@@ -661,7 +753,7 @@ func _move_and_maybe_strike(who: Creature, target: Creature, path: Array[Vector2
 		await who.arrived
 		if round_id != _round:
 			return
-	if _formation_distance(_hex_of(who), _hex_of(target)) == 1 and not _ranged():
+	if tested != "houndmaster-pair" and _formation_distance(_hex_of(who), _hex_of(target)) == 1 and not _ranged():
 		who.strike(target, _hex_spacing(), OVERLAP)
 		await get_tree().create_timer(who.hit_delay() + 1.5).timeout  # попадание + реакция цели
 	else:
@@ -689,7 +781,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		var from := _attack_hex(click.position)
 		if from != NO_HEX and enemy.can_be_hit():
-			_move_and_maybe_strike(player, enemy, reachable[from], _start_enemy_turn)  # свой гекс — пустой путь
+			if tested == "houndmaster-pair":
+				_raid(player, enemy, _raid_reachable[from], _start_enemy_turn)
+			else:
+				_move_and_maybe_strike(player, enemy, reachable[from], _start_enemy_turn)  # свой гекс — пустой путь
 		return
 	var h := _hex_under(click.position)
 	if reachable.has(h) and h != _hex_of(player):
@@ -708,13 +803,16 @@ func _attack_hex(screen: Vector2) -> Vector2i:
 	var pointer := Vector2(ground.x - center.x, ground.z - center.z)
 	var best := NO_HEX
 	var best_dot := -INF
-	for n: Vector2i in reachable:
-		if _formation_distance(n, target) != 1:
+	var options: Dictionary = _raid_reachable if tested == "houndmaster-pair" else reachable
+	for n: Vector2i in options:
+		if tested != "houndmaster-pair" and _formation_distance(n, target) != 1:
 			continue
 		var c := _hex_center(n)
+		if tested == "houndmaster-pair":
+			c += Vector3(0, 0, radius * 1.5)
 		var side := Vector2(c.x - center.x, c.z - center.z).normalized()
 		var dot := side.dot(pointer.normalized()) if pointer.length() > 0.01 else -float(_hex_distance(n, mine))
-		if dot > best_dot or (is_equal_approx(dot, best_dot) and reachable[n].size() < reachable.get(best, []).size()):
+		if dot > best_dot or (is_equal_approx(dot, best_dot) and options[n].size() < options.get(best, []).size()):
 			best_dot = dot
 			best = n
 	return best
@@ -769,7 +867,8 @@ func _paint() -> void:
 			color = color.lerp(PLAYER_TURN, 0.25)
 			if h == _hovered:
 				color = color.lerp(PLAYER_TURN, 0.35)
-		if _attack_from != NO_HEX and _footprint(_attack_from).has(h):
+		var attack_cells := _dog_footprint(_attack_from) if tested == "houndmaster-pair" else _footprint(_attack_from)
+		if _attack_from != NO_HEX and attack_cells.has(h):
 			color = color.lerp(TARGET, 0.55)
 		elif reachable.has(_hovered) and _footprint(_hovered).has(h):
 			color = color.lerp(PLAYER_TURN, 0.35)
@@ -810,7 +909,10 @@ func _process(delta: float) -> void:
 	sword.visible = from != NO_HEX
 	if sword.visible:
 		# Остриё в курсоре, меч смотрит от гекса атаки к противнику.
-		var a := camera.unproject_position(_hex_center(from))
+		var origin := _hex_center(from)
+		if tested == "houndmaster-pair":
+			origin += Vector3(0, 0, radius * 1.5)
+		var a := camera.unproject_position(origin)
 		var b := camera.unproject_position(_hex_center(_hex_of(enemy)))
 		sword.position = mouse
 		sword.rotation = (b - a).angle()
@@ -830,7 +932,8 @@ func _process(delta: float) -> void:
 		if targeted and from == NO_HEX and not _ranged():
 			text += ". Не дотянуться: нет свободной стороны в пределах хода"
 	if tested == "houndmaster-pair" and turn == Turn.PLAYER:
-		text += " · Псарь сверху, собака на двух нижних; выбирай верхний гекс назначения"
+		text = text.replace("подойти и ударить", "послать собаку и вернуть её")
+		text += " · Перемещение: выбирай верхний гекс; при атаке псарь остаётся на месте"
 	status.text = text
 
 
