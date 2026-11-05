@@ -994,3 +994,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - build_clips.py handles _point_strike; point impact 0.48, weapon reach 1.45. Shared config applies to gallery and both arenas.
 - Auditioned slash (4)/(5) and downloaded Bayonet Stab through Chrome/CUA; wide cuts and reversed shaft grip unsuitable. Preserved Bayonet source, excluded from runtime.
 - Commands: Blender conversion, build_clips.py, Godot import, pose_sheet authoring renders. No automated tests; manual acceptance remains with user.
+
+### 2026-11-05 17:36 — Visible hammerer fidget (137)
+
+- Replaced subtle idle (2) with idle (3), 3.6 s weapon-lowering/hand-on-hip gesture. Preserved chosen FBX and rebuilt fidget.glb; gallery uses the same clip.
+- Added hammerer-only Fidget button to creature arena: full clip at normal speed, no turn consumed, busy guard, reset cancellation through round ID. Other roster entries retain existing controls.
+- Commands: build_clips.py, Blender conversion of three idle candidates, pose_sheet authoring render, Godot import and normal scene launch. No automated tests; manual acceptance by user.

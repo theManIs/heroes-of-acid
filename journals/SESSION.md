@@ -2957,3 +2957,9 @@
 **User:** Reports permanent red cells under opposing houndmaster pair, rejects hammerer point-attack clip and cannot see the fidget response.
 
 **Assistant:** Read paint and animation triggers: pair footprint is explicitly tinted permanently; fidget exists in showcase selection but is never invoked in either arena. Recorded 135 for pair display and 136 for replacement point attack, visible fidget and an explicit arena trigger. Proposed changes; no code changed.
+
+### 2026-11-05 17:37
+
+**User:** Разрешил продолжить скачивание в Mixamo; 136 и 137 одобрены.
+
+**Assistant:** Заменены точечный удар и отклик молотобойца; добавлена кнопка отклика, открыты витрина и сцена существа. 135: выделена отдельная постоянная заливка только пары; правка ждёт одобрения.
