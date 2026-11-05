@@ -35,6 +35,7 @@ var walk_speed := WALK_SPEED  # метров в секунду при walk_rate 
 var impact := 0.5  # момент попадания, доля проигрываемой части удара
 var _strike_id := 0
 var reach := 1.0  # вынос кулака вперёд в момент попадания, метров
+var no_backstep := false  # длинное оружие: не отводить модель назад, если оно достаёт дальше цели
 var height := 2.0  # рост существа, метров
 var attack_anim := "slash"  # анимация удара этого существа
 var attack_from := 0.0  # с какой доли длины играть удар: срезать долгий замах
@@ -603,6 +604,7 @@ func set_melee_mode(mode: String) -> void:
 	set_attack(cfg.anim)
 	impact = cfg.get("impact", impact)
 	reach = cfg.get("reach", reach) * height / 1.9 if cfg.has("reach") else reach
+	no_backstep = cfg.get("no_backstep", false)
 
 
 func next_melee_mode() -> void:
@@ -637,6 +639,8 @@ func strike(target: Creature, _distance: float, overlap: float, collateral: Arra
 	get_tree().create_timer(hit_delay()).timeout.connect(puff_smoke)
 	get_tree().create_timer(hit_delay()).timeout.connect(target.puff_smoke)
 	var lunge := position.distance_to(contact) - (reach + target.front() - overlap)
+	if no_backstep:
+		lunge = maxf(lunge, 0.0)
 	if absf(lunge) > 0.01:
 		var tween := create_tween()
 		tween.tween_property(model, "position:x", _model_base.x + lunge, hit_delay()).set_trans(Tween.TRANS_SINE)

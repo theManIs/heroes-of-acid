@@ -1209,3 +1209,16 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 +const HEAD_ROLL := deg_to_rad(-80.0)
 +	frame = frame * Basis(Vector3.UP, HEAD_ROLL)
 ```
+
+### 2026-11-05 — задача 154
+
+`game/scenes/creature.gd`, `game/scenes/hammerer_config.gd`: без отхода назад в точечном ударе.
+
+```diff
++var no_backstep := false
++	no_backstep = cfg.get("no_backstep", false)
++	if no_backstep:
++		lunge = maxf(lunge, 0.0)
+-"impact": 0.2173913, "reach": 1.6},
++"impact": 0.2173913, "reach": 1.6, "no_backstep": true},
+```

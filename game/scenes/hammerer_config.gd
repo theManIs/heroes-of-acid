@@ -14,6 +14,6 @@ const UNIT := {
 	"size": 1.9, "walk_speed": 1.18, "showcase_size": 2.7, "showcase_metal_light": true,
 	"melee_modes": {
 		"area": {"title": "По площади", "anim": "attack", "area": true, "impact": 0.49107143, "reach": 1.25, "full_clip": true},
-		"point": {"title": "Точечный", "anim": "attack_point", "area": false, "impact": 0.2173913, "reach": 1.6},
+		"point": {"title": "Точечный", "anim": "attack_point", "area": false, "impact": 0.2173913, "reach": 1.6, "no_backstep": true},  # 153: не отъезжать назад на 0,67 м
 	},
 }
