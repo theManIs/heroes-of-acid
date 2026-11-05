@@ -826,3 +826,11 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `creatures/houndmaster/`; `game/assets/creatures/houndmaster/houndmaster.glb`; `game/scenes/showcase.gd`: `NEW_CREATURES`.
 - Команда: `.venv/bin/python pipelines/creature/stage2_tripo.py houndmaster` (65 кредитов API).
+
+### 2026-11-05 Task 119: local Mixamo catalogue
+
+- Added `catalogs/mixamo/catalog.json`: names, descriptions, types from 26 pages; 2484 entries, preserving variants.
+- Added `catalogs/mixamo/catalog.md` and `README.md`: alphabetical table, search links, collection date and scope.
+- Added `pipelines/mixamo-catalog/build.py`, `README.md` and index entry: validation, table generation and update instructions.
+- Updated `TASKS.md` and `journals/SESSION.md`.
+- Command: `python3 pipelines/mixamo-catalog/build.py` — 26 pages, 2484 entries; checks page sequence, row counts, required fields and duplicate whole pages.
