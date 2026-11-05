@@ -1,0 +1,5 @@
+# Right view
+
+Attachment: ../front.png. Same ChatGPT conversation.
+
+Use the attached approved front.png as the authoritative reference for this exact armored hammer warrior. Generate one full-body orthographic turnaround image for 3D reconstruction. Preserve the corrected natural abdomen, waist and pelvis, narrow stance with legs nearly vertical, body proportions, helmet shape, steel plate shapes, cobalt-blue accents and single waist belt. Same unarmed T-pose in 3D: both arms straight and horizontal sideways at shoulder height, empty hands; do not move the arms forward to make them visible. No weapon, no text, no ground or cast shadow, plain light-grey background, soft even lighting, generous empty margin around the entire figure. Do not redesign the character. RIGHT SIDE VIEW: camera sees the character's anatomical right side, strict 90-degree profile, the helmet and toes point toward the RIGHT edge of the image. Arms project toward and away from the camera and therefore overlap in profile; show this honest T-pose silhouette, not a frontal torso or three-quarter view. Keep the full helmet, body and feet inside the frame. Generate the image itself.

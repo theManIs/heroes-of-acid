@@ -951,3 +951,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Updated generation.json: latest revision, conversation available for further work.
 - Updated TASKS and SESSION; no game code changed.
 - Commands: view_image front-v2.png; Python metadata and journal update; git add; git commit. No tests run.
+
+### 2026-11-05 12:53 — Hammerer turnaround views (133)
+
+- Canonical concept/front.png copied from accepted front-v2.png.
+- Added views/left.png, back.png, right.png and exact prompts from the same ChatGPT conversation; source front attached to every request through native CUA.
+- Updated metadata, description, README and task stage; user acceptance pending, no paid 3D jobs submitted.
+- Commands: mkdir, cp, view_image for each PNG, Python metadata/journal updates, git add and git commit. No tests run.

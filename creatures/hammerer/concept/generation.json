@@ -9,7 +9,7 @@
     1122,
     1402
   ],
-  "status": "awaiting_user_approval",
+  "status": "awaiting_views_approval",
   "prompt": "creatures/hammerer/concept/prompt-v2.md",
   "revisions": [
     {
@@ -20,8 +20,44 @@
         1122,
         1402
       ],
-      "status": "awaiting_user_approval",
+      "status": "approved_by_user",
       "change": "Restore abdomen and pelvis; narrow natural stance with nearly vertical legs."
+    }
+  ],
+  "approved_front": "creatures/hammerer/concept/front.png",
+  "views": [
+    {
+      "view": "left",
+      "reference": "creatures/hammerer/concept/front.png",
+      "output": "creatures/hammerer/concept/views/left.png",
+      "prompt": "creatures/hammerer/concept/views/left-prompt.md",
+      "size": [
+        1122,
+        1402
+      ],
+      "status": "awaiting_user_approval"
+    },
+    {
+      "view": "back",
+      "reference": "creatures/hammerer/concept/front.png",
+      "output": "creatures/hammerer/concept/views/back.png",
+      "prompt": "creatures/hammerer/concept/views/back-prompt.md",
+      "size": [
+        1122,
+        1402
+      ],
+      "status": "awaiting_user_approval"
+    },
+    {
+      "view": "right",
+      "reference": "creatures/hammerer/concept/front.png",
+      "output": "creatures/hammerer/concept/views/right.png",
+      "prompt": "creatures/hammerer/concept/views/right-prompt.md",
+      "size": [
+        1122,
+        1402
+      ],
+      "status": "awaiting_user_approval"
     }
   ]
 }
