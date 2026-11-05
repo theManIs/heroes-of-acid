@@ -31,6 +31,7 @@ func _ready() -> void:
 		_make_death_cell(grid, death)
 	for fidget: Array in FIDGETS:
 		_make_fidget_cell(grid, fidget)
+	_make_plant_cell(grid)
 	get_viewport().size_changed.connect(_fit.bind(grid))
 	_fit(grid)
 	_finish()
@@ -218,6 +219,11 @@ func _make_death_cell(grid: GridContainer, death: Array) -> void:
 
 ## Отклик при наведении — кандидаты из сидячего набора, копьё лежит под рукой, как в стойке.
 const FIDGETS := [["Отклик: осматривается (кандидат)", "ride_fidget_look"], ["Отклик: боевой клич (кандидат)", "ride_fidget_yell"]]
+## Отклик «воткнуть копьё и крикнуть»: копьё поворачивается в кисти остриём вверх и древком
+## втыкается в землю у правого бока коня, всадник кричит, потом берёт копьё обратно.
+const PLANT_TIME := 0.7
+const PLANT_SIDE := 0.25  # насколько дальше кисти от коня встаёт копьё
+const PLANT_DEPTH := 0.12  # насколько древко уходит в землю
 
 
 func _make_fidget_cell(grid: GridContainer, fidget: Array) -> void:
@@ -241,4 +247,62 @@ func _make_fidget_cell(grid: GridContainer, fidget: Array) -> void:
 			MOCK.place_lance(lance, rider, mount)
 			await get_tree().process_frame
 			left -= get_process_delta_time()
+
+
+func _make_plant_cell(grid: GridContainer) -> void:
+	var cell := _make_frame(grid, 4.4)
+	var view: SubViewport = cell.view
+	var mount := Node3D.new()
+	view.add_child(mount)
+	MOCK.build_horse(mount)
+	var rider := MOCK.make_rider(mount)
+	var lance := MOCK.add_lance(mount)
+	_make_label(cell.frame).text = "Отклик: втыкает копьё и кричит"
+	var yell := rider.anim.get_animation("ride_fidget_yell").length
+	while is_instance_valid(rider):
+		rider.anim.play("ride_still", 0.2)
+		rider.anim.advance(0.0)
+		await get_tree().process_frame
+		MOCK.sit(rider)
+		await _hold_couched(lance, rider, mount, 1.2)
+		# Втыкает: из-под руки — вертикально, древком в землю у бока коня.
+		var start := lance.global_transform
+		var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_RightHand"))
+		var side: Vector3 = mount.global_basis * Vector3(0, 0, 1)
+		var butt := Vector3(hand.x, -PLANT_DEPTH, hand.z) + side * PLANT_SIDE
+		var planted := Transform3D(Basis(Vector3.RIGHT, Vector3.UP, Vector3.BACK), butt + Vector3.UP * MOCK.LANCE_LENGTH * 0.5)
+		await _move_lance(lance, start, planted, PLANT_TIME, true)
+		rider.anim.play("ride_fidget_yell", 0.25)
+		await get_tree().create_timer(yell).timeout
+		rider.anim.play("ride_still", 0.3)
+		await get_tree().create_timer(0.3).timeout
+		# Берёт обратно и укладывает под руку.
+		MOCK.place_lance(lance, rider, mount)
+		var back := lance.global_transform
+		lance.global_transform = planted
+		await _move_lance(lance, planted, back, PLANT_TIME, false)
+		await _hold_couched(lance, rider, mount, HOLD)
+
+
+func _hold_couched(lance: MeshInstance3D, rider: Creature, mount: Node3D, seconds: float) -> void:
+	var left := seconds
+	while left > 0.0:
+		MOCK.place_lance(lance, rider, mount)
+		await get_tree().process_frame
+		left -= get_process_delta_time()
+
+
+## Плавный перенос копья; в конце втыкания — короткий толчок вниз, будто вошло в землю.
+func _move_lance(lance: MeshInstance3D, from: Transform3D, to: Transform3D, seconds: float, stab: bool) -> void:
+	var time := 0.0
+	while time < seconds:
+		await get_tree().process_frame
+		time += get_process_delta_time()
+		var t := smoothstep(0.0, 1.0, minf(time / seconds, 1.0))
+		var basis := Basis(from.basis.get_rotation_quaternion().slerp(to.basis.get_rotation_quaternion(), t))
+		var origin := from.origin.lerp(to.origin, t)
+		if stab and t > 0.8:
+			origin.y -= sin((t - 0.8) / 0.2 * PI) * 0.05
+		lance.global_transform = Transform3D(basis, origin)
+	lance.global_transform = to
 
