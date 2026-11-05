@@ -5,6 +5,7 @@ extends "res://scenes/showcase.gd"
 const MOCK := preload("res://scenes/rider_mock.gd")
 const CELL_TARGET := 460
 const HOLD := 0.6
+const LANCE_CLIPS := ["ride_swing", "ride_strike"]  # удары сидя: копьё в кисти
 ## Езда без клипа езды: всадник в сидячей стойке, конь-макет идёт на месте,
 ## качается корпусом и переставляет ноги. Подпись, клип всадника, шагов в секунду,
 ## подъём корпуса (м), размах ног (градусы).
@@ -21,6 +22,9 @@ func _ready() -> void:
 	for gait: Array in GAITS:
 		_make_ride_cell(grid, gait)
 	for clip: Array in MOCK.CLIPS:
+		if clip[1] in LANCE_CLIPS:
+			_make_rider_cell(grid, clip, true)
+	for clip: Array in MOCK.CLIPS:
 		_make_rider_cell(grid, clip)
 	get_viewport().size_changed.connect(_fit.bind(grid))
 	_fit(grid)
@@ -36,23 +40,34 @@ func _fit(grid: GridContainer) -> void:
 		pair[0].custom_minimum_size = Vector2.ONE * side
 
 
-func _make_rider_cell(grid: GridContainer, clip: Array) -> void:
-	var cell := _make_frame(grid, 3.1)
+func _make_rider_cell(grid: GridContainer, clip: Array, with_lance := false) -> void:
+	var cell := _make_frame(grid, 3.1 if not with_lance else 4.2)
 	var view: SubViewport = cell.view
-	MOCK.build_horse(view)
-	var rider := MOCK.make_rider(view)
-	_make_label(cell.frame).text = clip[0]
-	_repeat(rider, clip[1])
+	var mount := Node3D.new()
+	view.add_child(mount)
+	MOCK.build_horse(mount)
+	var rider := MOCK.make_rider(mount)
+	var lance: MeshInstance3D = MOCK.add_lance(mount) if with_lance else null
+	_make_label(cell.frame).text = clip[0] + (" с копьём" if with_lance else "")
+	_repeat(rider, clip[1], lance, mount)
 
 
-func _repeat(rider: Creature, clip: String) -> void:
+func _repeat(rider: Creature, clip: String, lance: MeshInstance3D = null, mount: Node3D = null) -> void:
 	var length := rider.anim.get_animation(clip).length
 	while true:
 		rider.anim.play(clip, 0.0)
 		rider.anim.advance(0.0)
 		await get_tree().process_frame
 		MOCK.sit(rider)
-		await get_tree().create_timer(length).timeout
+		if lance == null:
+			await get_tree().create_timer(length).timeout
+		else:
+			var local := MOCK.calibrate_hand_lance(rider, mount)
+			var left := length
+			while left > 0.0:
+				MOCK.place_hand_lance(lance, rider, local)
+				await get_tree().process_frame
+				left -= get_process_delta_time()
 		await get_tree().create_timer(HOLD).timeout
 
 
@@ -154,6 +169,6 @@ func _make_charge_cell(grid: GridContainer) -> void:
 		if time >= CHARGE_TIME and time < CHARGE_TIME + 0.5:
 			# Отдача от удара: остриё дёргается вверх и затухает.
 			var after := time - CHARGE_TIME
-			jolt = 6.0 * exp(-after * 7.0) * cos(after * 30.0)
+			jolt = 2.0 * exp(-after * 6.0) * cos(after * 14.0)  # тяжёлое копьё: малый размах, медленно
 		MOCK.place_lance(lance, rider, mount, sin(phase - 0.9) * 2.6 * speed + jolt, sin(phase * 0.5 + 0.4) * 1.0 * speed)
 

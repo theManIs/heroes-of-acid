@@ -127,3 +127,25 @@ static func place_lance(lance: MeshInstance3D, rider: Creature, mount: Node3D, p
 	# Цилиндр Godot вытянут по Y: ось копья — Y, базис правый (z = x × y).
 	lance.global_transform = Transform3D(Basis(side, forward, side.cross(forward)), hand + forward * (LANCE_LENGTH * 0.5 - LANCE_BACK))
 
+
+## Копьё в кисти для ударов сидя: идёт за кистью, как молот в хвате.
+## Сначала calibrate_hand_lance на первом кадре: копьё вдоль коня, остриём вперёд.
+static func hand_frame(rider: Creature) -> Basis:
+	var sk := rider.skeleton
+	var hand := sk.find_bone("mixamorig_RightHand")
+	return (sk.global_transform * sk.get_bone_global_pose(hand)).basis.orthonormalized()
+
+
+static func calibrate_hand_lance(rider: Creature, mount: Node3D) -> Vector3:
+	var forward: Vector3 = (mount.global_basis * Vector3(1.0, -LANCE_DOWN, 0.0)).normalized()
+	return hand_frame(rider).inverse() * forward
+
+
+static func place_hand_lance(lance: MeshInstance3D, rider: Creature, local_dir: Vector3) -> void:
+	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_RightHand"))
+	var forward := (hand_frame(rider) * local_dir).normalized()
+	var side := forward.cross(Vector3.UP).normalized()
+	if side.length_squared() < 0.01:
+		side = Vector3.BACK
+	lance.global_transform = Transform3D(Basis(side, forward, side.cross(forward)), hand + forward * (LANCE_LENGTH * 0.5 - LANCE_BACK))
+
