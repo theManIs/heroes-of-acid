@@ -1120,3 +1120,15 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 +	if to.length() > 0.01:
 +		_dog_yaw = atan2(to.x, to.z)
 ```
+
+### 2026-11-05 — задача 148
+
+`game/scenes/houndmaster_unit.gd`: собака не смотрит прямо вверх на своего псаря.
+
+```diff
++const UP_TILT := deg_to_rad(35.0)
++	var from_up := wrapf(yaw - PI, -PI, PI)
++	if absf(from_up) < UP_TILT:
++		var side := signf(from_up) if absf(from_up) > 0.001 else (-1.0 if sin(_dog_yaw) >= 0.0 else 1.0)
++		yaw = PI + side * UP_TILT
+```

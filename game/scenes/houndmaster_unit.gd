@@ -7,6 +7,7 @@ const DOG_HEIGHT := 1.05
 const BITE_IMPACT := 0.45
 const BITE_STEP := 0.08  # короткий шаг корпуса, основной выпад уже есть в клипе
 const BITE_GAP := 0.04
+const UP_TILT := deg_to_rad(35.0)  # противник сверху: морда мимо своего псаря
 const RAID_RUN_FROM := 2  # гексов: больше половины хода пары (3); ближе — шагом
 const FEET: Array[String] = ["FF.L", "FF.R", "FFB.L", "FFB.R"]
 enum MovePhase { NONE, DOG, MASTER, RAID_HOLD, RAID_OUT, RAID_BACK }
@@ -161,8 +162,14 @@ func face_foe(point: Vector3) -> void:
 	super.face(point)
 	var to := point - (get_parent() as Node3D).to_local(_dog.global_position)
 	to.y = 0.0
-	if to.length() > 0.01:
-		_dog_yaw = atan2(to.x, to.z)
+	if to.length() <= 0.01:
+		return
+	var yaw := atan2(to.x, to.z)
+	var from_up := wrapf(yaw - PI, -PI, PI)  # 0 — прямо вверх, там стоит свой псарь
+	if absf(from_up) < UP_TILT:
+		var side := signf(from_up) if absf(from_up) > 0.001 else (-1.0 if sin(_dog_yaw) >= 0.0 else 1.0)
+		yaw = PI + side * UP_TILT
+	_dog_yaw = yaw
 
 
 func melee_point(from: Vector3) -> Vector3:
