@@ -21,13 +21,13 @@ func _ready() -> void:
 	columns = 4
 	var grid := _build_page()
 	# Заявленные действия: стойка, шаг, рысь (бег), таран (атака), реакция, защита.
-	_make_rider_cell(grid, ["Стойка: сидит спокойно", "ride_still"])
+	_make_fidget_cell(grid, ["Стойка: сидит спокойно", "ride_still"])
 	for gait: Array in GAITS:
 		_make_ride_cell(grid, gait)
 	_make_charge_cell(grid)
 	_make_charge_cell(grid, "Атака впритык: выпад конём", CHARGE_HIT - LUNGE, LUNGE_TIME, 0.3)
-	for clip: Array in MOCK.CLIPS:
-		_make_rider_cell(grid, clip)
+	# Реакция: в клипе удар и откат головы — первые 2,2 с, дальше 4 с почти без движения.
+	_make_fidget_cell(grid, ["Реакция: удар по голове", "ride_hurt", HURT_LEN])
 	for death: Array in DEATHS:
 		_make_death_cell(grid, death)
 	for defend: Array in DEFENDS:
@@ -124,6 +124,7 @@ const CHARGE_BACK := 1.6
 
 
 ## Впритык разгона нет: конь делает короткий выпад на полшага, копьё под рукой, как в таране.
+const HURT_LEN := 2.2
 const LUNGE := 0.5
 const LUNGE_TIME := 0.35
 
@@ -258,14 +259,19 @@ func _make_fidget_cell(grid: GridContainer, fidget: Array) -> void:
 	var lance := MOCK.add_lance(mount)
 	_make_label(cell.frame).text = fidget[0]
 	var clip: String = fidget[1]
-	var length := rider.anim.get_animation(clip).length
+	# Третье поле — сколько секунд клипа играть, дальше плавно в стойку.
+	var length: float = fidget[2] if fidget.size() > 2 else rider.anim.get_animation(clip).length
 	while is_instance_valid(rider):
 		rider.anim.play(clip, 0.2)
 		rider.anim.advance(0.0)
 		await get_tree().process_frame
 		MOCK.sit(rider)
 		var left := length + HOLD
+		var back := false
 		while left > 0.0:
+			if not back and left <= HOLD and fidget.size() > 2:
+				rider.anim.play("ride_still", 0.4)
+				back = true
 			MOCK.place_lance(lance, rider, mount)
 			await get_tree().process_frame
 			left -= get_process_delta_time()
