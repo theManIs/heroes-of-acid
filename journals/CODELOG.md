@@ -1188,3 +1188,15 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 +		if from > 0.0:
 +			_dog_anim.seek(from, true)
 ```
+
+### 2026-11-05 — задача 153
+
+`game/scenes/hammer_grip.gd`: боёк по ходу взмаха в ударе по площади.
+
+```diff
++	var length_now := 1.5 * _unit.height / 1.9
++	frame = _face_target(frame, axis, right + axis * length_now * 0.75, delta)
++func _face_target(frame: Basis, axis: Vector3, head: Vector3, delta: float) -> Basis:
++	var across := velocity - axis * velocity.dot(axis)
++	var strike := Basis(axis.cross(z).normalized(), axis, z)
+```
