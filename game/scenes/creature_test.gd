@@ -940,7 +940,6 @@ func _process(delta: float) -> void:
 	var mouse := get_viewport().get_mouse_position()
 	var fidget_allowed := _pointer_inside and turn == Turn.PLAYER
 	player.set_fidget_hovered(fidget_allowed and _on_creature(player, mouse))
-	enemy.set_fidget_hovered(fidget_allowed and _on_enemy(mouse))
 	var over_enemy := _pointer_inside and not player.dead and (_on_enemy(mouse) or _footprint(_hex_of(enemy)).has(_hex_at(_ground_point(mouse))))
 	var targeted := turn == Turn.PLAYER and over_enemy and enemy.can_be_hit()
 	if targeted != _targeted:

@@ -1108,7 +1108,7 @@ func _process(delta: float) -> void:
 		inspected = null
 	for side: Array in sides:
 		for unit: Creature in side:
-			unit.set_fidget_hovered(turn == Turn.PLAYER and unit == inspected)
+			unit.set_fidget_hovered(turn == Turn.PLAYER and sides[0].has(unit) and unit == inspected)
 	if h != _hovered or from != _attack_from or inspected != _inspected:
 		_hovered = h
 		_attack_from = from

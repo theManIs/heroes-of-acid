@@ -1013,3 +1013,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Creature.set_fidget_hovered starts the configured fidget once per cursor entry, only from idle while alive, stationary and not defending. Normal gameplay animations interrupt it; no combat turn consumed. Hammerer opts in; other creatures remain under pending 114.
 - Creature arena detects hover over either model; battle uses existing inspected unit. Gallery retains the same visible fidget clip. Updated scene and pipeline documentation.
 - Commands: build_clips.py, Godot import and pose_sheet asset authoring render, normal showcase/arena launch. No automated tests or manual gameplay acceptance performed.
+
+### 2026-11-05 18:04 — Allied-only hover fidget (137)
+
+- Creature arena no longer invokes enemy hover fidget. Battle arena only invokes it for sides[0]. Shared animation and idle guard unchanged. Updated scene and pipeline descriptions. No tests run.
