@@ -1222,3 +1222,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 -"impact": 0.2173913, "reach": 1.6},
 +"impact": 0.2173913, "reach": 1.6, "no_backstep": true},
 ```
+
+### 2026-11-05 — задача 154, удар по площади
+
+`game/scenes/hammerer_config.gd`: `"no_backstep": true` и у режима `area`.
