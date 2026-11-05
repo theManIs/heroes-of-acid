@@ -3047,3 +3047,27 @@
 **User:** Commit and push current creature fixes; dog must start simultaneously with master command.
 
 **Assistant:** Pushed implementation through 7261544 to origin/main successfully (75 LFS objects, 194 MB). Completed 138, 135, 140, 141, 142; corrected simultaneous dog launch. Fresh pair showcase and arena launched without startup errors. No automated tests run.
+
+### 2026-11-05 19:03
+
+**User:** Screenshot of many Godot Dock icons; complains about repeatedly opening Godot.
+
+**Assistant:** Acknowledged starting fresh previews without closing prior agent processes. Recorded 143 to clean up owned duplicates, and updated pipeline preview policy to keep one owned preview. Saved user screenshot under ignored screens/current. No processes closed or new Godot launched.
+
+### 2026-11-05 19:04
+
+**User:** Dog uses running even for adjacent attack and slides slowly; requests walking or appropriately matched movement speed.
+
+**Assistant:** Confirmed raid phases always choose run and multiply walk speed by 2. Recorded 144: short raid routes walk, long routes run with clip-matched speed, both scales/directions; simultaneous launch preserved. Proposed correction, no implementation or Godot launch.
+
+### 2026-11-05 19:06
+
+**User:** Сказал, что с прежнего пайплайна псаря уже ушли.
+
+**Assistant:** Подтвердил: ответ про переригивание устарел, задачи 120–123 уже выполнены, псарь на риге Mixamo с восемью клипами. Ничего не менял.
+
+### 2026-11-05 19:09
+
+**User:** Почему нельзя встать вплотную к псарю, не атакуя; проверить, внесена ли правка 144.
+
+**Assistant:** По коду: пути соседство не запрещают, клик перехватывает экранная рамка по костям пары; записал задачу 145. Правка 144 не внесена: задача открыта, в `houndmaster_unit.gd` вылазка всегда бег со скоростью x2. Кода не менял, игру не запускал.
