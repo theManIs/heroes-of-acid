@@ -144,11 +144,21 @@ func _make_pair_cell(grid: GridContainer, cell: Array) -> void:
 	while is_instance_valid(rider):
 		player.play(cell[1], 0.2)
 		rider.anim.play(cell[2], 0.2)
-		var length: float = maxf(player.get_animation(cell[1]).length, 2.2 if cell[2] == "ride_hurt" else rider.anim.get_animation(cell[2]).length)
+		rider.anim.speed_scale = 1.0
+		var horse_len: float = player.get_animation(cell[1]).length
+		var rider_len: float = 2.2 if cell[2] == "ride_hurt" else rider.anim.get_animation(cell[2]).length
+		var length: float = maxf(horse_len, rider_len)
 		var time := 0.0
 		var back := false
+		var stretched := false
 		while time < length + HOLD:
+			# Клип всадника короче клипа коня: последние 5 % растягиваются до конца клипа коня,
+			# иначе Creature сам ставит стойку без перехода и руки прыгают.
+			if not stretched and rider_len < horse_len and time >= rider_len * 0.95:
+				rider.anim.speed_scale = (rider_len * 0.05) / maxf(horse_len - rider_len * 0.95, 0.01)
+				stretched = true
 			if not back and time >= length:
+				rider.anim.speed_scale = 1.0
 				player.play("idle_breathe", 0.3)
 				rider.anim.play("ride_still", 0.3)
 				back = true
