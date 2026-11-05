@@ -1049,3 +1049,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - Compared config and hover code: only hammerer opted into arena fidget; pair had petting clip and contact IK only in showcase. Other creatures remain under open 114. Enabled existing pair fidget, allied-only through existing arena guards.
 - Ported accepted showcase palm/head IK into HoundmasterUnit, targeting actual dog head and smoothly enabling only during petting. Combat/movement disable the modifier; dog stays standing. No new source motion generated; no tests run.
+
+### 2026-11-05 18:52 — Wait for complete master command (142)
+
+- Removed fixed 0.85 s launch lead. Pair command plays full clip without Creature attack cutoff; raid waits until actual command playback ends, checking epoch/death/target cancellation every frame. Dog then runs, bites and returns as before.
+- Paired gallery now also waits full command before dog action. hit_delay compatibility derives command duration and playback speed. No tests run.

@@ -4,7 +4,6 @@ extends Creature
 const DOG_SCENE := preload("res://assets/creatures/hound/hound.glb")
 const DOG_IDLE := "idle_breathe"
 const DOG_HEIGHT := 1.05
-const COMMAND_LEAD := 0.85
 const BITE_IMPACT := 0.45
 const BITE_STEP := 0.08  # короткий шаг корпуса, основной выпад уже есть в клипе
 const BITE_GAP := 0.04
@@ -199,7 +198,8 @@ func _dog_play(clip: String, speed := 1.0) -> void:
 
 
 func hit_delay() -> float:
-	return COMMAND_LEAD + BITE_IMPACT
+	var duration := anim.get_animation(attack_anim).length * (1.0 - attack_from)
+	return duration / _speed(duration) + BITE_IMPACT
 
 
 func strike(target: Creature, _distance: float, _overlap: float, _collateral: Array[Creature] = []) -> void:
@@ -235,9 +235,11 @@ func raid(target: Creature, points: Array[Vector3], contact: Vector3) -> void:
 	target.face(position)
 	play_once(attack_anim)
 	_dog_play(DOG_IDLE)
-	await get_tree().create_timer(COMMAND_LEAD).timeout
-	if epoch != _epoch or dead or not is_instance_valid(target):
-		return
+	# Собака ждёт фактического окончания команды, включая выбранную скорость.
+	while anim.current_animation == attack_anim:
+		await get_tree().process_frame
+		if epoch != _epoch or dead or not is_instance_valid(target):
+			return
 	if not outbound.is_empty():
 		_dog_route = outbound.duplicate()
 		_move_phase = MovePhase.RAID_OUT
@@ -292,6 +294,15 @@ func raid(target: Creature, points: Array[Vector3], contact: Vector3) -> void:
 
 
 func play_once(clip: String) -> void:
+	if clip == attack_anim:
+		if dead:
+			return
+		walking = false
+		_strike_id += 1
+		var length := anim.get_animation(clip).length
+		anim.play(clip, BLEND, _speed(length * (1.0 - attack_from)))
+		anim.seek(length * attack_from, true)
+		return  # команда целиком; общий ранний обрыв удара здесь не применяется
 	super.play_once(clip)
 	if is_instance_valid(_dog_anim) and not dead:
 		if clip == hurt_anim:

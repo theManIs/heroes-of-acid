@@ -206,11 +206,10 @@ func _repeat_pair(unit: Creature, dog: AnimationPlayer, index: int) -> void:
 		unit.dead = master_clip == "fall"
 		unit.anim.play(master_clip, 0.2)
 		if index == 3:
-			# Сначала псарь указывает цель, затем собака бросается вперёд.
-			var lead := master_time * 0.35
-			await get_tree().create_timer(lead).timeout
+			# Полная команда псаря, затем действие собаки.
+			await get_tree().create_timer(master_time).timeout
 			dog.play(dog_clip, 0.15)
-			await get_tree().create_timer(maxf(master_time - lead, dog.get_animation(dog_clip).length)).timeout
+			await get_tree().create_timer(dog.get_animation(dog_clip).length).timeout
 		elif index == 7:
 			# Принимает поглаживание стоя, а не нюхает землю.
 			dog.play(HOUND_LAB.IDLE, 0.2)
