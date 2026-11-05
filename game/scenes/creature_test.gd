@@ -771,7 +771,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var click := event as InputEventMouseButton
 	if turn != Turn.PLAYER or click == null or not click.pressed or click.button_index != MOUSE_BUTTON_LEFT:
 		return
-	if _on_enemy(click.position) or _footprint(_hex_of(enemy)).has(_hex_at(_ground_point(click.position))):
+	if _over_enemy(click.position):
 		if _ranged():
 			if enemy.can_be_hit():
 				_fire(player, enemy, _start_enemy_turn)
@@ -834,6 +834,17 @@ func _hex_under(screen: Vector2) -> Vector2i:
 ## Курсор над врагом: экранная рамка по всем костям в текущей позе плюс толщина тела.
 func _on_enemy(screen: Vector2) -> bool:
 	return _on_creature(enemy, screen)
+
+
+## Цель под курсором: гексы фигуры всегда, рамка тела — если не перекрывает гекс для шага.
+## У пары рамка широкая и накрывает соседние клетки, поэтому свободный гекс важнее неё.
+func _over_enemy(screen: Vector2) -> bool:
+	var hex := _hex_at(_ground_point(screen))
+	if _footprint(_hex_of(enemy)).has(hex):
+		return true
+	if tested == "houndmaster-pair" and turn == Turn.PLAYER and reachable.has(hex) and hex != _hex_of(player):
+		return false
+	return _on_enemy(screen)
 
 
 func _on_creature(unit: Creature, screen: Vector2) -> bool:
@@ -935,7 +946,7 @@ func _process(delta: float) -> void:
 	var mouse := get_viewport().get_mouse_position()
 	var fidget_allowed := _pointer_inside and turn == Turn.PLAYER
 	player.set_fidget_hovered(fidget_allowed and _on_creature(player, mouse))
-	var over_enemy := _pointer_inside and not player.dead and (_on_enemy(mouse) or _footprint(_hex_of(enemy)).has(_hex_at(_ground_point(mouse))))
+	var over_enemy := _pointer_inside and not player.dead and _over_enemy(mouse)
 	var targeted := turn == Turn.PLAYER and over_enemy and enemy.can_be_hit()
 	if targeted != _targeted:
 		_targeted = targeted

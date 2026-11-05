@@ -946,9 +946,16 @@ func _enemy_under(screen: Vector2) -> Creature:
 	var hex := _hex_under(screen)
 	var best: Creature
 	for c in _living(1):
-		if (_footprint(c).has(hex) or _over_body(c, screen)) and (best == null or c.position.z > best.position.z):
+		var over_body := _over_body(c, screen) and not (_is_pair(c) and _free_step(hex))
+		if (_footprint(c).has(hex) or over_body) and (best == null or c.position.z > best.position.z):
 			best = c
 	return best
+
+
+## Свободный гекс, на который можно шагнуть: рамка тела пары его не перекрывает.
+## Стрелок целится в тело, поэтому для него рамка важнее гекса.
+func _free_step(hex: Vector2i) -> bool:
+	return turn == Turn.PLAYER and active != null and not active.ranged() and reachable.has(hex) and hex != cells[active]
 
 
 ## Своё существо под курсором: на его гексе или в экранной рамке по костям.
