@@ -3035,3 +3035,9 @@
 **User:** Show open tasks.
 
 **Assistant:** Read TASKS.md and listed all 14 unchecked tasks with stable IDs; no task statuses or gameplay changed.
+
+### 2026-11-05 18:57
+
+**User:** Execute current/next tasks and commit/push; explicitly clarified dog must start simultaneously with master command, never wait for completion.
+
+**Assistant:** Completed 138/135/140/141 and corrected 142 to simultaneous launch. Preparing final previews and push to origin/main. No automated tests; user acceptance pending.

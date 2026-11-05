@@ -1054,3 +1054,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - Removed fixed 0.85 s launch lead. Pair command plays full clip without Creature attack cutoff; raid waits until actual command playback ends, checking epoch/death/target cancellation every frame. Dog then runs, bites and returns as before.
 - Paired gallery now also waits full command before dog action. hit_delay compatibility derives command duration and playback speed. No tests run.
+
+### 2026-11-05 18:57 — Correct simultaneous pair launch (142)
+
+- User explicitly clarified simultaneous start. Removed newly introduced command-completion wait from raid and paired gallery. Master command continues while dog starts its route immediately; bite contact and return unchanged. hit_delay compatibility has no command lead. Supersedes previous 142 interpretation.
+- Updated pair pipeline and scene guide, plus hammer follow-through documentation. Imported Godot assets and opened normal showcases; no automated tests run.
