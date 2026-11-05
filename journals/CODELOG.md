@@ -856,3 +856,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `pipelines/README.md`: отдельная витрина конкретного существа обязательна в конце работы; ссылки из creature, creature-tripo-mixamo, creature-quadruped и creature-fal-mixamo.
 - `TASKS.md`: задача 122 на отдельную витрину псаря, отложена по просьбе пользователя. Изменения только в документации.
+
+### 2026-11-05 Задача 122: отдельная витрина псаря
+
+- Добавлены `game/scenes/houndmaster_showcase.gd`, `.tscn`: наследует оформление витрины, сетка 4×2 с восемью клипами, циклические проигрываются постоянно, разовые повторяются через стойку; смерть включает `dead` для прижатия к земле.
+- Обновлены SCENES, TASKS и README псаря.
+- Команды: `godot --headless --path game --import`; `godot --path game --position 10000,10000 res://scenes/houndmaster_showcase.tscn -- --shot=...`; `git diff --check`. Импорт без ошибок, кадр с восемью квадратами просмотрен, FPS кадра 60.
