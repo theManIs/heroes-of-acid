@@ -1,11 +1,12 @@
 extends Creature
-## Один отряд, три клетки и одно здоровье. Собака следует за верхним якорем,
-## но не вращает занятую фигуру вместе с поворотом псаря.
+## Один отряд, три клетки и одно здоровье. Сначала проходит собака,
+## затем псарь; фигура занятых клеток не вращается вместе с моделями.
 const DOG_SCENE := preload("res://assets/creatures/hound/hound.glb")
 const DOG_IDLE := "idle_breathe"
 const DOG_HEIGHT := 1.05
 const COMMAND_LEAD := 0.85
 const BITE_IMPACT := 0.45
+enum MovePhase { NONE, DOG, MASTER }
 
 var _dog := Node3D.new()
 var _dog_model: Node3D
@@ -16,6 +17,9 @@ var _escape: Tween
 var _bite: Tween
 var _escaping := false
 var _dog_offset := Vector3(0, 0, 0.9)  # середина двух нижних гексов радиуса 0,6
+var _move_phase := MovePhase.NONE
+var _dog_route: Array[Vector3] = []
+var _master_route: Array[Vector3] = []
 
 
 func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt := "", size := 2.0, attack_start := 0.0, idle := "idle") -> void:
@@ -40,21 +44,62 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 
 func face(point: Vector3) -> void:
 	super.face(point)
-	# Вытянутая собака остаётся вдоль своих двух нижних клеток.
+	# Только в стойке: при проходе маршрута собака смотрит вдоль своего шага.
 	_dog_yaw = PI / 2.0 if point.x >= position.x else -PI / 2.0
+
+
+func walk_path(points: Array[Vector3]) -> void:
+	if dead:
+		return
+	if points.is_empty():
+		arrived.emit()
+		return
+	_strike_id += 1
+	walking = false
+	_path.clear()
+	_master_route = points.duplicate()
+	_dog_route.clear()
+	for point in points:
+		_dog_route.append((get_parent() as Node3D).to_global(point) + _dog_offset)
+	_move_phase = MovePhase.DOG
+	_play("idle")
+	_dog_play(DOG_IDLE)
+
+
+func _physics_process(delta: float) -> void:
+	if _move_phase == MovePhase.DOG:
+		var to := _dog_route[0] - _dog.global_position
+		to.y = 0.0
+		if to.length() < 0.02:
+			_dog.global_position = _dog_route.pop_front()
+			if _dog_route.is_empty():
+				_move_phase = MovePhase.MASTER
+				_dog_play(DOG_IDLE)
+				# Сигнал arrived придёт от базового движения только после псаря.
+				super.walk_path(_master_route)
+			return
+		var heading := atan2(to.x, to.z)
+		_dog.rotation.y = rotate_toward(_dog.rotation.y, heading, TURN_SPEED * delta)
+		if absf(wrapf(heading - _dog.rotation.y, -PI, PI)) > 0.04:
+			# На повороте стоит, а не скользит боком с играющей ходьбой.
+			_dog_play(DOG_IDLE)
+			return
+		_dog_play("walk", walk_rate)
+		_dog.global_position += to.normalized() * minf(walk_speed * walk_rate * delta, to.length())
+		return
+	super._physics_process(delta)
+	if _move_phase == MovePhase.MASTER and not walking:
+		_move_phase = MovePhase.NONE
+		_master_route.clear()
 
 
 func _process(delta: float) -> void:
 	super._process(delta)
 	if not is_instance_valid(_dog_anim):
 		return
-	if not _escaping and not is_instance_valid(_bite):
+	if _move_phase == MovePhase.NONE and not _escaping and not is_instance_valid(_bite):
 		_dog.global_position = global_position + _dog_offset
 		_dog.rotation.y = lerp_angle(_dog.rotation.y, _dog_yaw, minf(1.0, TURN_SPEED * delta))
-	if walking and not dead:
-		_dog_play("walk", _dog_anim.get_animation("walk").length / anim.get_animation("walk").length * walk_rate)
-	elif not dead and _dog_anim.current_animation == &"walk":
-		_dog_play(DOG_IDLE)
 
 
 func _dog_play(clip: String, speed := 1.0) -> void:
@@ -120,6 +165,9 @@ func take_hit(delay: float) -> void:
 func die() -> void:
 	if dead:
 		return
+	_move_phase = MovePhase.NONE
+	_dog_route.clear()
+	_master_route.clear()
 	super.die()
 	_escaping = true
 	if is_instance_valid(_bite):
@@ -137,6 +185,9 @@ func die() -> void:
 func revive() -> void:
 	_epoch += 1
 	_strike_id += 1
+	_move_phase = MovePhase.NONE
+	_dog_route.clear()
+	_master_route.clear()
 	walking = false
 	_path.clear()
 	for tween in [_escape, _bite]:
