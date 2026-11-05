@@ -18,7 +18,6 @@ const CELLS := [
 	["Стойка", "idle_breathe", "ride_still", true],
 	["Шаг", "walk", "ride_still", true],
 	["Галоп", "run", "ride_still", true],
-	["Атака впритык: бросок головой коня", "attack_headbutt", "ride_still", false],
 	["Реакция", "hurt_left", "ride_hurt", false],
 	["Защита: уклон, конь пригнулся", "idle_head_low", "ride_dodge", false],
 	["Отклик: озирается, конь щиплет траву", "fidget_graze", "ride_fidget_look", false],
@@ -30,6 +29,9 @@ func _ready() -> void:
 	var grid := _build_page()
 	for cell: Array in CELLS:
 		_make_pair_cell(grid, cell)
+		if cell[1] == "run":
+			_make_strike_cell(grid, true)
+			_make_strike_cell(grid, false)
 	_make_death_cell(grid)
 	get_viewport().size_changed.connect(_fit.bind(grid))
 	_fit(grid)
@@ -94,11 +96,11 @@ func _seat(pair: Dictionary) -> void:
 
 
 ## Каждый кадр: всадник по кости спины, его поворот не трогает Creature, копьё под рукой.
-func _follow(pair: Dictionary) -> void:
+func _follow(pair: Dictionary, slide := 0.0, pitch := 0.0) -> void:
 	var rider: Creature = pair.rider
 	rider.global_transform = _bone_frame(pair) * pair.offset
 	rider.set("_yaw", rider.rotation.y)
-	MOCK.place_lance(pair.lance, rider, rider)
+	MOCK.place_lance(pair.lance, rider, rider, pitch, 0.0, slide)
 
 
 func _settle(pair: Dictionary) -> void:
@@ -176,3 +178,110 @@ func _make_death_cell(grid: GridContainer) -> void:
 			_follow(pair)
 			await get_tree().process_frame
 			time += get_process_delta_time()
+
+
+## Атака. С разбега: галоп на столб, копьё неподвижно под рукой, бьёт разгон.
+## С места: копьё отводится назад и коротким уколом идёт вперёд в цель, конь делает выпад головой.
+const CHARGE_FROM := -3.2
+const CHARGE_TIME := 0.9
+const POKE_BACK := 0.45  # насколько отводит копьё назад
+const POKE_FORWARD := 0.35  # насколько колет вперёд
+
+
+func _make_post(view: SubViewport) -> MeshInstance3D:
+	var post := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(0.3, 2.2, 0.3)
+	post.mesh = box
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.7, 0.2, 0.15)
+	post.material_override = mat
+	view.add_child(post)
+	post.visible = false
+	return post
+
+
+func _tip(lance: MeshInstance3D) -> Vector3:
+	return lance.global_transform * Vector3(0, MOCK.LANCE_LENGTH * 0.5, 0)
+
+
+func _make_strike_cell(grid: GridContainer, charge: bool) -> void:
+	var frame := _make_frame(grid, 5.2 if charge else 3.6)
+	var pair := _make_pair(frame.view)
+	_make_label(frame.frame).text = "Атака: таран с разбега" if charge else "Атака с места: отвёл копьё и ткнул"
+	var post := _make_post(frame.view)
+	# Цель впереди коня: камеру сдвигаем вперёд, чтобы столб попадал в кадр.
+	for cam: Camera3D in frame.view.find_children("*", "Camera3D", true, false):
+		cam.position.x += 1.0 if charge else 1.1
+	var player: AnimationPlayer = pair.player
+	var horse: Node3D = pair.horse
+	var home: Vector3 = horse.position
+	await _settle(pair)
+	var placed := false
+	while is_instance_valid(horse):
+		if charge:
+			# Разгон: конь галопом с отступа на место удара.
+			player.get_animation("run").loop_mode = Animation.LOOP_LINEAR
+			player.play("run", 0.2)
+			var time := 0.0
+			while time < CHARGE_TIME:
+				var t := time / CHARGE_TIME
+				horse.position = home + Vector3(lerpf(CHARGE_FROM, 0.0, t * t), 0, 0)
+				_follow(pair)
+				await get_tree().process_frame
+				time += get_process_delta_time()
+			horse.position = home
+			_follow(pair)
+			if not placed:
+				var tip := _tip(pair.lance)
+				post.global_position = Vector3(tip.x + 0.15, 1.1, tip.z)
+				post.visible = true
+				placed = true
+			player.play("idle_breathe", 0.25)
+			time = 0.0
+			while time < 0.6:
+				post.rotation.z = -deg_to_rad(8.0) * (1.0 - time / 0.6)
+				_follow(pair, 0.0, 2.0 * exp(-time * 6.0) * cos(time * 14.0))
+				await get_tree().process_frame
+				time += get_process_delta_time()
+			# Отход шагом назад к началу разбега.
+			player.get_animation("walk").loop_mode = Animation.LOOP_LINEAR
+			player.play("walk", 0.3)
+			time = 0.0
+			while time < 1.8:
+				horse.position = home + Vector3(lerpf(0.0, CHARGE_FROM, smoothstep(0.0, 1.0, time / 1.8)), 0, 0)
+				_follow(pair)
+				await get_tree().process_frame
+				time += get_process_delta_time()
+			player.play("idle_breathe", 0.3)
+			time = 0.0
+			while time < 0.6:
+				_follow(pair)
+				await get_tree().process_frame
+				time += get_process_delta_time()
+		else:
+			if not placed:
+				_follow(pair, POKE_FORWARD)
+				var tip := _tip(pair.lance)
+				post.global_position = Vector3(tip.x + 0.15, 1.1, tip.z)
+				post.visible = true
+				placed = true
+			var time := 0.0
+			# 0–0,4 с отводит назад, 0,4–0,6 с колет вперёд, держит, 0,6–1,2 с возвращает.
+			player.play("attack_headbutt", 0.2)
+			while time < 1.2 + HOLD:
+				var slide := 0.0
+				if time < 0.4:
+					slide = -POKE_BACK * smoothstep(0.0, 1.0, time / 0.4)
+				elif time < 0.6:
+					slide = lerpf(-POKE_BACK, POKE_FORWARD, smoothstep(0.0, 1.0, (time - 0.4) / 0.2))
+				elif time < 1.2:
+					slide = lerpf(POKE_FORWARD, 0.0, smoothstep(0.0, 1.0, (time - 0.6) / 0.6))
+				if time >= 0.6 and time < 1.0:
+					post.rotation.z = -deg_to_rad(6.0) * (1.0 - (time - 0.6) / 0.4)
+				if time >= 1.0 and player.current_animation != "idle_breathe":
+					player.play("idle_breathe", 0.3)
+				_follow(pair, slide)
+				await get_tree().process_frame
+				time += get_process_delta_time()
+

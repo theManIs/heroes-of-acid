@@ -121,14 +121,15 @@ static func add_lance(parent: Node) -> MeshInstance3D:
 
 
 ## pitch и yaw — раскачивание на весу, градусы: длинная палка качается при движении.
-static func place_lance(lance: MeshInstance3D, rider: Creature, mount: Node3D, pitch := 0.0, yaw := 0.0) -> void:
+## slide — сдвиг копья вдоль древка (м): назад для замаха, вперёд для укола.
+static func place_lance(lance: MeshInstance3D, rider: Creature, mount: Node3D, pitch := 0.0, yaw := 0.0, slide := 0.0) -> void:
 	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_RightHand"))
 	var local := Vector3(1.0, -LANCE_DOWN, 0.0).normalized()
 	local = local.rotated(Vector3.BACK, deg_to_rad(pitch)).rotated(Vector3.UP, deg_to_rad(yaw))
 	var forward: Vector3 = (mount.global_basis * local).normalized()
 	var side := forward.cross(Vector3.UP).normalized()
 	# Цилиндр Godot вытянут по Y: ось копья — Y, базис правый (z = x × y).
-	lance.global_transform = Transform3D(Basis(side, forward, side.cross(forward)), hand + forward * (LANCE_LENGTH * 0.5 - LANCE_BACK))
+	lance.global_transform = Transform3D(Basis(side, forward, side.cross(forward)), hand + forward * (LANCE_LENGTH * 0.5 - LANCE_BACK + slide))
 
 
 ## Копьё в кисти для ударов сидя: идёт за кистью, как молот в хвате.
