@@ -199,3 +199,25 @@ static func freeze_bones(rider: Creature, clip: String, bones: Array) -> void:
 		for k in a.track_get_key_count(t):
 			a.track_set_key_value(t, k, first)
 
+
+## Ноги в седле не участвуют в движении клипа, таз не сдвигается: всадник не подпрыгивает и не отъезжает.
+const LEGS := ["LeftUpLeg", "LeftLeg", "LeftFoot", "LeftToeBase", "RightUpLeg", "RightLeg", "RightFoot", "RightToeBase"]
+
+
+## Посадка одна на все клипы — из спокойной стойки: тогда и переходы между клипами не дёргают ноги.
+static func pin_seat(rider: Creature, clip: String, ref := "ride_still") -> void:
+	var anim := rider.anim
+	var root_path := anim.get_node(anim.root_node).get_path_to(rider.skeleton)
+	var a := anim.get_animation(clip)
+	var r := anim.get_animation(ref)
+	for bone: String in LEGS + ["Hips"]:
+		var path := NodePath("%s:mixamorig_%s" % [root_path, bone])
+		for kind in [Animation.TYPE_ROTATION_3D, Animation.TYPE_POSITION_3D]:
+			var t := a.find_track(path, kind)
+			var rt := r.find_track(path, kind)
+			if t < 0 or rt < 0 or r.track_get_key_count(rt) == 0:
+				continue
+			var value: Variant = r.track_get_key_value(rt, 0)
+			for k in a.track_get_key_count(t):
+				a.track_set_key_value(t, k, value)
+

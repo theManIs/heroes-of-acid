@@ -67,6 +67,10 @@ func _make_pair(view: SubViewport) -> Dictionary:
 	var rider := MOCK.make_rider(view)
 	for clip in FROZEN:
 		MOCK.freeze_bones(rider, clip, MOCK.RIGHT_ARM)
+	for clip in FROZEN:
+		if clip != "ride_still":
+			MOCK.pin_seat(rider, clip)
+	MOCK.pin_seat(rider, "idle")  # копия стойки, которую Creature включает сам
 	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
 	rider.rotation.y = TURN - PI / 2.0  # модель смотрит по +X, конь — по своему +Z
 	rider.set("_yaw", rider.rotation.y)
