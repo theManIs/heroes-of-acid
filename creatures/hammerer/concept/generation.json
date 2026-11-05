@@ -2,14 +2,26 @@
   "generated_at": "2026-11-05T12:30:12+04:00",
   "service": "ChatGPT in Chrome via native CUA",
   "conversation_url": "https://chatgpt.com/c/6aec3ce7-5ab8-83eb-9811-e9e67607d702",
-  "conversation_archived": true,
-  "archive_verified": "after reload: redirected to home and conversation absent from recent chats",
+  "conversation_archived": false,
   "reference": "references/hammerer/character-sheet.jpg",
-  "output": "creatures/hammerer/concept/front-v1.png",
+  "output": "creatures/hammerer/concept/front-v2.png",
   "size": [
     1122,
     1402
   ],
   "status": "awaiting_user_approval",
-  "prompt": "creatures/hammerer/concept/prompt.md"
+  "prompt": "creatures/hammerer/concept/prompt-v2.md",
+  "revisions": [
+    {
+      "generated_at": "2026-11-05T12:40:40+04:00",
+      "output": "creatures/hammerer/concept/front-v2.png",
+      "prompt": "creatures/hammerer/concept/prompt-v2.md",
+      "size": [
+        1122,
+        1402
+      ],
+      "status": "awaiting_user_approval",
+      "change": "Restore abdomen and pelvis; narrow natural stance with nearly vertical legs."
+    }
+  ]
 }

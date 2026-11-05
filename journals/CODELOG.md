@@ -944,3 +944,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - Updated AGENTS, creature and creature-tripo-mixamo READMEs, ARTIFACTS 39: archive after the entire task, retain the chat for intermediate revisions and views.
 - Copied AGENTS to /Users/artem/Documents/projects/AGENTS.md as required. Game files unchanged.
+
+### 2026-11-05 12:40 — Hammerer concept v2 (133)
+
+- Added concept/front-v2.png and exact prompt-v2.md through ChatGPT in Chrome native CUA.
+- Updated generation.json: latest revision, conversation available for further work.
+- Updated TASKS and SESSION; no game code changed.
+- Commands: view_image front-v2.png; Python metadata and journal update; git add; git commit. No tests run.

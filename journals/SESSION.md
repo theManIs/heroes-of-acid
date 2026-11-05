@@ -2891,3 +2891,15 @@
 **User:** Archive generation chats after the full task, not during it.
 
 **Assistant:** Updated AGENTS and humanoid pipelines to keep one chat for revisions and views until task completion; synchronized AGENTS to the required projects copy.
+
+### 2026-11-05 12:35
+
+**User:** Ноги молотобойца выглядят вставленными в нагрудник; спрашивает, зачем в промпте расставлять ноги.
+
+**Assistant:** Проверены изображение и точный промпт: явно указано legs apart with a clear gap. Признана излишне широкая стойка и визуально сжатый таз; предложена правка пропорций и стопы под тазом с небольшим просветом в рамках 133. Генерация не запускалась.
+
+### 2026-11-05 12:40
+
+**User:** Выполнить исправление пропорций и стойки молотобойца.
+
+**Assistant:** В том же чате ChatGPT создан и сохранён front-v2.png: выражены живот и таз, ноги почти вертикальны. Промпт и метаданные сохранены; чат доступен для продолжения, концепт показан на принятие.
