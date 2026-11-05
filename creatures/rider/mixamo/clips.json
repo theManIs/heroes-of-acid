@@ -1,0 +1,38 @@
+{
+  "_match_leg_rest": true,
+  "Jostled Passenger.fbx": {
+    "name": "ride_idle",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Sitting Idle Breathing.fbx": {
+    "name": "ride_still",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Sitting Swinging Weapon.fbx": {
+    "name": "ride_swing",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Sitting Weapon Strike.fbx": {
+    "name": "ride_strike",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Blocking Attack.fbx": {
+    "name": "ride_block",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Struck In Head.fbx": {
+    "name": "ride_hurt",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Dodge While Sitting.fbx": {
+    "name": "ride_dodge",
+    "grip": 0,
+    "keep_left_fingers": false
+  }
+}

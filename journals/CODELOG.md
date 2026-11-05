@@ -1231,3 +1231,12 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 `game/scenes/creature_gallery_page.gd`: квадраты по ширине окна с прокруткой (`CELL_TARGET` 460); `showcase_extra` — пробные клипы на витрине.
 `game/scenes/hammerer_config.gd`: `shoulder_equip.glb` в `extra`, ячейка «Проба: на плечо».
+
+### 2026-11-05 — задача 157, макет всадника
+
+Новое: `game/scenes/rider_lab.gd/.tscn`, `creatures/rider/` (README, `mixamo/clips.json`, FBX, копия рига), `game/assets/creatures/rider/anims/ride_idle.glb`.
+Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py rider`, `godot --headless --path game --import`.
+
+### 2026-11-06 — задача 157, витрина макета
+
+Новое: `game/scenes/rider_mock.gd` (конь, бёдра, посадка), `game/scenes/rider_showcase.gd/.tscn`; `rider_lab.gd` переведён на общий макет. Шесть новых FBX в `creatures/rider/mixamo/`, клипы `game/assets/creatures/rider/anims/`.

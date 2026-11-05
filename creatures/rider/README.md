@@ -1,0 +1,38 @@
+# Всадник — журнал (задача 157)
+
+Путь 1 по решению пользователя: сидячий набор Mixamo «бой в машине» (одна посадка во всех клипах),
+бёдра разведены одним постоянным поворотом для всех клипов, конь — позже по пайплайну четвероногих.
+
+## Шаг 1 — макет (2026-11-05)
+
+- Модель всадника не генерировалась. Макет — тело молотобойца без молота (`body.glb`) и его риг Mixamo:
+  `tripo/rig.glb` — копия `creatures/hammerer/tripo/rig.glb` (сначала был псарь, заменён по просьбе пользователя).
+- Клип: `mixamo/Jostled Passenger.fbx` (Passenger Jostled While Sitting In A Vehicle) → `ride_idle`, 2,67 с,
+  `_match_leg_rest: true`. Сборка: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py rider`.
+- Конь — коробки и цилиндры в `game/scenes/rider_lab.gd`, спина на 1,55 м под всадника ростом 2 м.
+- Бёдра: `LEG_SPREAD` 28° вокруг оси X скелета, одинаково для всего клипа. Таз ставится на седло после первого кадра.
+- Наблюдение по кадрам: ноги обхватывают корпус, ступни свисают по бокам; бёдра почти горизонтальны,
+  колени выходят вперёд, как на стуле; всадник сутулится — так в исходном клипе пассажира.
+- Сцена: `godot --path game res://scenes/rider_lab.tscn`.
+
+Кандидаты того же набора на потом: Sitting Swinging Weapon, Sitting Weapon Strike, Blocking Attack (сидя),
+Struck In Head (сидя). Сидячей смерти в наборе нет.
+
+- «Дёргается»: клип снят как пассажир, которого трясёт в машине на кочках — рывки корпуса, а не ритм шага коня.
+
+## Шаг 2 — витрина (2026-11-06)
+
+Модели не делаем, пока не ясно, как будут работать анимации (решение пользователя).
+Макет — тело молотобойца без молота (`body.glb`). Скачано из того же набора Mixamo:
+
+| Файл | Имя | Длина |
+|---|---|---|
+| Sitting Idle Breathing.fbx (Sitting With Breathing Idle) | ride_still | 4,30 с |
+| Jostled Passenger.fbx | ride_idle | 2,67 с |
+| Sitting Swinging Weapon.fbx | ride_swing | 4,80 с |
+| Sitting Weapon Strike.fbx (Knock Off Enemy With Pipe) | ride_strike | 2,80 с |
+| Blocking Attack.fbx (сидя, сверху) | ride_block | 1,00 с |
+| Dodge While Sitting.fbx (вправо) | ride_dodge | 3,17 с |
+| Struck In Head.fbx (сидя) | ride_hurt | 5,97 с |
+
+Общие части — `game/scenes/rider_mock.gd`; витрина — `game/scenes/rider_showcase.tscn`.
