@@ -125,7 +125,8 @@ const CHARGE_BACK := 1.6
 
 ## Впритык разгона нет: конь делает короткий выпад на полшага, копьё под рукой, как в таране.
 const HURT_LEN := 2.2
-const FROZEN_ARM := ["ride_hurt"]  # правая рука с копьём неподвижна, двигается остальное тело
+## Копьё под рукой: правая рука неподвижна во всех таких клипах, двигается остальное тело.
+const FROZEN_ARM := ["ride_still", "ride_hurt", "ride_fidget_look", "ride_dodge"]
 const LUNGE := 0.5
 const LUNGE_TIME := 0.35
 
