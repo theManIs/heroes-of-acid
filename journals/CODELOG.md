@@ -1006,3 +1006,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - User rejected the invented thrust. Removed author_point.py and _point_strike path. Precision now uses the existing Mixamo overhead great sword slash (3), with identical hit timing/reach to area; damage stays single-target.
 - Added per-source aliases in build_clips.py to preserve a separately named attack_point animation and gallery cell from the same source. Rebuilt clips; updated selection and pipeline.
 - Command: .venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py hammerer. No tests run; manual acceptance by user.
+
+### 2026-11-05 17:47 — Hover response correction (137)
+
+- Existing task 114 defines fidget as a decorative response when hovering an idle creature. Previous implementation incorrectly added a button; no arena hover trigger existed. Removed button and busy/turn-lock preview.
+- Creature.set_fidget_hovered starts the configured fidget once per cursor entry, only from idle while alive, stationary and not defending. Normal gameplay animations interrupt it; no combat turn consumed. Hammerer opts in; other creatures remain under pending 114.
+- Creature arena detects hover over either model; battle uses existing inspected unit. Gallery retains the same visible fidget clip. Updated scene and pipeline documentation.
+- Commands: build_clips.py, Godot import and pose_sheet asset authoring render, normal showcase/arena launch. No automated tests or manual gameplay acceptance performed.

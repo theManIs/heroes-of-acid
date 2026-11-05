@@ -162,6 +162,7 @@ func _make(id: String) -> Creature:
 	c.shots = cfg.get("shots", {})
 	c.set_shot(c.shots.keys()[0] if c.ranged() else "")
 	c.configure_melee(cfg.get("melee_modes", {}))
+	c.fidget_anim = cfg.get("fidget", "") if cfg.get("fidget_on_hover", false) else ""
 	c.walk_rate = WALK_RATE
 	c.set_meta("move", MOVES[id])
 	c.set_meta("title", cfg.name)
@@ -1105,6 +1106,9 @@ func _process(delta: float) -> void:
 	var inspected: Creature = (enemy if enemy else _ally_under(mouse)) if _pointer_inside else null
 	if turn == Turn.BUSY:  # гекс уже новый, а существо ещё идёт
 		inspected = null
+	for side: Array in sides:
+		for unit: Creature in side:
+			unit.set_fidget_hovered(turn == Turn.PLAYER and unit == inspected)
 	if h != _hovered or from != _attack_from or inspected != _inspected:
 		_hovered = h
 		_attack_from = from

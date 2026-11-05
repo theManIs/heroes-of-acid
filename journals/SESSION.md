@@ -2969,3 +2969,9 @@
 **User:** Rejected invented precision thrust; wants a normal overhead hammer strike. Reports hammerer fidget still absent.
 
 **Assistant:** Reopened 136 and 137, recorded overhead-only precision requirement and unresolved fidget. Proposed correction plan for approval; no implementation changes.
+
+### 2026-11-05 17:47
+
+**User:** Approved 136/137 corrections; rejected the fidget button and asked when the response should play.
+
+**Assistant:** Found existing definition in 114: hover over an idle creature. Restored Mixamo overhead single-target strike; removed button and wired hammerer hover fidget in both arenas. Separate commits, updated showcase and creature scene for user acceptance.

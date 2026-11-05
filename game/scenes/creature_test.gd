@@ -128,7 +128,6 @@ var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущ�
 var _raid_reachable := {}  # позиции только собаки для вылазки без перемещения псаря
 var _hovered := Vector2i(999, 999)
 var _mode_button := Button.new()  # смена режима огня: только у стрелка
-var _fidget_button := Button.new()
 var _enemy_shots := 0  # противник-стрелок чередует стрелы и бросок
 var _targeted := false  # на противнике зелёная обводка
 var _pointer_inside := true
@@ -185,6 +184,7 @@ func _make() -> Creature:
 	c.shots = cfg.get("shots", {})
 	c.set_shot(c.shots.keys()[0] if c.ranged() else "")
 	c.configure_melee(cfg.get("melee_modes", {}))
+	c.fidget_anim = cfg.get("fidget", "") if cfg.get("fidget_on_hover", false) else ""
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
@@ -240,8 +240,6 @@ func _ranged() -> bool:
 
 ## Подпись кнопки — текущий режим огня.
 func _show_mode() -> void:
-	_fidget_button.visible = tested == "hammerer"
-	_fidget_button.disabled = turn != Turn.PLAYER
 	_mode_button.visible = _ranged() or not player.melee_modes.is_empty()
 	if not player.melee_modes.is_empty():
 		_mode_button.text = "Атака: " + player.melee_title()
@@ -264,27 +262,6 @@ func _switch_mode() -> void:
 	if turn == Turn.PLAYER and _ranged():
 		player.next_shot_mode(_hex_distance(_hex_of(player), _hex_of(enemy)) == 1)
 		_show_mode()
-
-
-## Просмотр отклика без расхода хода. Сброс сцены отменяет ожидание.
-func _fidget() -> void:
-	if tested != "hammerer" or turn != Turn.PLAYER or player.dead:
-		return
-	var clip: String = creatures[tested].get("fidget", "")
-	if not player.anim.has_animation(clip):
-		return
-	var round_id := _round
-	turn = Turn.BUSY
-	_show_mode()
-	_targeted = false
-	_attack_from = NO_HEX
-	_hovered = NO_HEX
-	enemy.set_outline(null)
-	_paint()
-	player.anim.play(clip, Creature.BLEND, 1.0)
-	await get_tree().create_timer(player.anim.get_animation(clip).length).timeout
-	if round_id == _round:
-		_start_player_turn()
 
 
 func _fit_radius() -> void:
@@ -558,10 +535,6 @@ func _build_hud() -> void:
 	_mode_button.custom_minimum_size = Vector2(220, 48)
 	_mode_button.pressed.connect(_switch_mode)
 	bar.add_child(_mode_button)
-	_fidget_button.text = "Отклик"
-	_fidget_button.custom_minimum_size = Vector2(160, 48)
-	_fidget_button.pressed.connect(_fidget)
-	bar.add_child(_fidget_button)
 	_show_mode()
 	for item in [["Защита", _defend], ["Заново", _reset]]:
 		var button := Button.new()
@@ -860,13 +833,17 @@ func _hex_under(screen: Vector2) -> Vector2i:
 
 ## Курсор над врагом: экранная рамка по всем костям в текущей позе плюс толщина тела.
 func _on_enemy(screen: Vector2) -> bool:
-	var box := Rect2(camera.unproject_position(enemy.bone_world(0)), Vector2.ZERO)
-	for i in enemy.skeleton.get_bone_count():
-		box = box.expand(camera.unproject_position(enemy.bone_world(i)))
-	var center := enemy.position + Vector3.UP * enemy.height * 0.5
+	return _on_creature(enemy, screen)
+
+
+func _on_creature(unit: Creature, screen: Vector2) -> bool:
+	var box := Rect2(camera.unproject_position(unit.bone_world(0)), Vector2.ZERO)
+	for i in unit.skeleton.get_bone_count():
+		box = box.expand(camera.unproject_position(unit.bone_world(i)))
+	var center := unit.position + Vector3.UP * unit.height * 0.5
 	var pad := camera.unproject_position(center + camera.global_basis.x * 0.25).x - camera.unproject_position(center).x
 	if tested == "houndmaster-pair":
-		var dog: Node3D = enemy.get("_dog_model")
+		var dog: Node3D = unit.get("_dog_model")
 		var dog_skeleton: Skeleton3D = dog.find_children("*", "Skeleton3D", true, false)[0]
 		var dog_box := Rect2(camera.unproject_position(dog.global_position), Vector2.ZERO)
 		for i in dog_skeleton.get_bone_count():
@@ -961,6 +938,9 @@ func _process(delta: float) -> void:
 		_zoom = lerpf(_zoom, _zoom_target, 1.0 - exp(-10.0 * delta))
 		_apply_zoom()
 	var mouse := get_viewport().get_mouse_position()
+	var fidget_allowed := _pointer_inside and turn == Turn.PLAYER
+	player.set_fidget_hovered(fidget_allowed and _on_creature(player, mouse))
+	enemy.set_fidget_hovered(fidget_allowed and _on_enemy(mouse))
 	var over_enemy := _pointer_inside and not player.dead and (_on_enemy(mouse) or _footprint(_hex_of(enemy)).has(_hex_at(_ground_point(mouse))))
 	var targeted := turn == Turn.PLAYER and over_enemy and enemy.can_be_hit()
 	if targeted != _targeted:
@@ -1003,7 +983,6 @@ func _process(delta: float) -> void:
 	if not player.melee_modes.is_empty() and turn == Turn.PLAYER:
 		text += " · " + player.melee_title() + (": 3 гекса, задевает своих" if player.wide_melee() else ": только цель")
 	_mode_button.disabled = turn != Turn.PLAYER if not player.melee_modes.is_empty() else _mode_button.disabled
-	_fidget_button.disabled = turn != Turn.PLAYER
 	status.text = text
 
 

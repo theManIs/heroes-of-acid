@@ -57,6 +57,8 @@ var shot_mode := ""  # режим огня, которым выстрелит
 var shot_wanted := ""  # какой режим выбран; shot_mode отличается, если выбранный сейчас запрещён
 var melee_modes := {}
 var melee_mode := ""
+var fidget_anim := ""  # декоративный отклик при наведении на бездействующее существо
+var _fidget_hovered := false
 
 var _model_base := Vector3.ZERO
 var _target := Vector3.ZERO
@@ -397,6 +399,18 @@ func play_once(anim_name: String) -> void:
 		await get_tree().create_timer(hit_delay() + RECOIL).timeout
 		if id == _strike_id and not dead and anim.current_animation == attack_anim:
 			anim.play("idle", RECOIL_BLEND)
+
+
+## Один отклик на вход курсора. Боевые действия могут сразу прервать его.
+func set_fidget_hovered(hovered: bool) -> void:
+	var entered := hovered and not _fidget_hovered
+	_fidget_hovered = hovered
+	if not entered or dead or walking or defending or fidget_anim.is_empty():
+		return
+	if anim.current_animation != "idle" or not anim.has_animation(fidget_anim):
+		return
+	anim.play(fidget_anim, BLEND, 1.0)
+	anim.seek(0.0, true)
 
 
 ## Частичные анимации: с какой доли длины играть.
