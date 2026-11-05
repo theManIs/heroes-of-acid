@@ -23,9 +23,6 @@
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0,
-    "aliases": [
-      "attack_point"
-    ],
     "recovery": {
       "at": 0.9333333333333333,
       "duration": 0.7
@@ -54,5 +51,13 @@
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
+  },
+  "Great Sword Downward Slash.fbx": {
+    "name": "attack_point",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0,
+    "trim_start": 0.5,
+    "time_scale": 1.5
   }
 }

@@ -3005,3 +3005,9 @@
 **User:** Restarted Chrome and asked to retry background control.
 
 **Assistant:** Retried on existing and fresh bindings after runtime reset; same timeoutMs failure. Completed 138 recovery edit and marked 136/139 unfinished. Documented the reproducible failure; 137 committed allied-only.
+
+### 2026-11-05 18:39
+
+**User:** Finish 136; authorized active-tab/native browser control after plugin failure, explicitly prohibited invented animation, asked why selection was taking so long.
+
+**Assistant:** Downloaded and compared three original Mixamo candidates. Selected exact Great Sword Downward Slash; excluded one-handed Bash/axe, removed initial lateral windup and slowed stock keys without authoring new poses. Separate point clip connected to gallery and both arenas; opening for user review. Background issue 139 remains unresolved and deferred.

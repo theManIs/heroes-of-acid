@@ -330,6 +330,13 @@ def main(creature_id):
             subprocess.run(["blender", "-b", "--python", str(HERE / "fbx2glb.py"), "--", str(base / "mixamo" / fbx), str(glb)],
                            check=True, capture_output=True)
         times, rotations, hips = retarget(rig_doc, rig, glb, cfg["name"], cfg)
+        if cfg.get("trim_start", 0.0) > 0.0:
+            first = min(range(len(times)), key=lambda i: abs(times[i] - cfg["trim_start"]))
+            origin = times[first]
+            times = [t - origin for t in times[first:]]
+            rotations = {bone: values[first:] for bone, values in rotations.items()}
+            hips = hips[first:]
+        times = [t * cfg.get("time_scale", 1.0) for t in times]
         if cfg.get("recovery"):
             times, rotations, hips = finish_in_idle(times, rotations, hips, out_dir / "idle.glb", cfg["recovery"])
         write(rig_doc, rig, cfg["name"], times, rotations, hips, out_dir / (cfg["name"] + ".glb"))

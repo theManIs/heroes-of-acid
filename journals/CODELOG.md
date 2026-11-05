@@ -1023,3 +1023,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Added per-clip recovery in build_clips.py: keep original keys through 28/30 s, then smooth quaternion/hip interpolation to idle over 0.7 s. Removed the original post-contact upward sword recovery. Final length 1.6333 s; impact 0.56122449 preserves contact at 0.9167 s, reach unchanged.
 - Rebuilt attack and its temporary attack_point alias. 136 explicitly remains unfinished: alias is rejected by user, not a distinct vertical attack. Updated source selection and pipeline, including background-only browser requirement.
 - Commands: build_clips.py, Godot asset import, pose_sheet asset authoring render. No tests run; visual/manual acceptance is the user’s.
+
+### 2026-11-05 18:39 — Separate Mixamo downward precision strike (136)
+
+- User authorized active-tab Chrome after background failure and explicitly rejected invented animation. Abandoned the unconnected local authoring draft; no authored attack code or asset retained.
+- Downloaded original Bash, Standing Melee Attack Downward and Great Sword Slash / Great Sword Downward Slash through Chrome/CUA; preserved FBXs. Bash and axe clip are one-handed, excluded. Chosen exact Downward result renamed Great Sword Downward Slash.fbx for provenance.
+- Removed area alias. build_clips.py supports trim_start and time_scale: chosen source starts at 0.5 s to exclude lateral windup, time stretched x1.5 without pose changes. Final duration 1.15 s, hit 0.25 s, impact 0.2173913 and reach 1.6. Shared config used by both arenas and gallery.
+- Commands: build_clips.py with Blender FBX conversion, Godot asset import, pose_sheet authoring renders, normal showcase and arena launch. No automated tests run; user performs interactive acceptance.
