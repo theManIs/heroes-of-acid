@@ -198,8 +198,7 @@ func _dog_play(clip: String, speed := 1.0) -> void:
 
 
 func hit_delay() -> float:
-	var duration := anim.get_animation(attack_anim).length * (1.0 - attack_from)
-	return duration / _speed(duration) + BITE_IMPACT
+	return BITE_IMPACT
 
 
 func strike(target: Creature, _distance: float, _overlap: float, _collateral: Array[Creature] = []) -> void:
@@ -235,11 +234,7 @@ func raid(target: Creature, points: Array[Vector3], contact: Vector3) -> void:
 	target.face(position)
 	play_once(attack_anim)
 	_dog_play(DOG_IDLE)
-	# Собака ждёт фактического окончания команды, включая выбранную скорость.
-	while anim.current_animation == attack_anim:
-		await get_tree().process_frame
-		if epoch != _epoch or dead or not is_instance_valid(target):
-			return
+	# Команда псаря и вылазка собаки начинаются одновременно.
 	if not outbound.is_empty():
 		_dog_route = outbound.duplicate()
 		_move_phase = MovePhase.RAID_OUT
