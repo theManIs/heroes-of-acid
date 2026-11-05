@@ -59,5 +59,29 @@
     "hip_scale": 0,
     "trim_start": 0.5,
     "time_scale": 1.5
+  },
+  "pack/great sword idle (2).fbx": {
+    "name": "idle_cand2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "pack/great sword idle (4).fbx": {
+    "name": "idle_cand4",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "pack/great sword idle (5).fbx": {
+    "name": "idle_cand5",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "Unarmed Equip Over Shoulder.fbx": {
+    "name": "shoulder_equip",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
   }
 }

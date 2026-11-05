@@ -1226,3 +1226,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-05 — задача 154, удар по площади
 
 `game/scenes/hammerer_config.gd`: `"no_backstep": true` и у режима `area`.
+
+### 2026-11-05 — задача 156 и проба 155
+
+`game/scenes/creature_gallery_page.gd`: квадраты по ширине окна с прокруткой (`CELL_TARGET` 460); `showcase_extra` — пробные клипы на витрине.
+`game/scenes/hammerer_config.gd`: `shoulder_equip.glb` в `extra`, ячейка «Проба: на плечо».

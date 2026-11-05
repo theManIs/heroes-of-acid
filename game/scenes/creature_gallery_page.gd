@@ -30,6 +30,8 @@ func _ready() -> void:
 		for field in ["run", "fidget"]:
 			if cfg.has(field):
 				actions.append(["Бег" if field == "run" else "Отклик", cfg[field], 0.0, 0.0])
+		for extra: Array in cfg.get("showcase_extra", []):  # пробные клипы только для витрины
+			actions.append([extra[0], extra[1], 0.0, 0.0])
 		for shot: Dictionary in cfg.get("shots", {}).values():
 			if shot.anim != cfg.attack:
 				actions.append([shot.title, shot.anim, 0.0, 0.0])
@@ -39,11 +41,15 @@ func _ready() -> void:
 	_finish()
 
 
+const CELL_TARGET := 460  # желаемый размер квадрата витрины, пикселей
+
+
 func fit_cells() -> void:
 	if not is_instance_valid(_grid):
 		return
-	var rows := ceili(float(_views.size()) / columns)
-	cell_size = maxi(90, floori(minf((size.x - GAP * (columns + 1)) / columns, (size.y - GAP * (rows + 1)) / rows)) - 6)
+	# Крупные квадраты по ширине окна, остальное прокручивается: всё на один экран было слишком мелко.
+	_grid.columns = clampi(floori((size.x - GAP) / (CELL_TARGET + GAP)), 1, columns)
+	cell_size = maxi(90, floori((size.x - GAP * (_grid.columns + 1)) / _grid.columns) - 6)
 	for pair: Array in _views:
 		pair[0].custom_minimum_size = Vector2.ONE * cell_size
 
