@@ -3011,3 +3011,27 @@
 **User:** Finish 136; authorized active-tab/native browser control after plugin failure, explicitly prohibited invented animation, asked why selection was taking so long.
 
 **Assistant:** Downloaded and compared three original Mixamo candidates. Selected exact Great Sword Downward Slash; excluded one-handed Bash/axe, removed initial lateral windup and slowed stock keys without authoring new poses. Separate point clip connected to gallery and both arenas; opening for user review. Background issue 139 remains unresolved and deferred.
+
+### 2026-11-05 18:41
+
+**User:** Queue houndmaster pair fixes after hammerer: dog hurt reaction before escape when master dies, permanent red enemy cell, missing hover response, dog departing before master command animation finishes.
+
+**Assistant:** Kept existing 135 for persistent tint; recorded 140 (lethal hit sequence), 141 (allied idle hover response), 142 (wait for completed master command). Deferred pair implementation until hammerer review is finished; no gameplay changes.
+
+### 2026-11-05 18:42
+
+**User:** Hammerer area attack stops midway instead of following through all three cells with momentum.
+
+**Assistant:** Acknowledged overly early recovery cut from previous 138. Reopened 138: preserve full sector follow-through, remove early clip/runtime cutoff, correct only excessive upward recovery afterward. Proposed correction; awaiting command, no gameplay changes.
+
+### 2026-11-05 18:43
+
+**User:** For 141, first understand what is visible because other creatures do not show the same behavior.
+
+**Assistant:** Changed queued 141 from a predetermined hover-animation fix to diagnosis and comparison first, then a concrete proposal. Kept pair work deferred until hammerer is finished; no gameplay changes.
+
+### 2026-11-05 18:45
+
+**User:** Show open tasks.
+
+**Assistant:** Read TASKS.md and listed all 14 unchecked tasks with stable IDs; no task statuses or gameplay changed.

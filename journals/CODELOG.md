@@ -1030,3 +1030,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Downloaded original Bash, Standing Melee Attack Downward and Great Sword Slash / Great Sword Downward Slash through Chrome/CUA; preserved FBXs. Bash and axe clip are one-handed, excluded. Chosen exact Downward result renamed Great Sword Downward Slash.fbx for provenance.
 - Removed area alias. build_clips.py supports trim_start and time_scale: chosen source starts at 0.5 s to exclude lateral windup, time stretched x1.5 without pose changes. Final duration 1.15 s, hit 0.25 s, impact 0.2173913 and reach 1.6. Shared config used by both arenas and gallery.
 - Commands: build_clips.py with Blender FBX conversion, Godot asset import, pose_sheet authoring renders, normal showcase and arena launch. No automated tests run; user performs interactive acceptance.
+
+### 2026-11-05 18:48 — Full hammer follow-through (138)
+
+- Extended preserved source sweep through 35/30 s instead of 28/30; 0.7 s recovery begins after follow-through. Clip length 1.8667 s; impact 0.49107143 preserves contact at 0.9167 s.
+- Added full_clip melee option; hammer area opts in, so play_once does not cut at hit + 0.3 s. Animation returns to idle on completion. Other attacks retain existing timing.
+- Command: build_clips.py hammerer. No tests run; manual acceptance remains with user.

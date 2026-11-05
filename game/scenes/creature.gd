@@ -38,6 +38,7 @@ var reach := 1.0  # вынос кулака вперёд в момент поп�
 var height := 2.0  # рост существа, метров
 var attack_anim := "slash"  # анимация удара этого существа
 var attack_from := 0.0  # с какой доли длины играть удар: срезать долгий замах
+var attack_full_clip := false  # полный пронос оружия до завершения клипа
 var hurt_anim := ""  # анимация получения удара; пусто — программный толчок flinch()
 var hurt_len := 0.0  # сколько секунд реакции играть (0 — целиком); дальше — плавно в idle
 var defend_anim := ""  # анимация защиты: играется вместо реакции, если существо защищается
@@ -392,7 +393,7 @@ func play_once(anim_name: String) -> void:
 		return
 	anim.play(anim_name, BLEND, _speed(length - start))
 	anim.seek(start, true)
-	if anim_name == attack_anim:
+	if anim_name == attack_anim and not attack_full_clip:
 		# Не досматривать удар до конца (существо «позирует»): вскоре после попадания — в idle.
 		_strike_id += 1
 		var id := _strike_id
@@ -593,6 +594,7 @@ func set_melee_mode(mode: String) -> void:
 	melee_mode = mode
 	var cfg: Dictionary = melee_modes[mode]
 	attack_from = cfg.get("from", 0.0)
+	attack_full_clip = cfg.get("full_clip", false)
 	set_attack(cfg.anim)
 	impact = cfg.get("impact", impact)
 	reach = cfg.get("reach", reach) * height / 1.9 if cfg.has("reach") else reach
