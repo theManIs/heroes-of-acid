@@ -374,6 +374,11 @@ func face(point: Vector3) -> void:
 		_yaw = atan2(to.x, to.z) + FRONT_YAW
 
 
+## Повернуться к противнику и так остаться. У составного существа — каждой моделью.
+func face_foe(point: Vector3) -> void:
+	face(point)
+
+
 func play_once(anim_name: String) -> void:
 	if dead:
 		return
@@ -623,7 +628,7 @@ func melee_point(_from: Vector3) -> Vector3:
 func strike(target: Creature, _distance: float, overlap: float, collateral: Array[Creature] = []) -> void:
 	var contact := target.melee_point(position)
 	face(contact)
-	target.face(position)
+	target.face_foe(position)
 	play_once(attack_anim)
 	target.take_hit(hit_delay())
 	for victim: Creature in collateral:
@@ -685,7 +690,7 @@ func fire_shot(target: Creature, parent: Node) -> float:
 ## rate — скорость клипа: короткие клипы выстрела замедляем, чтобы было видно прицеливание.
 func fire(target: Creature, anim_name: String, release: float, rate: float, on_release: Callable) -> void:
 	face(target.position)
-	target.face(position)
+	target.face_foe(position)
 	walking = false
 	_strike_id += 1
 	var id := _strike_id

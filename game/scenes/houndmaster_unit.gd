@@ -156,6 +156,15 @@ func face(point: Vector3) -> void:
 	_dog_yaw = PI / 2.0 if point.x >= position.x else -PI / 2.0
 
 
+## К противнику собака поворачивается сама, от своего места и на любой угол.
+func face_foe(point: Vector3) -> void:
+	super.face(point)
+	var to := point - (get_parent() as Node3D).to_local(_dog.global_position)
+	to.y = 0.0
+	if to.length() > 0.01:
+		_dog_yaw = atan2(to.x, to.z)
+
+
 func melee_point(from: Vector3) -> Vector3:
 	var dog_position := (get_parent() as Node3D).to_local(_dog.global_position)
 	return dog_position if from.distance_squared_to(dog_position) < from.distance_squared_to(position) else position
@@ -276,8 +285,9 @@ func raid(target: Creature, points: Array[Vector3], contact: Vector3) -> void:
 	_move_phase = MovePhase.RAID_HOLD
 	walking = false
 	_path.clear()
-	face(target.position)
-	target.face(position)
+	face_foe(target.position)
+	# Жертва смотрит туда, откуда её укусят, а не на псаря, который стоит на месте.
+	target.face_foe((get_parent() as Node3D).to_local(home if outbound.is_empty() else outbound[-1]))
 	play_once(attack_anim)
 	_dog_play(DOG_IDLE)
 	# Обычный поход к соседней клетке — шагом, дальний — бегом; обратно тем же ходом.

@@ -1105,3 +1105,18 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 +	if anchor != NO_HEX:
 +		_move_and_maybe_strike(player, enemy, reachable[anchor], _start_enemy_turn)
 ```
+
+### 2026-11-05 — задача 147
+
+`game/scenes/creature.gd`, `game/scenes/houndmaster_unit.gd`: поворот к противнику отдельным методом.
+
+```diff
+-	target.face(position)
++	target.face_foe(position)
++func face_foe(point: Vector3) -> void:
++	super.face(point)
++	var to := point - (get_parent() as Node3D).to_local(_dog.global_position)
++	to.y = 0.0
++	if to.length() > 0.01:
++		_dog_yaw = atan2(to.x, to.z)
+```
