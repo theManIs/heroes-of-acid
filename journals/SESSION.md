@@ -2963,3 +2963,9 @@
 **User:** Разрешил продолжить скачивание в Mixamo; 136 и 137 одобрены.
 
 **Assistant:** Заменены точечный удар и отклик молотобойца; добавлена кнопка отклика, открыты витрина и сцена существа. 135: выделена отдельная постоянная заливка только пары; правка ждёт одобрения.
+
+### 2026-11-05 17:39
+
+**User:** Rejected invented precision thrust; wants a normal overhead hammer strike. Reports hammerer fidget still absent.
+
+**Assistant:** Reopened 136 and 137, recorded overhead-only precision requirement and unresolved fidget. Proposed correction plan for approval; no implementation changes.

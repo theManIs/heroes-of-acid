@@ -1000,3 +1000,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Replaced subtle idle (2) with idle (3), 3.6 s weapon-lowering/hand-on-hip gesture. Preserved chosen FBX and rebuilt fidget.glb; gallery uses the same clip.
 - Added hammerer-only Fidget button to creature arena: full clip at normal speed, no turn consumed, busy guard, reset cancellation through round ID. Other roster entries retain existing controls.
 - Commands: build_clips.py, Blender conversion of three idle candidates, pose_sheet authoring render, Godot import and normal scene launch. No automated tests; manual acceptance by user.
+
+### 2026-11-05 17:44 — Overhead precision strike correction (136)
+
+- User rejected the invented thrust. Removed author_point.py and _point_strike path. Precision now uses the existing Mixamo overhead great sword slash (3), with identical hit timing/reach to area; damage stays single-target.
+- Added per-source aliases in build_clips.py to preserve a separately named attack_point animation and gallery cell from the same source. Rebuilt clips; updated selection and pipeline.
+- Command: .venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py hammerer. No tests run; manual acceptance by user.

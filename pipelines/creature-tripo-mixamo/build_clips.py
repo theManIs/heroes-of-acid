@@ -299,7 +299,6 @@ def main(creature_id):
     clips = json.loads((base / "mixamo" / "clips.json").read_text())
     arm_out = clips.pop("_arm_out", {})
     match_leg_rest = clips.pop("_match_leg_rest", False)
-    point_strike = clips.pop("_point_strike", None)
     for fbx, cfg in clips.items():
         cfg["arm_out"] = arm_out
         cfg["match_leg_rest"] = match_leg_rest
@@ -309,10 +308,10 @@ def main(creature_id):
                            check=True, capture_output=True)
         times, rotations, hips = retarget(rig_doc, rig, glb, cfg["name"], cfg)
         write(rig_doc, rig, cfg["name"], times, rotations, hips, out_dir / (cfg["name"] + ".glb"))
+        for alias in cfg.get("aliases", []):
+            write(rig_doc, rig, alias, times, rotations, hips, out_dir / (alias + ".glb"))
+            print(alias, "uses", cfg["name"])
         print(cfg["name"], f"{times[-1]:.2f} с, кадров {len(times)}")
-    if point_strike:
-        from author_point import author
-        author(rig.path, out_dir / 'idle.glb', out_dir / 'attack_point.glb', point_strike.get('duration', 1.1))
 
 
 if __name__ == "__main__":

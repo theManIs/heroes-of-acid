@@ -22,7 +22,10 @@
     "name": "attack",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "attack_point"
+    ]
   },
   "great sword impact (2).fbx": {
     "name": "hurt",
@@ -41,9 +44,6 @@
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
-  },
-  "_point_strike": {
-    "duration": 1.1
   },
   "great sword idle (3).fbx": {
     "name": "fidget",
