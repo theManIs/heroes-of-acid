@@ -932,3 +932,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `Creature.melee_point` и реализация пары: обычные ближние атаки направлены к ближайшей модели составного отряда. Собака масштабируется вместе с псарём в бою; ограниченный шаг и измерение выноса морды сохранены.
 - Общая запись пары в `houndmaster_config.gd`; icon_shot поддерживает парный портрет, создан `game/assets/creatures/houndmaster/icon.png` (256×256) и импортирован. Обновлены TASKS, SCENES, решения игры, README и пайплайн с индексом.
 - Команды: `godot --path game --position 10000,10000 res://tools/icon_shot.tscn -- --id=houndmaster-pair`; `godot --headless --path game --editor --import --quit`; `godot --path game res://scenes/battle_test.tscn`; `git diff --check`. Тесты и --auto не запускались. Ошибок загрузки сцены в выводе нет. Интерактивный просмотр выполнен пользователем, результат принят.
+
+### 2026-11-05 Задача 133, этап концепта молотобойца
+
+- Сохранён референс пользователя `references/hammerer/character-sheet.jpg`, строка использования в references/README. В creatures/hammerer/concept — description.md, prompt.md, front-v1.png и generation.json; создан README существа.
+- Концепт через ChatGPT в Chrome/CUA по исходному листу: техническая T-поза, свободные руки, сохранены шлем, сталь и синие акценты. Получен исходный PNG 1122×1402 через «Сохранить изображение как» прямо в проект. Просмотрен локальный файл. Чат генерации архивирован, после перезагрузки отсутствует в недавних и открыт home.
+- TASKS 133 остаётся открытой до следующих этапов и принятия; уточнены pipeline creature-tripo-mixamo и индекс. ARTIFACTS 61 документирует native CUA ввод и обход ошибки DOM-управления. Встроенный image_gen не вызывался: использован Chrome по выбранному пайплайну.
+- Команды: подготовка файлов через Python; `file creatures/hammerer/concept/front-v1.png`; `git diff --check`. Модель, риг и анимации не заказывались, игровые файлы не менялись.
