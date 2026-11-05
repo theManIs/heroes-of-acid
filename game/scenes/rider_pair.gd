@@ -11,6 +11,8 @@ const SADDLE_BONE := "Torso2"
 const SEAT := Vector3(0.0, 0.85, -0.10)
 const CELL_TARGET := 460
 const TURN := PI / 2.0  # конь смотрит по +X, как остальные существа
+## Копьё отведено наружу от головы коня: замер — не ближе 0,34 м к голове и шее в любом клипе (было 0,13).
+const LANCE_YAW := -14.0
 const HOLD := 1.0
 const FROZEN := ["ride_still", "ride_hurt", "ride_fidget_look", "ride_dodge"]
 ## Подпись, клип коня, клип всадника, по кругу без остановки.
@@ -100,7 +102,7 @@ func _follow(pair: Dictionary, slide := 0.0, pitch := 0.0) -> void:
 	var rider: Creature = pair.rider
 	rider.global_transform = _bone_frame(pair) * pair.offset
 	rider.set("_yaw", rider.rotation.y)
-	MOCK.place_lance(pair.lance, rider, rider, pitch, 0.0, slide)
+	MOCK.place_lance(pair.lance, rider, rider, pitch, LANCE_YAW, slide)
 
 
 func _settle(pair: Dictionary) -> void:
@@ -181,11 +183,12 @@ func _make_death_cell(grid: GridContainer) -> void:
 
 
 ## Атака. С разбега: галоп на столб, копьё неподвижно под рукой, бьёт разгон.
-## С места: копьё отводится назад и коротким уколом идёт вперёд в цель, конь делает выпад головой.
+## С места: конь делает полшага назад и короткий рывок галопом в цель.
 const CHARGE_FROM := -3.2
 const CHARGE_TIME := 0.9
-const POKE_BACK := 0.45  # насколько отводит копьё назад
-const POKE_FORWARD := 0.35  # насколько колет вперёд
+const STEP_BACK := 0.6  # с места: полшага назад перед рывком
+const STEP_BACK_TIME := 0.6
+const LUNGE_TIME := 0.35
 
 
 func _make_post(view: SubViewport) -> MeshInstance3D:
@@ -208,7 +211,7 @@ func _tip(lance: MeshInstance3D) -> Vector3:
 func _make_strike_cell(grid: GridContainer, charge: bool) -> void:
 	var frame := _make_frame(grid, 5.2 if charge else 3.6)
 	var pair := _make_pair(frame.view)
-	_make_label(frame.frame).text = "Атака: таран с разбега" if charge else "Атака с места: отвёл копьё и ткнул"
+	_make_label(frame.frame).text = "Атака: таран с разбега" if charge else "Атака с места: полшага назад и рывок"
 	var post := _make_post(frame.view)
 	# Цель впереди коня: камеру сдвигаем вперёд, чтобы столб попадал в кадр.
 	for cam: Camera3D in frame.view.find_children("*", "Camera3D", true, false):
@@ -260,28 +263,39 @@ func _make_strike_cell(grid: GridContainer, charge: bool) -> void:
 				await get_tree().process_frame
 				time += get_process_delta_time()
 		else:
+			# С места: полшага назад шагом, затем короткий рывок галопом в цель.
+			player.get_animation("walk").loop_mode = Animation.LOOP_LINEAR
+			player.play("walk", 0.2)
+			player.speed_scale = -1.0  # шаг назад
+			var time := 0.0
+			while time < STEP_BACK_TIME:
+				horse.position = home + Vector3(-STEP_BACK * smoothstep(0.0, 1.0, time / STEP_BACK_TIME), 0, 0)
+				_follow(pair)
+				await get_tree().process_frame
+				time += get_process_delta_time()
+			player.speed_scale = 1.0
+			player.get_animation("run").loop_mode = Animation.LOOP_LINEAR
+			player.play("run", 0.15)
+			time = 0.0
+			while time < LUNGE_TIME:
+				var t := time / LUNGE_TIME
+				horse.position = home + Vector3(lerpf(-STEP_BACK, 0.0, t * t), 0, 0)
+				_follow(pair)
+				await get_tree().process_frame
+				time += get_process_delta_time()
+			horse.position = home
+			_follow(pair)
 			if not placed:
-				_follow(pair, POKE_FORWARD)
 				var tip := _tip(pair.lance)
 				post.global_position = Vector3(tip.x + 0.15, 1.1, tip.z)
 				post.visible = true
 				placed = true
-			var time := 0.0
-			# 0–0,4 с отводит назад, 0,4–0,6 с колет вперёд, держит, 0,6–1,2 с возвращает.
-			player.play("attack_headbutt", 0.2)
-			while time < 1.2 + HOLD:
-				var slide := 0.0
-				if time < 0.4:
-					slide = -POKE_BACK * smoothstep(0.0, 1.0, time / 0.4)
-				elif time < 0.6:
-					slide = lerpf(-POKE_BACK, POKE_FORWARD, smoothstep(0.0, 1.0, (time - 0.4) / 0.2))
-				elif time < 1.2:
-					slide = lerpf(POKE_FORWARD, 0.0, smoothstep(0.0, 1.0, (time - 0.6) / 0.6))
-				if time >= 0.6 and time < 1.0:
-					post.rotation.z = -deg_to_rad(6.0) * (1.0 - (time - 0.6) / 0.4)
-				if time >= 1.0 and player.current_animation != "idle_breathe":
-					player.play("idle_breathe", 0.3)
-				_follow(pair, slide)
+			player.play("idle_breathe", 0.25)
+			time = 0.0
+			while time < 0.5 + HOLD:
+				if time < 0.5:
+					post.rotation.z = -deg_to_rad(6.0) * (1.0 - time / 0.5)
+				_follow(pair, 0.0, 1.5 * exp(-time * 6.0) * cos(time * 14.0) if time < 0.5 else 0.0)
 				await get_tree().process_frame
 				time += get_process_delta_time()
 
