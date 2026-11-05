@@ -5,8 +5,9 @@ extends "res://scenes/showcase.gd"
 const MOCK := preload("res://scenes/rider_mock.gd")
 const CELL_TARGET := 460
 const HOLD := 0.6
-const LANCE_CLIPS := ["ride_swing", "ride_strike"]  # удары сидя: копьё в кисти
-const LANCE_DAMP := {"ride_swing": 0.45}  # с копьём взмах аккуратнее: доля размаха клипа
+const LANCE_CLIPS := ["ride_swing", "ride_swing_mirror", "ride_strike"]  # удары сидя: копьё в кисти
+const LANCE_DAMP := {"ride_swing": 0.45, "ride_swing_mirror": 0.45}  # с копьём взмах аккуратнее: доля размаха клипа
+const LEFT_HAND_CLIPS := ["ride_swing_mirror"]  # зеркальный клип бьёт левой рукой — копьё в левой
 ## Езда без клипа езды: всадник в сидячей стойке, конь-макет идёт на месте,
 ## качается корпусом и переставляет ноги. Подпись, клип всадника, шагов в секунду,
 ## подъём корпуса (м), размах ног (градусы).
@@ -52,10 +53,11 @@ func _make_rider_cell(grid: GridContainer, clip: Array, with_lance := false) -> 
 	if with_lance and LANCE_DAMP.has(clip[1]):
 		MOCK.damp_clip(rider, clip[1], LANCE_DAMP[clip[1]])
 	_make_label(cell.frame).text = clip[0] + (" с копьём" if with_lance else "")
-	_repeat(rider, clip[1], lance, mount)
+	var hand := "mixamorig_LeftHand" if clip[1] in LEFT_HAND_CLIPS else "mixamorig_RightHand"
+	_repeat(rider, clip[1], lance, mount, hand)
 
 
-func _repeat(rider: Creature, clip: String, lance: MeshInstance3D = null, mount: Node3D = null) -> void:
+func _repeat(rider: Creature, clip: String, lance: MeshInstance3D = null, mount: Node3D = null, hand := "mixamorig_RightHand") -> void:
 	var length := rider.anim.get_animation(clip).length
 	while true:
 		rider.anim.play(clip, 0.0)
@@ -65,10 +67,10 @@ func _repeat(rider: Creature, clip: String, lance: MeshInstance3D = null, mount:
 		if lance == null:
 			await get_tree().create_timer(length).timeout
 		else:
-			var local := MOCK.calibrate_hand_lance(rider, mount)
+			var local := MOCK.calibrate_hand_lance(rider, mount, hand)
 			var left := length
 			while left > 0.0:
-				MOCK.place_hand_lance(lance, rider, local)
+				MOCK.place_hand_lance(lance, rider, local, hand)
 				await get_tree().process_frame
 				left -= get_process_delta_time()
 		await get_tree().create_timer(HOLD).timeout

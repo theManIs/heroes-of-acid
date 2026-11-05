@@ -10,7 +10,8 @@ const LEG_AXIS := Vector3(1, 0, 0)  # ось разведения в прост�
 ## Сидячий набор Mixamo «бой в машине»: подпись и имя клипа.
 const CLIPS := [
 	["Стойка: сидит спокойно", "ride_still"], ["Стойка: трясёт на кочках", "ride_idle"],
-	["Удар: взмах сидя", "ride_swing"], ["Удар: сбить врага трубой", "ride_strike"],
+	["Удар: взмах сидя", "ride_swing"], ["Удар: взмах сидя, зеркально", "ride_swing_mirror"],
+	["Удар: сбить врага трубой", "ride_strike"],
 	["Защита: блок сверху", "ride_block"], ["Уклон вправо", "ride_dodge"],
 	["Реакция: удар по голове", "ride_hurt"],
 ]
@@ -130,20 +131,20 @@ static func place_lance(lance: MeshInstance3D, rider: Creature, mount: Node3D, p
 
 ## Копьё в кисти для ударов сидя: идёт за кистью, как молот в хвате.
 ## Сначала calibrate_hand_lance на первом кадре: копьё вдоль коня, остриём вперёд.
-static func hand_frame(rider: Creature) -> Basis:
+static func hand_frame(rider: Creature, hand_bone := "mixamorig_RightHand") -> Basis:
 	var sk := rider.skeleton
-	var hand := sk.find_bone("mixamorig_RightHand")
+	var hand := sk.find_bone(hand_bone)
 	return (sk.global_transform * sk.get_bone_global_pose(hand)).basis.orthonormalized()
 
 
-static func calibrate_hand_lance(rider: Creature, mount: Node3D) -> Vector3:
+static func calibrate_hand_lance(rider: Creature, mount: Node3D, hand_bone := "mixamorig_RightHand") -> Vector3:
 	var forward: Vector3 = (mount.global_basis * Vector3(1.0, -LANCE_DOWN, 0.0)).normalized()
-	return hand_frame(rider).inverse() * forward
+	return hand_frame(rider, hand_bone).inverse() * forward
 
 
-static func place_hand_lance(lance: MeshInstance3D, rider: Creature, local_dir: Vector3) -> void:
-	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_RightHand"))
-	var forward := (hand_frame(rider) * local_dir).normalized()
+static func place_hand_lance(lance: MeshInstance3D, rider: Creature, local_dir: Vector3, hand_bone := "mixamorig_RightHand") -> void:
+	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone(hand_bone))
+	var forward := (hand_frame(rider, hand_bone) * local_dir).normalized()
 	var side := forward.cross(Vector3.UP).normalized()
 	if side.length_squared() < 0.01:
 		side = Vector3.BACK
