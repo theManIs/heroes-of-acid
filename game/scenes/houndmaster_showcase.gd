@@ -229,15 +229,34 @@ func _repeat_pair(unit: Creature, dog: AnimationPlayer, index: int) -> void:
 func _add_petting_target(view: SubViewport, unit: Creature, hound: Dictionary) -> void:
 	var target := Node3D.new()
 	view.add_child(target)
+	var hand := unit.skeleton.find_bone("mixamorig_RightHand")
+	var middle := unit.skeleton.find_bone("mixamorig_RightHandMiddle1")
+	var index := unit.skeleton.find_bone("mixamorig_RightHandIndex1")
+	var pinky := unit.skeleton.find_bone("mixamorig_RightHandPinky1")
+	var hand_rest := unit.skeleton.get_bone_global_rest(hand)
+	var fingers := unit.skeleton.get_bone_global_rest(middle).origin - hand_rest.origin
+	var across := unit.skeleton.get_bone_global_rest(index).origin - unit.skeleton.get_bone_global_rest(pinky).origin
+	# Оси ладони в координатах самой кисти, а не произвольных осях рига.
+	var local_forward := (hand_rest.basis.inverse() * fingers).normalized()
+	var local_across := (hand_rest.basis.inverse() * across).normalized()
+	local_across = (local_across - local_forward * local_across.dot(local_forward)).normalized()
+	var local_palm := local_forward.cross(local_across).normalized()
+	var hand_frame := Basis(local_across, local_palm, local_forward)
+	var forward := Vector3.BACK
+	var palm := Vector3.DOWN
+	var desired := Basis(palm.cross(forward), palm, forward)
+	target.global_basis = desired * hand_frame.inverse()
+	var palm_offset := (unit.skeleton.global_basis * fingers).length() * 0.5
 	var ik := SkeletonIK3D.new()
 	ik.root_bone = &"mixamorig_RightArm"
 	ik.tip_bone = &"mixamorig_RightHand"
-	ik.override_tip_basis = false
+	ik.override_tip_basis = true
 	unit.skeleton.add_child(ik)
 	ik.target_node = ik.get_path_to(target)
 	ik.influence = 0.0
 	ik.start()
-	_petters.append({"unit": unit, "dog": hound.skeleton, "head": hound.skeleton.find_bone("Head"), "target": target, "ik": ik})
+	_petters.append({"unit": unit, "dog": hound.skeleton, "head": hound.skeleton.find_bone("Head"),
+		"target": target, "ik": ik, "palm_offset": palm_offset})
 
 
 func _process(delta: float) -> void:
@@ -247,7 +266,8 @@ func _process(delta: float) -> void:
 		var dog: Skeleton3D = pair.dog
 		var head: Vector3 = dog.global_transform * dog.get_bone_global_pose(pair.head).origin
 		var time := unit.anim.current_animation_position
-		pair.target.global_position = head + Vector3(0, 0.08, sin(time * 3.0) * 0.06)
+		# К голове приходит середина ладони; запястье находится немного позади неё.
+		pair.target.global_position = head + Vector3(0, 0.035, 0.025 + sin(time * 3.0) * 0.045 - pair.palm_offset)
 		var weight := 0.0
 		if unit.anim.current_animation == &"fidget_pet":
 			var length := unit.anim.get_animation("fidget_pet").length

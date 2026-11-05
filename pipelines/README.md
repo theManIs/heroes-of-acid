@@ -32,4 +32,4 @@
 | [`creature-quadruped`](creature-quadruped/README.md) | существо на четырёх лапах | Tripo API | скелет донора Quaternius, привязка в Blender | донора | кредиты Tripo, только модель | проба, задача 108 |
 | [`3d-model`](3d-model/README.md) | то же, что `creature`, для других проектов | Tripo | Tripo | пресеты Tripo | кредиты Tripo | копия |
 | [`mixamo-catalog`](mixamo-catalog/README.md) | локальный каталог названий и описаний | — | — | метаданные Mixamo через Chrome/CUA; сборка таблицы Python | — | проба, задача 119 |
-| [`creature-pair-showcase`](creature-pair-showcase/README.md) | витрина псаря, собаки и пары | готовые игровые модели | готовые риги | готовые клипы, синхронизация, контакт руки и бегство собаки в Godot | — | проба, задачи 124 и 125 |
+| [`creature-pair-showcase`](creature-pair-showcase/README.md) | витрина псаря, собаки и пары | готовые игровые модели | готовые риги | готовые клипы, синхронизация, контакт руки и бегство собаки в Godot | — | проба, задачи 124–126 |

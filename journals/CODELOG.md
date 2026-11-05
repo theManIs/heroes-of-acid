@@ -884,3 +884,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `ESCAPE_HOLD`: 2 с для просмотра павшего псаря после завершения падения. Готовый run зациклен, новые файлы анимаций не нужны.
 - Обновлены пайплайн creature-pair-showcase и индекс, SCENES, TASKS и README псаря.
 - Команды: `godot --path game --position 10000,10000 res://scenes/houndmaster_showcase.tscn -- --section=pair --shot=...`; `git diff --check`. Кадр просмотрен: собаки в квадрате гибели нет, псарь лежит; ошибок скрипта нет, FPS кадра 60.
+
+### 2026-11-05 Задача 126: положение ладони при поглаживании
+
+- `game/scenes/houndmaster_showcase.gd`: включён `override_tip_basis`, ориентация кисти строится по костям Hand/Middle1/Index1/Pinky1. Пальцы вдоль головы, ладонь вниз; цель запястья учитывает середину ладони, высота снижена до 0,035 м над Head, ход поглаживания ±0,045 м.
+- Обновлены TASKS, README псаря, пайплайн creature-pair-showcase и индекс.
+- Команды: `godot --path game --position 10000,10000 res://scenes/houndmaster_showcase.tscn -- --section=pair --shot=...`; `git diff --check`. Кадр просмотрен, кисть горизонтальна у макушки, запуск без ошибок, FPS кадра 60.
