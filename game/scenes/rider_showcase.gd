@@ -17,6 +17,7 @@ const GAITS := [
 func _ready() -> void:
 	columns = 4
 	var grid := _build_page()
+	_make_charge_cell(grid)
 	for gait: Array in GAITS:
 		_make_ride_cell(grid, gait)
 	for clip: Array in MOCK.CLIPS:
@@ -62,6 +63,7 @@ func _make_ride_cell(grid: GridContainer, gait: Array) -> void:
 	view.add_child(mount)
 	var legs := MOCK.build_horse(mount)
 	var rider := MOCK.make_rider(mount)
+	var lance := MOCK.add_lance(mount)
 	_make_label(cell.frame).text = gait[0]
 	rider.anim.get_animation(gait[1]).loop_mode = Animation.LOOP_LINEAR
 	rider.anim.play(gait[1])
@@ -80,8 +82,72 @@ func _make_ride_cell(grid: GridContainer, gait: Array) -> void:
 		# привстаёт на каждый второй шаг — облегчённая рысь. Без клипа «спокойно сидит».
 		var post: float = maxf(0.0, sin(phase * 0.5)) * gait[3] * 0.6 if gait[2] > 2.0 else 0.0
 		rider.position.y = seat_y + post
+		MOCK.place_lance(lance, rider, mount)
 		for i in legs.size():
 			# Диагональные пары ног движутся вместе, как у рыси.
 			var pair := 1.0 if i == 0 or i == 3 else -1.0
 			legs[i].rotation.z = sin(phase) * deg_to_rad(gait[4]) * pair
+
+
+## Таранный удар: копьё неподвижно под рукой, бьёт разгон коня. Цель — столб.
+const CHARGE_FROM := -3.4
+const CHARGE_HIT := -1.2  # где корень коня, когда остриё доходит до столба
+const CHARGE_TIME := 0.9
+const CHARGE_BACK := 1.6
+
+
+func _make_charge_cell(grid: GridContainer) -> void:
+	var cell := _make_frame(grid, 4.6)
+	var view: SubViewport = cell.view
+	var post := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(0.3, 2.2, 0.3)
+	post.mesh = box
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.7, 0.2, 0.15)
+	post.material_override = mat
+	post.position = Vector3(CHARGE_HIT + 1.0 + MOCK.LANCE_LENGTH - MOCK.LANCE_BACK - 0.2, 1.1, 0.35)
+	view.add_child(post)
+	var mount := Node3D.new()
+	view.add_child(mount)
+	var legs := MOCK.build_horse(mount)
+	var rider := MOCK.make_rider(mount)
+	var lance := MOCK.add_lance(mount)
+	_make_label(cell.frame).text = "Таран копьём: разгон на цель"
+	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
+	rider.anim.play("ride_still")
+	rider.anim.advance(0.0)
+	await get_tree().process_frame
+	MOCK.sit(rider)
+	var time := 0.0
+	var placed := false
+	while is_instance_valid(mount):
+		await get_tree().process_frame
+		var delta := get_process_delta_time()
+		time = fmod(time + delta, CHARGE_TIME + 0.5 + CHARGE_BACK + 0.6)
+		var x := CHARGE_FROM
+		var speed := 0.0
+		if time < CHARGE_TIME:
+			var t := time / CHARGE_TIME
+			x = lerpf(CHARGE_FROM, CHARGE_HIT, t * t)  # разгон
+			speed = 1.0
+		elif time < CHARGE_TIME + 0.5:
+			x = CHARGE_HIT  # удар и короткая остановка
+			if not placed:
+				# Столб ровно там, куда пришло остриё.
+				var tip: Vector3 = lance.global_transform * Vector3(0, MOCK.LANCE_LENGTH * 0.5, 0)
+				post.global_position = Vector3(tip.x + 0.15, 1.1, tip.z)
+				placed = true
+			post.rotation.z = -deg_to_rad(8.0) * (1.0 - (time - CHARGE_TIME) / 0.5)
+		elif time < CHARGE_TIME + 0.5 + CHARGE_BACK:
+			x = lerpf(CHARGE_HIT, CHARGE_FROM, smoothstep(0.0, 1.0, (time - CHARGE_TIME - 0.5) / CHARGE_BACK))
+			speed = 0.4
+		mount.position.x = x
+		var phase := time * 3.2 * TAU
+		mount.position.y = absf(sin(phase)) * 0.08 * speed
+		mount.rotation.z = sin(phase) * deg_to_rad(2.0) * speed
+		for i in legs.size():
+			var pair := 1.0 if i < 2 else -1.0  # галоп: передние и задние вместе
+			legs[i].rotation.z = sin(phase) * deg_to_rad(32.0) * pair * speed
+		MOCK.place_lance(lance, rider, mount)
 

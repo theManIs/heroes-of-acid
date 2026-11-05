@@ -93,3 +93,34 @@ static func build_horse(parent: Node) -> Array[Node3D]:
 	saddle.position = Vector3(-0.1, SADDLE + 0.03, 0)
 	parent.add_child(saddle)
 	return legs
+
+
+## Палка вместо копья: лежит под правой рукой остриём вперёд, вдоль коня.
+## Держится за кисть, но направление задаёт конь, а не клип: копьё не крутится в руке.
+const LANCE_LENGTH := 3.2
+const LANCE_BACK := 0.9  # сколько палки остаётся за кистью
+const LANCE_DOWN := 0.06  # наклон остриём вниз
+
+
+static func add_lance(parent: Node) -> MeshInstance3D:
+	var lance := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 0.025
+	cyl.bottom_radius = 0.035
+	cyl.height = LANCE_LENGTH
+	lance.mesh = cyl
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.62, 0.5, 0.33)
+	lance.material_override = mat
+	parent.add_child(lance)
+	lance.top_level = true
+	return lance
+
+
+static func place_lance(lance: MeshInstance3D, rider: Creature, mount: Node3D) -> void:
+	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_RightHand"))
+	var forward: Vector3 = (mount.global_basis * Vector3(1.0, -LANCE_DOWN, 0.0)).normalized()
+	var side := forward.cross(Vector3.UP).normalized()
+	# Цилиндр Godot вытянут по Y: ось копья — Y, базис правый (z = x × y).
+	lance.global_transform = Transform3D(Basis(side, forward, side.cross(forward)), hand + forward * (LANCE_LENGTH * 0.5 - LANCE_BACK))
+
