@@ -55,6 +55,8 @@ var _glow_anchor: Node3D
 var shots := {}  # режимы огня: имя -> настройки снаряда; пусто — ближний бой
 var shot_mode := ""  # режим огня, которым выстрелит
 var shot_wanted := ""  # какой режим выбран; shot_mode отличается, если выбранный сейчас запрещён
+var melee_modes := {}
+var melee_mode := ""
 
 var _model_base := Vector3.ZERO
 var _target := Vector3.ZERO
@@ -565,18 +567,52 @@ func set_attack(anim_name: String) -> void:
 	_find_impact()
 
 
+func configure_melee(modes: Dictionary) -> void:
+	melee_modes = modes
+	if not modes.is_empty():
+		set_melee_mode(modes.keys()[0])
+
+
+func set_melee_mode(mode: String) -> void:
+	if not melee_modes.has(mode):
+		return
+	melee_mode = mode
+	var cfg: Dictionary = melee_modes[mode]
+	attack_from = cfg.get("from", 0.0)
+	set_attack(cfg.anim)
+	impact = cfg.get("impact", impact)
+	reach = cfg.get("reach", reach) * height / 1.9 if cfg.has("reach") else reach
+
+
+func next_melee_mode() -> void:
+	var keys := melee_modes.keys()
+	if not keys.is_empty():
+		set_melee_mode(keys[(keys.find(melee_mode) + 1) % keys.size()])
+
+
+func wide_melee() -> bool:
+	return melee_modes.get(melee_mode, {}).get("area", false)
+
+
+func melee_title() -> String:
+	return melee_modes.get(melee_mode, {}).get("title", "")
+
+
 ## Точка ближнего контакта: у составного существа может быть несколько моделей.
 func melee_point(_from: Vector3) -> Vector3:
 	return position
 
 
 ## Кулак не достаёт до выбранной части цели — выпад вперёд, затем возврат.
-func strike(target: Creature, _distance: float, overlap: float) -> void:
+func strike(target: Creature, _distance: float, overlap: float, collateral: Array[Creature] = []) -> void:
 	var contact := target.melee_point(position)
 	face(contact)
 	target.face(position)
 	play_once(attack_anim)
 	target.take_hit(hit_delay())
+	for victim: Creature in collateral:
+		if victim != target and victim != self:
+			victim.take_hit(hit_delay())
 	get_tree().create_timer(hit_delay()).timeout.connect(puff_smoke)
 	get_tree().create_timer(hit_delay()).timeout.connect(target.puff_smoke)
 	var lunge := position.distance_to(contact) - (reach + target.front() - overlap)

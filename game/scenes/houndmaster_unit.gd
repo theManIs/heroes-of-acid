@@ -152,7 +152,7 @@ func hit_delay() -> float:
 	return COMMAND_LEAD + BITE_IMPACT
 
 
-func strike(target: Creature, _distance: float, _overlap: float) -> void:
+func strike(target: Creature, _distance: float, _overlap: float, _collateral: Array[Creature] = []) -> void:
 	# Совместимость с интерфейсом Creature для атаки уже стоящего рядом врага.
 	raid(target, [] as Array[Vector3], target.position)
 

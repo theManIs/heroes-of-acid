@@ -2933,3 +2933,21 @@
 **User:** Попробовать исправить тёмную сталь через отражения и свет витрины.
 
 **Assistant:** Для ячеек молотобойца включены нейтральный Sky как источник отражений и мягкий заполняющий свет. Изменение управляется showcase_metal_light в его конфигурации. Материалы не менялись; обновлённая витрина открыта для ручного принятия.
+
+### 2026-11-05 16:00
+
+**User:** Положительно оценил свет; задал молотобойцу два режима атаки: сверху по трём ячейкам с риском задеть своих и точечный по одной.
+
+**Assistant:** Добавлена 134, изложен план переключения режимов, подсветки зоны и общего момента попадания; интерактивно уточняется форма трёх гексов. Код не менялся, реализация после согласования плана и команды.
+
+### 2026-11-05 16:01
+
+**User:** Выбрал форму площадного удара: цель и гексы слева и справа от неё поперёк удара.
+
+**Assistant:** Уточнена 134: поперечная зона из трёх гексов, дружеское поражение, альтернативный точечный режим. План согласован по форме, код не менялся; ожидается команда на реализацию по AGENTS.
+
+### 2026-11-05 17:08
+
+**User:** Authorized 134 and immediate creature-arena preview; then reported stale orange/green hover tiles and clarified that all three area cells must neighbor the hammerer.
+
+**Assistant:** Implemented two melee modes, common area geometry, friendly fire with one hit per squad, preview warnings, AI precision selection, ninth showcase clip, icon, and integration in both arenas. Corrected the mistaken target-centered line to the three adjacent forward cells. Fixed the typed-array redraw error and explicit hover clearing when the pointer leaves the window. Reopened hammerer creature arena; code for 133/134 complete, manual acceptance pending.

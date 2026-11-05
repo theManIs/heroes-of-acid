@@ -78,6 +78,7 @@ const CREATURES := {
 		"attack": "slash", "attack_from": 0.0,
 		"hurt": "hit_to_body_01", "hurt_len": 0.65, "idle": "idle", "defend": "fold_arms", "defend_from": 0.102, "defend_len": 1.6, "defend_lead": 1.0, "size": 2.0,  # кусок 1,75–3,35 с: руки скрещиваются
 	},
+	"hammerer": preload("res://scenes/hammerer_config.gd").UNIT,
 }
 const ROMAN := ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"]
 const COLS := 6
@@ -106,6 +107,7 @@ enum Turn { PLAYER, ENEMY, BUSY, OVER }
 const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
 # Этот отряд пока подключён только в тест существа; большой бой использует CREATURES.
 const PAIR_PATHS := preload("res://scenes/houndmaster_paths.gd")
+const MELEE_AREA := preload("res://scenes/melee_area.gd")
 var creatures := CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair()})
 
 var player: Creature
@@ -128,6 +130,7 @@ var _hovered := Vector2i(999, 999)
 var _mode_button := Button.new()  # смена режима огня: только у стрелка
 var _enemy_shots := 0  # противник-стрелок чередует стрелы и бросок
 var _targeted := false  # на противнике зелёная обводка
+var _pointer_inside := true
 var _attack_from := Vector2i(999, 999)  # гекс, с которого будет удар (выбран сектором под курсором)
 var sword: Control
 var bow: Control
@@ -155,6 +158,8 @@ func _ready() -> void:
 	_build_board()
 	_build_hud()
 	_reset()
+	get_window().mouse_exited.connect(_clear_hover)
+	get_window().mouse_entered.connect(func(): _pointer_inside = true)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--shot="):
 			_shoot(arg.trim_prefix("--shot="))
@@ -178,6 +183,7 @@ func _make() -> Creature:
 	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED)
 	c.shots = cfg.get("shots", {})
 	c.set_shot(c.shots.keys()[0] if c.ranged() else "")
+	c.configure_melee(cfg.get("melee_modes", {}))
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
@@ -223,6 +229,7 @@ func _switch(id: String) -> void:
 	player = _make()
 	enemy = _make()
 	_show_mode()
+	preload("res://scenes/metal_lighting.gd").apply(self, creatures[tested].get("showcase_metal_light", false))
 	_reset()
 
 
@@ -232,7 +239,11 @@ func _ranged() -> bool:
 
 ## Подпись кнопки — текущий режим огня.
 func _show_mode() -> void:
-	_mode_button.visible = _ranged()
+	_mode_button.visible = _ranged() or not player.melee_modes.is_empty()
+	if not player.melee_modes.is_empty():
+		_mode_button.text = "Атака: " + player.melee_title()
+		_mode_button.disabled = turn != Turn.PLAYER
+		return
 	if _ranged():
 		var adjacent := _hex_distance(_hex_of(player), _hex_of(enemy)) == 1
 		player.update_shot(adjacent)
@@ -242,6 +253,11 @@ func _show_mode() -> void:
 
 
 func _switch_mode() -> void:
+	if turn == Turn.PLAYER and not player.melee_modes.is_empty():
+		player.next_melee_mode()
+		_show_mode()
+		_paint()
+		return
 	if turn == Turn.PLAYER and _ranged():
 		player.next_shot_mode(_hex_distance(_hex_of(player), _hex_of(enemy)) == 1)
 		_show_mode()
@@ -414,6 +430,8 @@ func _build_world() -> void:
 	sun.rotation_degrees = Vector3(-50, 30, 0)
 	sun.shadow_enabled = true
 	add_child(sun)
+	if creatures[tested].get("showcase_metal_light", false):
+		preload("res://scenes/metal_lighting.gd").apply(self)
 
 	camera.fov = 55.0  # фигурки крупно, крайние гексы видны частично
 	add_child(camera)
@@ -569,6 +587,9 @@ func _icon_style(state: String) -> StyleBox:
 func _reset() -> void:
 	_round += 1
 	turn = Turn.BUSY
+	_attack_from = NO_HEX
+	_hovered = NO_HEX
+	_targeted = false
 	_enemy_shots = 0
 	player.revive()
 	enemy.revive()
@@ -729,7 +750,7 @@ func _move_and_maybe_strike(who: Creature, target: Creature, path: Array[Vector2
 		if round_id != _round:
 			return
 	if tested != "houndmaster-pair" and _formation_distance(_hex_of(who), _hex_of(target)) == 1 and not _ranged():
-		who.strike(target, _hex_spacing(), OVERLAP)
+		who.strike(target, _hex_spacing(), OVERLAP, _melee_victims(who, target, _hex_of(who)))
 		await get_tree().create_timer(who.hit_delay() + 1.5).timeout  # попадание + реакция цели
 	else:
 		who.face(target.position)
@@ -829,7 +850,37 @@ func _on_enemy(screen: Vector2) -> bool:
 
 # --- Отрисовка состояния ---
 
+func _impact_cells(who: Creature, target: Creature, from: Vector2i) -> Array[Vector2i]:
+	if who.melee_modes.is_empty() or from == NO_HEX:
+		return []
+	var contact := _hex_of(target)
+	for h in _footprint(_hex_of(target)):
+		if _hex_distance(from, h) < _hex_distance(from, contact):
+			contact = h
+	var zone: Array[Vector2i] = []
+	for h in MELEE_AREA.zone(from, contact, who.wide_melee()):
+		if tiles.has(h):
+			zone.append(h)
+	return zone
+
+
+func _melee_victims(who: Creature, target: Creature, from: Vector2i) -> Array[Creature]:
+	var result: Array[Creature] = []
+	var zone := _impact_cells(who, target, from)
+	for c: Creature in [player, enemy]:
+		if c == who or not c.can_be_hit():
+			continue
+		for h in _footprint(_hex_of(c)):
+			if zone.has(h):
+				result.append(c)
+				break
+	return result
+
+
 func _paint() -> void:
+	var zone: Array[Vector2i] = []
+	if turn == Turn.PLAYER and _targeted:
+		zone = _impact_cells(player, enemy, _attack_from)
 	for h: Vector2i in tiles:
 		var mat: StandardMaterial3D = tiles[h].material_override
 		var color: Color = tiles[h].get_meta("base")
@@ -847,6 +898,8 @@ func _paint() -> void:
 			color = color.lerp(TARGET, 0.55)
 		elif reachable.has(_hovered) and _footprint(_hovered).has(h):
 			color = color.lerp(PLAYER_TURN, 0.35)
+		if zone.has(h):
+			color = color.lerp(Color(1.0, 0.5, 0.1), 0.7)
 		mat.albedo_color = color
 
 
@@ -860,6 +913,16 @@ func _check_shot_request() -> void:
 	DirAccess.remove_absolute(screens.path_join(".shot"))
 
 
+func _clear_hover() -> void:
+	_pointer_inside = false
+	_targeted = false
+	_attack_from = NO_HEX
+	_hovered = NO_HEX
+	enemy.set_outline(null)
+	_paint()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
 func _process(delta: float) -> void:
 	if OS.is_debug_build():
 		_check_shot_request()
@@ -870,12 +933,12 @@ func _process(delta: float) -> void:
 		_zoom = lerpf(_zoom, _zoom_target, 1.0 - exp(-10.0 * delta))
 		_apply_zoom()
 	var mouse := get_viewport().get_mouse_position()
-	var over_enemy := not player.dead and (_on_enemy(mouse) or _footprint(_hex_of(enemy)).has(_hex_at(_ground_point(mouse))))
+	var over_enemy := _pointer_inside and not player.dead and (_on_enemy(mouse) or _footprint(_hex_of(enemy)).has(_hex_at(_ground_point(mouse))))
 	var targeted := turn == Turn.PLAYER and over_enemy and enemy.can_be_hit()
 	if targeted != _targeted:
 		_targeted = targeted
 		enemy.set_outline(TARGET if targeted else null)
-	var h := NO_HEX if over_enemy else _hex_under(mouse)  # противник заслоняет гексы за собой
+	var h := NO_HEX if over_enemy or not _pointer_inside else _hex_under(mouse)  # противник заслоняет гексы за собой
 	var from := _attack_hex(mouse) if targeted and not _ranged() else NO_HEX
 	if h != _hovered or from != _attack_from:
 		_hovered = h
@@ -909,6 +972,9 @@ func _process(delta: float) -> void:
 	if tested == "houndmaster-pair" and turn == Turn.PLAYER:
 		text = text.replace("подойти и ударить", "послать собаку и вернуть её")
 		text += " · Перемещение: выбирай верхний гекс; при атаке псарь остаётся на месте"
+	if not player.melee_modes.is_empty() and turn == Turn.PLAYER:
+		text += " · " + player.melee_title() + (": 3 гекса, задевает своих" if player.wide_melee() else ": только цель")
+	_mode_button.disabled = turn != Turn.PLAYER if not player.melee_modes.is_empty() else _mode_button.disabled
 	status.text = text
 
 

@@ -6,7 +6,7 @@ var _grid: GridContainer
 
 
 func _ready() -> void:
-	columns = 4
+	columns = 3 if selected == "hammerer" else 4
 	cell_size = 350
 	_grid = _build_page()
 	if selected in ["houndmaster", "hound", "houndmaster-pair"]:
@@ -22,6 +22,11 @@ func _ready() -> void:
 		var actions := [["Стойка", "idle", 0.0, 0.0], ["Ходьба", "walk", 0.0, 0.0],
 			["Атака", cfg.attack, cfg.attack_from, 0.0], ["Реакция на удар", cfg.hurt, 0.0, cfg.hurt_len],
 			["Защита", cfg.defend, cfg.defend_from, cfg.defend_len], ["Смерть", "fall", 0.0, 0.0]]
+		if cfg.has("melee_modes"):
+			actions[2][0] = "Удар по площади"
+			for mode: Dictionary in cfg.melee_modes.values():
+				if mode.anim != cfg.attack:
+					actions.insert(3, [mode.title + " удар", mode.anim, mode.get("from", 0.0), 0.0])
 		for field in ["run", "fidget"]:
 			if cfg.has(field):
 				actions.append(["Бег" if field == "run" else "Отклик", cfg[field], 0.0, 0.0])

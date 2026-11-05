@@ -976,3 +976,14 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - showcase.gd: added optional neutral procedural Sky for reflections with the existing flat backdrop, plus a cool fill light (0.75 energy).
 - hammerer_config.gd opts in; creature_gallery_page.gd applies the option per cell. Documented in the pipeline.
 - Commands: Godot launch/snapshot; local Environment enum introspection to correct REFLECTION_SOURCE_SKY; updated showcase launch. No automated tests run.
+
+### 2026-11-05 17:08 - Hammerer melee modes and arena integration (133, 134)
+
+- Creature: configure/select/cycle melee modes independently of ranged shots; animation, impact timing and reach per mode. strike accepts collateral recipients using the same hit delay. Houndmaster override signature kept compatible.
+- melee_area.gd: shared three-cell forward arc, all three cells adjacent to attacker; precision returns only target cell. Both arenas filter map edges and deduplicate squads by footprint, including friendly squads.
+- Creature and battle arenas: mode buttons, area preview, friendly-fire warning, AI precision when allies would be hit. Hammerer added to roster, battle move range 3 and an additional starting row (8 squads per side).
+- Gallery: two distinct attack cells, 9 clips in a 3x3 grid. Added Mixamo great sword attack source and retargeted attack_point.glb. Added icon.
+- metal_lighting.gd: reused approved neutral lighting for the hammerer in creature arena and icon; original environment restored for other selections.
+- User feedback correction: removed target-centered transverse line; replaced ternary untyped empty arrays with typed Array[Vector2i] initialization to prevent aborted paint calls. Added explicit hover reset on window mouse exit in both arenas.
+- Commands: prepare_pack.py, build_clips.py, Godot asset import and icon generation, point-attack authoring render, creature arena launches, runtime-log inspection, screenshot request. No automated tests run; user performs interactive acceptance.
+- Updated TASKS, SCENES, pipeline and creature documentation.

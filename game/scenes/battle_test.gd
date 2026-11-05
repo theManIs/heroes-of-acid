@@ -8,19 +8,20 @@ extends Node3D
 const ARENA := preload("res://scenes/creature_test.gd")  # записи существ — там
 const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
 const PAIR_PATHS := preload("res://scenes/houndmaster_paths.gd")
+const MELEE_AREA := preload("res://scenes/melee_area.gd")
 const SWORD := preload("res://scenes/sword_cursor.gd")
 const BOW := preload("res://scenes/bow_cursor.gd")
 const ACTION_ICON := preload("res://scenes/action_icon.gd")
 const COLS := 12
 const ROWS := 9
-const START_ROWS: Array[int] = [0, 2, 3, 5, 6, 8]  # ряды, где стоят существа в начале боя
+const START_ROWS: Array[int] = [0, 2, 3, 5, 6, 8, 1]  # ряды одиночных существ; пара размещается отдельно
 const OBSTACLES := [  # преграда занимает свои гексы: ни встать, ни пройти; cells — колонка и ряд каждого
 	{"id": "rock-ridge", "turn": 0.0, "cells": [Vector2i(5, 3), Vector2i(6, 3), Vector2i(6, 4)]},
 	{"id": "dead-tree-v2", "turn": 2.1, "cells": [Vector2i(8, 6)], "sink": 0.1},  # sink — доля высоты под землёй: прячет подставку модели
 ]
 const OBSTACLE_OVER := 1.15  # насколько модель шире занятых гексов: не выглядит вписанной в сетку
 const OBSTACLE_HEIGHT := 2.0  # выше не бывает, метров: не закрывает существ в ряду за ней
-const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3, "houndmaster-pair": 3}  # обычное перемещение; вылазка собаки не ограничена
+const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3, "hammerer": 3, "houndmaster-pair": 3}  # обычное перемещение; вылазка собаки не ограничена
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
 const TILE_HEIGHT := 0.01  # заливка гекса плоская, лежит на траве
@@ -90,6 +91,7 @@ var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущ�
 var sword: Control
 var bow: Control
 var mode_button: Button  # смена режима огня: видна, когда ходит свой стрелок
+var melee_mode_button := Button.new()
 var queue_bar := HBoxContainer.new()  # шкала инициативы
 var wait_button: Button
 var round_no := 0  # номер игрового хода
@@ -99,6 +101,7 @@ var _wait_phase := false  # очередь ожидавших: ждать вто
 var _hovered := NO_HEX
 var _attack_from := NO_HEX  # гекс, с которого будет удар
 var _targeted: Creature  # противник с зелёной обводкой
+var _pointer_inside := true
 var _inspected: Creature  # существо под курсором: показываем его дальность хода
 var _auto := false
 var _shot := ""
@@ -130,6 +133,8 @@ func _ready() -> void:
 	_place_camera()
 	get_viewport().size_changed.connect(_place_camera)
 	_reset()
+	get_window().mouse_exited.connect(_clear_hover)
+	get_window().mouse_entered.connect(func(): _pointer_inside = true)
 	if _shot != "":
 		await get_tree().create_timer(0.8 * Engine.time_scale).timeout
 		get_viewport().get_texture().get_image().save_png(_shot + "-start.png")
@@ -156,6 +161,7 @@ func _make(id: String) -> Creature:
 	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED) * CREATURE_SCALE  # шаг крупнее — ноги не скользят
 	c.shots = cfg.get("shots", {})
 	c.set_shot(c.shots.keys()[0] if c.ranged() else "")
+	c.configure_melee(cfg.get("melee_modes", {}))
 	c.walk_rate = WALK_RATE
 	c.set_meta("move", MOVES[id])
 	c.set_meta("title", cfg.name)
@@ -498,6 +504,9 @@ func _build_hud() -> void:
 	hud.add_child(bar)
 	mode_button = _action_button("Режим огня", _switch_mode, ACTION_ICON.Kind.FIRE_MODE)
 	bar.add_child(mode_button)
+	melee_mode_button.custom_minimum_size = Vector2(240, 64)
+	melee_mode_button.pressed.connect(_switch_mode)
+	bar.add_child(melee_mode_button)
 	wait_button = _action_button("Ждать", _wait, ACTION_ICON.Kind.WAIT)
 	bar.add_child(wait_button)
 	bar.add_child(_action_button("Защита", _defend, ACTION_ICON.Kind.DEFEND))
@@ -742,6 +751,8 @@ func _ai_move(enemy_side: int) -> void:
 func _act(who: Creature, target: Creature, path: Array[Vector2i]) -> void:
 	turn = Turn.BUSY
 	_set_target(null)
+	_attack_from = NO_HEX
+	_hovered = NO_HEX
 	who.set_outline(null)
 	reachable.clear()
 	_paint()
@@ -753,7 +764,9 @@ func _act(who: Creature, target: Creature, path: Array[Vector2i]) -> void:
 		who.walk_path(points)
 		await who.arrived
 	if target and not _is_pair(who) and _formation_distance(who, target) == 1:
-		who.strike(target, _hex_spacing(), OVERLAP)
+		if sides[1].has(who) or _auto:
+			_choose_melee_mode(who, target)
+		who.strike(target, _hex_spacing(), OVERLAP, _melee_victims(who, target, cells[who]))
 		await get_tree().create_timer(who.hit_delay()).timeout
 		_show_queue()  # убитый уходит из шкалы в момент попадания
 		await get_tree().create_timer(1.5).timeout  # реакция цели
@@ -819,6 +832,10 @@ func _game_over() -> void:
 
 ## Смена режима огня: не тратит ход.
 func _switch_mode() -> void:
+	if turn == Turn.PLAYER and not active.melee_modes.is_empty():
+		active.next_melee_mode()
+		_paint()
+		return
 	if turn == Turn.PLAYER and active.ranged():
 		active.next_shot_mode(_enemy_adjacent(active))
 
@@ -980,7 +997,49 @@ func _range_of(c: Creature) -> Dictionary:
 	return out
 
 
+func _impact_cells(who: Creature, target: Creature, from: Vector2i) -> Array[Vector2i]:
+	if who == null or target == null or who.melee_modes.is_empty() or from == NO_HEX:
+		return []
+	var contact: Vector2i = cells[target]
+	for h in _footprint(target):
+		if _hex_distance(from, h) < _hex_distance(from, contact):
+			contact = h
+	var zone: Array[Vector2i] = []
+	for h in MELEE_AREA.zone(from, contact, who.wide_melee()):
+		if tiles.has(h):
+			zone.append(h)
+	return zone
+
+
+func _melee_victims(who: Creature, target: Creature, from: Vector2i) -> Array[Creature]:
+	var result: Array[Creature] = []
+	var zone := _impact_cells(who, target, from)
+	for side in sides:
+		for c: Creature in side:
+			if c == who or not c.can_be_hit():
+				continue
+			for h in _footprint(c):
+				if zone.has(h):
+					result.append(c)
+					break
+	return result
+
+
+func _choose_melee_mode(who: Creature, target: Creature) -> void:
+	if who.melee_modes.is_empty():
+		return
+	who.set_melee_mode("area")
+	var allies: Array = sides[0] if sides[0].has(who) else sides[1]
+	for c in _melee_victims(who, target, cells[who]):
+		if allies.has(c):
+			who.set_melee_mode("point")
+			return
+
+
 func _paint() -> void:
+	var zone: Array[Vector2i] = []
+	if turn == Turn.PLAYER:
+		zone = _impact_cells(active, _targeted, _attack_from)
 	var shown := reachable
 	var tint := PLAYER_TURN
 	var center: Variant = cells[active] if active else null
@@ -1005,8 +1064,22 @@ func _paint() -> void:
 			color = Color(PLAYER_TURN if sides[0].has(active) else ENEMY_TURN, RANGE_ALPHA)
 		elif preview and shown.has(_hovered) and _footprint(preview, _hovered).has(h):
 			color = Color(tint, RANGE_ALPHA * 2.0)
+		if zone.has(h):
+			var occupant := _unit_on(h)
+			var friendly := occupant != null and sides[0].has(occupant) == sides[0].has(active)
+			color = Color(1.0, 0.18 if friendly else 0.5, 0.1, 0.8)
 		tiles[h].visible = color.a > 0.0
 		tiles[h].material_override.albedo_color = color
+
+
+func _clear_hover() -> void:
+	_pointer_inside = false
+	_set_target(null)
+	_attack_from = NO_HEX
+	_hovered = NO_HEX
+	_inspected = null
+	_paint()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
 func _process(delta: float) -> void:
@@ -1023,13 +1096,13 @@ func _process(delta: float) -> void:
 		_zoom = lerpf(_zoom, _zoom_target, 1.0 - exp(-10.0 * delta))
 		_apply_zoom()
 	var mouse := get_viewport().get_mouse_position()
-	var enemy := _enemy_under(mouse)
+	var enemy := _enemy_under(mouse) if _pointer_inside else null
 	var targeted := enemy if turn == Turn.PLAYER else null
 	_set_target(targeted)
-	var h := NO_HEX if enemy else _hex_under(mouse)  # противник заслоняет гексы за собой
+	var h := NO_HEX if enemy or not _pointer_inside else _hex_under(mouse)  # противник заслоняет гексы за собой
 	var shooter := turn == Turn.PLAYER and active.ranged()
 	var from := _attack_hex(mouse, targeted) if targeted and not shooter else NO_HEX
-	var inspected := enemy if enemy else _ally_under(mouse)
+	var inspected: Creature = (enemy if enemy else _ally_under(mouse)) if _pointer_inside else null
 	if turn == Turn.BUSY:  # гекс уже новый, а существо ещё идёт
 		inspected = null
 	if h != _hovered or from != _attack_from or inspected != _inspected:
@@ -1046,6 +1119,10 @@ func _process(delta: float) -> void:
 		sword.position = mouse
 		sword.rotation = (b - a).angle()
 	mode_button.visible = shooter
+	melee_mode_button.visible = turn == Turn.PLAYER and not active.melee_modes.is_empty()
+	if melee_mode_button.visible:
+		melee_mode_button.text = "Атака: " + active.melee_title()
+		melee_mode_button.tooltip_text = "3 гекса, включая своих" if active.wide_melee() else "Только выбранная цель"
 	if shooter:
 		var single: bool = active.allowed_shots(_enemy_adjacent(active)).size() < 2
 		mode_button.disabled = single
@@ -1061,11 +1138,21 @@ func _process(delta: float) -> void:
 func _status_text(unit: Creature, from: Vector2i) -> String:
 	if unit:
 		var text := "%s: удары %d/%d" % [unit.get_meta("title"), unit.hits, Creature.HITS_TO_KILL]
+		if unit == _targeted and not active.melee_modes.is_empty() and from != NO_HEX:
+			text += " · " + active.melee_title()
+			var allies := 0
+			for c in _melee_victims(active, unit, from):
+				if sides[0].has(c) == sides[0].has(active):
+					allies += 1
+			if allies > 0:
+				text += " · Заденет своих: %d" % allies
 		if unit == _targeted and from == NO_HEX and not active.ranged():
 			text += ", не дотянуться"
 		return text
 	match turn:
 		Turn.PLAYER:
+			if not active.melee_modes.is_empty():
+				return "%s: %s%s" % [active.get_meta("title"), active.melee_title(), " — задевает своих" if active.wide_melee() else " — только цель"]
 			if _is_pair(active):
 				return "Псарь с собакой: ход %d; атака на всё поле по свободному пути, собака возвращается" % active.get_meta("move")
 			if active.ranged():

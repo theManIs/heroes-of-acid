@@ -9,7 +9,8 @@
 | great sword idle.fbx | idle | Двуручная стойка |
 | great sword walk.fbx | walk | Ходьба с двуручным хватом |
 | great sword run.fbx | run | Бег с оружием |
-| great sword slash (3).fbx | attack | Удар сверху, 1,83 с |
+| great sword slash (3).fbx | attack | Удар сверху по трём соседним гексам перед собой, 1,83 с |
+| great sword attack.fbx | attack_point | Короткий точечный удар, 1,20 с |
 | great sword impact (2).fbx | hurt | Реакция на удар |
 | great sword blocking.fbx | defend | Принять блок оружием |
 | two handed sword death.fbx | fall | Падение, руки расходятся |

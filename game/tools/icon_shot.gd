@@ -34,6 +34,8 @@ func _ready() -> void:
 
 
 func _shoot(id: String, cfg: Dictionary) -> void:
+	if cfg.get("showcase_metal_light", false):
+		preload("res://scenes/metal_lighting.gd").apply(self)
 	var c: Creature = HOUNDMASTER_UNIT.new() if id == "houndmaster-pair" else Creature.new()
 	add_child(c)
 	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
