@@ -79,8 +79,8 @@ func _make_ride_cell(grid: GridContainer, gait: Array) -> void:
 		mount.rotation.z = sin(phase) * deg_to_rad(1.5)
 		# Опытный наездник не трясётся: бёдра гасят толчки, корпус идёт ровнее коня.
 		# На рыси привстаёт на каждый второй шаг — облегчённая рысь.
-		var follow := mount.position.y * RIDER_FOLLOW
-		var post := maxf(0.0, sin(phase * 0.5)) * gait[3] * 0.8 if gait[2] > 2.0 else 0.0
+		var follow: float = mount.position.y * RIDER_FOLLOW
+		var post: float = maxf(0.0, sin(phase * 0.5)) * gait[3] * 0.8 if gait[2] > 2.0 else 0.0
 		rider.position.y = seat_y + follow + post
 		for i in legs.size():
 			# Диагональные пары ног движутся вместе, как у рыси.
