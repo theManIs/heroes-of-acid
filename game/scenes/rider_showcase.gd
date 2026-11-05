@@ -25,6 +25,7 @@ func _ready() -> void:
 	for gait: Array in GAITS:
 		_make_ride_cell(grid, gait)
 	_make_charge_cell(grid)
+	_make_charge_cell(grid, "Атака впритык: выпад конём", CHARGE_HIT - LUNGE, LUNGE_TIME, 0.3)
 	for clip: Array in MOCK.CLIPS:
 		_make_rider_cell(grid, clip)
 	for death: Array in DEATHS:
@@ -122,7 +123,12 @@ const CHARGE_TIME := 0.9
 const CHARGE_BACK := 1.6
 
 
-func _make_charge_cell(grid: GridContainer) -> void:
+## Впритык разгона нет: конь делает короткий выпад на полшага, копьё под рукой, как в таране.
+const LUNGE := 0.5
+const LUNGE_TIME := 0.35
+
+
+func _make_charge_cell(grid: GridContainer, label := "Атака: таран копьём", from := CHARGE_FROM, run := CHARGE_TIME, gallop := 1.0) -> void:
 	var cell := _make_frame(grid, 4.6)
 	var view: SubViewport = cell.view
 	var post := MeshInstance3D.new()
@@ -139,7 +145,7 @@ func _make_charge_cell(grid: GridContainer) -> void:
 	var legs := MOCK.build_horse(mount)
 	var rider := MOCK.make_rider(mount)
 	var lance := MOCK.add_lance(mount)
-	_make_label(cell.frame).text = "Атака: таран копьём"
+	_make_label(cell.frame).text = label
 	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
 	rider.anim.play("ride_still")
 	rider.anim.advance(0.0)
@@ -150,23 +156,24 @@ func _make_charge_cell(grid: GridContainer) -> void:
 	while is_instance_valid(mount):
 		await get_tree().process_frame
 		var delta := get_process_delta_time()
-		time = fmod(time + delta, CHARGE_TIME + 0.5 + CHARGE_BACK + 0.6)
-		var x := CHARGE_FROM
+		var back := CHARGE_BACK * (from - CHARGE_HIT) / (CHARGE_FROM - CHARGE_HIT)
+		time = fmod(time + delta, run + 0.5 + back + 0.6)
+		var x := from
 		var speed := 0.0
-		if time < CHARGE_TIME:
-			var t := time / CHARGE_TIME
-			x = lerpf(CHARGE_FROM, CHARGE_HIT, t * t)  # разгон
-			speed = 1.0
-		elif time < CHARGE_TIME + 0.5:
+		if time < run:
+			var t := time / run
+			x = lerpf(from, CHARGE_HIT, t * t)  # разгон
+			speed = gallop
+		elif time < run + 0.5:
 			x = CHARGE_HIT  # удар и короткая остановка
 			if not placed:
 				# Столб ровно там, куда пришло остриё.
 				var tip: Vector3 = lance.global_transform * Vector3(0, MOCK.LANCE_LENGTH * 0.5, 0)
 				post.global_position = Vector3(tip.x + 0.15, 1.1, tip.z)
 				placed = true
-			post.rotation.z = -deg_to_rad(8.0) * (1.0 - (time - CHARGE_TIME) / 0.5)
-		elif time < CHARGE_TIME + 0.5 + CHARGE_BACK:
-			x = lerpf(CHARGE_HIT, CHARGE_FROM, smoothstep(0.0, 1.0, (time - CHARGE_TIME - 0.5) / CHARGE_BACK))
+			post.rotation.z = -deg_to_rad(8.0 * gallop) * (1.0 - (time - run) / 0.5)
+		elif time < run + 0.5 + back:
+			x = lerpf(CHARGE_HIT, from, smoothstep(0.0, 1.0, (time - run - 0.5) / back))
 			speed = 0.4
 		mount.position.x = x
 		var phase := time * 3.2 * TAU
@@ -176,10 +183,10 @@ func _make_charge_cell(grid: GridContainer) -> void:
 			var pair := 1.0 if i < 2 else -1.0  # галоп: передние и задние вместе
 			legs[i].rotation.z = sin(phase) * deg_to_rad(32.0) * pair * speed
 		var jolt := 0.0
-		if time >= CHARGE_TIME and time < CHARGE_TIME + 0.5:
+		if time >= run and time < run + 0.5:
 			# Отдача от удара: остриё дёргается вверх и затухает.
-			var after := time - CHARGE_TIME
-			jolt = 2.0 * exp(-after * 6.0) * cos(after * 14.0)  # тяжёлое копьё: малый размах, медленно
+			var after := time - run
+			jolt = 2.0 * gallop * exp(-after * 6.0) * cos(after * 14.0)  # тяжёлое копьё: малый размах, медленно
 		MOCK.place_lance(lance, rider, mount, sin(phase - 0.9) * 2.6 * speed + jolt, sin(phase * 0.5 + 0.4) * 1.0 * speed)
 
 
