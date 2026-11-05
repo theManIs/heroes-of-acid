@@ -2951,3 +2951,9 @@
 **User:** Authorized 134 and immediate creature-arena preview; then reported stale orange/green hover tiles and clarified that all three area cells must neighbor the hammerer.
 
 **Assistant:** Implemented two melee modes, common area geometry, friendly fire with one hit per squad, preview warnings, AI precision selection, ninth showcase clip, icon, and integration in both arenas. Corrected the mistaken target-centered line to the three adjacent forward cells. Fixed the typed-array redraw error and explicit hover clearing when the pointer leaves the window. Reopened hammerer creature arena; code for 133/134 complete, manual acceptance pending.
+
+### 2026-11-05 17:11
+
+**User:** Reports permanent red cells under opposing houndmaster pair, rejects hammerer point-attack clip and cannot see the fidget response.
+
+**Assistant:** Read paint and animation triggers: pair footprint is explicitly tinted permanently; fidget exists in showcase selection but is never invoked in either arena. Recorded 135 for pair display and 136 for replacement point attack, visible fidget and an explicit arena trigger. Proposed changes; no code changed.

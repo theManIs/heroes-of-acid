@@ -13,6 +13,6 @@ const UNIT := {
 	"size": 1.9, "walk_speed": 1.18, "showcase_size": 2.7, "showcase_metal_light": true,
 	"melee_modes": {
 		"area": {"title": "По площади", "anim": "attack", "area": true, "impact": 0.5, "reach": 1.25},
-		"point": {"title": "Точечный", "anim": "attack_point", "area": false, "impact": 0.45, "reach": 1.15},
+		"point": {"title": "Точечный", "anim": "attack_point", "area": false, "impact": 0.48, "reach": 1.45},
 	},
 }

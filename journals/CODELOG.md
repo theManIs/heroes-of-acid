@@ -987,3 +987,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - User feedback correction: removed target-centered transverse line; replaced ternary untyped empty arrays with typed Array[Vector2i] initialization to prevent aborted paint calls. Added explicit hover reset on window mouse exit in both arenas.
 - Commands: prepare_pack.py, build_clips.py, Godot asset import and icon generation, point-attack authoring render, creature arena launches, runtime-log inspection, screenshot request. No automated tests run; user performs interactive acceptance.
 - Updated TASKS, SCENES, pipeline and creature documentation.
+
+### 2026-11-05 17:35 — Precision hammer strike (136)
+
+- Replaced rejected sword attack with a reproducible 1.1 s two-handed thrust derived from Mixamo idle. author_point.py solves both arms against palm targets; same rig, stationary feet/pelvis, short windup and recovery.
+- build_clips.py handles _point_strike; point impact 0.48, weapon reach 1.45. Shared config applies to gallery and both arenas.
+- Auditioned slash (4)/(5) and downloaded Bayonet Stab through Chrome/CUA; wide cuts and reversed shaft grip unsuitable. Preserved Bayonet source, excluded from runtime.
+- Commands: Blender conversion, build_clips.py, Godot import, pose_sheet authoring renders. No automated tests; manual acceptance remains with user.
