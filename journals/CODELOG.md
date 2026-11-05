@@ -1148,3 +1148,20 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ```
 
 Проверка: кадры в скрытом окне, сбоку, спереди и с боевой камеры, обе стороны.
+
+### 2026-11-05 — задача 150
+
+Поглаживание убрано: `houndmaster_unit.gd` без IK и `_update_petting`, `houndmaster_showcase.gd` без `_add_petting_target`.
+Новый клип: `creatures/houndmaster/mixamo/Neck Stretching.fbx` → `game/assets/creatures/houndmaster/anims/fidget_neck.glb`.
+
+```diff
+-	"fidget": "fidget_pet"
++	"fidget": "fidget_neck"
++func set_fidget_hovered(hovered: bool) -> void:
++	var entered := hovered and not _fidget_hovered
++	super.set_fidget_hovered(hovered)
++	if entered and ... _dog_anim.current_animation == DOG_IDLE:
++		_dog_play(DOG_FIDGET)
+```
+
+Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py houndmaster`, `godot --headless --path game --import`.

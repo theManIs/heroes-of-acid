@@ -3,14 +3,12 @@ extends Creature
 ## затем псарь; фигура занятых клеток не вращается вместе с моделями.
 const DOG_SCENE := preload("res://assets/creatures/hound/hound.glb")
 const DOG_IDLE := "idle_breathe"
+const DOG_FIDGET := "fidget_sniff_ground"  # свой отклик собаки, без касания псаря
 const DOG_HEIGHT := 1.05
 const BITE_IMPACT := 0.45
 const BITE_STEP := 0.08  # короткий шаг корпуса, основной выпад уже есть в клипе
 const BITE_GAP := 0.04
 const UP_TILT := deg_to_rad(35.0)  # противник сверху: морда мимо своего псаря
-const PET_HEAD_ANGLE := deg_to_rad(27.0)  # голова собаки справа спереди, как в принятой витрине
-const PET_REACH := 0.72  # от плеча до цели ладони в витрине, при росте 2
-const PET_SHIFT_MAX := 0.35
 const RAID_RUN_FROM := 2  # гексов: больше половины хода пары (3); ближе — шагом
 const FEET: Array[String] = ["FF.L", "FF.R", "FFB.L", "FFB.R"]
 enum MovePhase { NONE, DOG, MASTER, RAID_HOLD, RAID_OUT, RAID_BACK }
@@ -30,15 +28,6 @@ var _move_phase := MovePhase.NONE
 var _dog_route: Array[Vector3] = []
 var _master_route: Array[Vector3] = []
 var _bite_reach := 1.0
-var _pet_target: Node3D
-var _pet_ik: SkeletonIK3D
-var _pet_hand_frame := Basis.IDENTITY
-var _pet_palm_offset := 0.0
-var _dog_rig: Skeleton3D
-var _dog_head := -1
-var _pet_turn := false
-var _pet_saved_yaw := 0.0
-var _pet_shift := Vector3.ZERO
 var _raid_clip := "run"
 var _gait_speed := {}  # клип -> метры в секунду при скорости клипа 1
 
@@ -63,36 +52,6 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 			_dog_play(DOG_IDLE))
 	_dog_play(DOG_IDLE)
 	_dog.global_position = global_position + _dog_offset
-	_setup_petting()
-
-
-## Тот же контакт ладони, что в принятой витрине поглаживания.
-func _setup_petting() -> void:
-	_dog_rig = _dog_model.find_children("*", "Skeleton3D", true, false)[0]
-	_dog_head = _dog_rig.find_bone("Head")
-	var hand := skeleton.find_bone("mixamorig_RightHand")
-	var middle := skeleton.find_bone("mixamorig_RightHandMiddle1")
-	var index := skeleton.find_bone("mixamorig_RightHandIndex1")
-	var pinky := skeleton.find_bone("mixamorig_RightHandPinky1")
-	var rest := skeleton.get_bone_global_rest(hand)
-	var fingers := skeleton.get_bone_global_rest(middle).origin - rest.origin
-	var across := skeleton.get_bone_global_rest(index).origin - skeleton.get_bone_global_rest(pinky).origin
-	var forward := (rest.basis.inverse() * fingers).normalized()
-	across = (rest.basis.inverse() * across).normalized()
-	across = (across - forward * across.dot(forward)).normalized()
-	_pet_hand_frame = Basis(across, forward.cross(across).normalized(), forward)
-	_pet_palm_offset = (skeleton.global_basis * fingers).length() * 0.5
-	_pet_target = Node3D.new()
-	add_child(_pet_target)
-	_pet_target.top_level = true
-	_pet_ik = SkeletonIK3D.new()
-	_pet_ik.root_bone = &"mixamorig_Spine1"  # наклон корпуса: голова собаки в арене ниже длины руки
-	_pet_ik.tip_bone = &"mixamorig_RightHand"
-	_pet_ik.override_tip_basis = true
-	skeleton.add_child(_pet_ik)
-	_pet_ik.target_node = _pet_ik.get_path_to(_pet_target)
-	_pet_ik.influence = 0.0
-	_pet_ik.start()
 
 
 ## Максимальный вынос морды самим клипом, в игровых метрах, с учётом рига ×100.
@@ -158,7 +117,6 @@ func _measure_gait(clip: String) -> float:
 
 
 func face(point: Vector3) -> void:
-	_pet_turn = false
 	super.face(point)
 	# Только в стойке: при проходе маршрута собака смотрит вдоль своего шага.
 	_dog_yaw = PI / 2.0 if point.x >= position.x else -PI / 2.0
@@ -166,7 +124,6 @@ func face(point: Vector3) -> void:
 
 ## К противнику собака поворачивается сама, от своего места и на любой угол.
 func face_foe(point: Vector3) -> void:
-	_pet_turn = false
 	super.face(point)
 	var to := point - (get_parent() as Node3D).to_local(_dog.global_position)
 	to.y = 0.0
@@ -243,44 +200,16 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(_dog_anim):
 		return
 	if _move_phase == MovePhase.NONE and not _escaping and not is_instance_valid(_bite):
-		_dog.global_position = global_position + _dog_offset + _pet_shift
+		_dog.global_position = global_position + _dog_offset
 		_dog.rotation.y = lerp_angle(_dog.rotation.y, _dog_yaw, minf(1.0, TURN_SPEED * delta))
-	if is_instance_valid(_pet_ik):
-		_update_petting()
 
 
-## Как в витрине: голова собаки справа спереди от псаря, пальцы вдоль его взгляда.
-## В арене собака мельче и стоит дальше, поэтому на время поглаживания
-## псарь поворачивается к ней, а собака подходит под руку.
-func _update_petting() -> void:
-	var petting := anim.current_animation == &"fidget_pet" and not dead and _move_phase == MovePhase.NONE
-	var head: Vector3 = _dog_rig.global_transform * _dog_rig.get_bone_global_pose(_dog_head).origin
-	if petting and not _pet_turn:
-		_pet_turn = true
-		_pet_saved_yaw = _yaw
-		var to := head - _pet_shift - global_position
-		_yaw = atan2(to.x, to.z) - PET_HEAD_ANGLE
-	elif not petting and _pet_turn:
-		_pet_turn = false
-		_yaw = _pet_saved_yaw
-	var look := rotation.y - FRONT_YAW
-	var forward := Vector3(sin(look), 0.0, cos(look))
-	var palm := Vector3.DOWN
-	_pet_target.global_basis = Basis(palm.cross(forward), palm, forward) * _pet_hand_frame.inverse()
-	var time := anim.current_animation_position
-	var weight := 0.0
-	if petting:
-		var duration := anim.get_animation("fidget_pet").length
-		weight = smoothstep(0.5, 1.5, time) * (1.0 - smoothstep(duration - 1.2, duration - 0.2, time))
-	var shoulder: Vector3 = skeleton.global_transform * skeleton.get_bone_global_pose(skeleton.find_bone("mixamorig_RightArm")).origin
-	var rest_target := head - _pet_shift + Vector3.UP * 0.035 + forward * (0.025 - _pet_palm_offset)
-	var k := height / 2.0
-	var gap := clampf(shoulder.distance_to(rest_target) - PET_REACH * k, 0.0, PET_SHIFT_MAX * k)
-	var pull := shoulder - rest_target
-	pull.y = 0.0
-	_pet_shift = pull.normalized() * gap * weight if pull.length() > 0.01 else Vector3.ZERO
-	_pet_target.global_position = head + Vector3.UP * 0.035 + forward * (0.025 + sin(time * 3.0) * 0.045 - _pet_palm_offset)
-	_pet_ik.influence = weight
+## Отклик при наведении: каждый играет своё, модели друг друга не касаются.
+func set_fidget_hovered(hovered: bool) -> void:
+	var entered := hovered and not _fidget_hovered
+	super.set_fidget_hovered(hovered)
+	if entered and not dead and not _escaping and _move_phase == MovePhase.NONE and _dog_anim.current_animation == DOG_IDLE:
+		_dog_play(DOG_FIDGET)
 
 
 func _dog_play(clip: String, speed := 1.0) -> void:
