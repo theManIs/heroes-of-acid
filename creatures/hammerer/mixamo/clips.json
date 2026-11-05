@@ -83,5 +83,11 @@
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
+  },
+  "Baseball Idle.fbx": {
+    "name": "idle_bat",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
   }
 }
