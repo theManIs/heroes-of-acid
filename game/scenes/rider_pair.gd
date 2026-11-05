@@ -98,6 +98,10 @@ func _follow(pair: Dictionary) -> void:
 
 
 func _settle(pair: Dictionary) -> void:
+	# После смерти всадник лежит на боку: перед новой посадкой — снова прямо.
+	var rider: Creature = pair.rider
+	rider.global_transform = Transform3D(Basis(Vector3.UP, TURN - PI / 2.0), Vector3.ZERO)
+	rider.set("_yaw", rider.rotation.y)
 	pair.player.play("idle_breathe", 0.0)
 	pair.player.advance(0.0)
 	pair.rider.anim.play("ride_still", 0.0)
