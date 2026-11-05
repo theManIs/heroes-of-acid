@@ -10,7 +10,7 @@ const LEG_AXIS := Vector3(1, 0, 0)  # ось разведения в прост�
 ## Сидячий набор Mixamo «бой в машине»: подпись и имя клипа. В витрине только заявленные
 ## действия; прочие пробы (тряска, взмахи, уклон) лежат в файлах, см. creatures/rider/README.md.
 const CLIPS := [
-	["Реакция: удар по голове", "ride_hurt"], ["Защита: блок сверху (кандидат)", "ride_block"],
+	["Реакция: удар по голове", "ride_hurt"],
 ]
 ## Все собранные клипы, которые грузит макет.
 const ALL_CLIPS := ["ride_still", "ride_idle", "ride_swing", "ride_swing_mirror", "ride_strike", "ride_block", "ride_dodge", "ride_hurt", "ride_death_pulled", "ride_death_crouch", "ride_fidget_look", "ride_fidget_yell"]

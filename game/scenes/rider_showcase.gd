@@ -29,6 +29,8 @@ func _ready() -> void:
 		_make_rider_cell(grid, clip)
 	for death: Array in DEATHS:
 		_make_death_cell(grid, death)
+	for defend: Array in DEFENDS:
+		_make_fidget_cell(grid, defend)
 	for fidget: Array in FIDGETS:
 		_make_fidget_cell(grid, fidget)
 	get_viewport().size_changed.connect(_fit.bind(grid))
@@ -221,6 +223,8 @@ func _make_death_cell(grid: GridContainer, death: Array) -> void:
 
 
 ## Отклик при наведении — кандидаты из сидячего набора, копьё лежит под рукой, как в стойке.
+## Защита — кандидаты из сидячего набора. Копьё держится в руке: идёт за кистью, лежит вдоль коня.
+const DEFENDS := [["Защита: блок сверху (кандидат)", "ride_block"], ["Защита: уклон вправо (кандидат)", "ride_dodge"]]
 ## Выбор пользователя: отклик — «осматривается». Клич и «воткнуть копьё» (_make_plant_cell) не используются.
 const FIDGETS := [["Отклик: осматривается", "ride_fidget_look"]]
 ## Отклик «воткнуть копьё и крикнуть»: копьё поворачивается в кисти остриём вверх и древком
