@@ -2885,3 +2885,9 @@
 **User:** Выполнить первый этап молотобойца по референсу.
 
 **Assistant:** В ChatGPT через Chrome/CUA создан технический вид спереди в T-позе со свободными руками; PNG 1122×1402 сохранён в creatures/hammerer/concept/front-v1.png вместе с описанием, промптом и метаданными. Чат архивирован, проверено перезагрузкой. Задача 133 ждёт принятия концепта, платные этапы не запускались.
+
+### 2026-11-05 12:32
+
+**User:** Archive generation chats after the full task, not during it.
+
+**Assistant:** Updated AGENTS and humanoid pipelines to keep one chat for revisions and views until task completion; synchronized AGENTS to the required projects copy.

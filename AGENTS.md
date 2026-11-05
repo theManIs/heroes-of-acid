@@ -109,7 +109,7 @@ Rules:
 
 ### Asset generation in external chats
 
-- When an asset is generated in an external chat (ChatGPT etc.) through the browser, archive every chat opened for that generation once the result is saved.
+- When an asset is generated in an external chat (ChatGPT etc.) through the browser, keep the chat available for revisions and additional views while the task is in progress. Archive every chat opened for that generation after the entire task is finished, not after each intermediate image is saved.
 
 ### Pipelines
 

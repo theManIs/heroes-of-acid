@@ -939,3 +939,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Концепт через ChatGPT в Chrome/CUA по исходному листу: техническая T-поза, свободные руки, сохранены шлем, сталь и синие акценты. Получен исходный PNG 1122×1402 через «Сохранить изображение как» прямо в проект. Просмотрен локальный файл. Чат генерации архивирован, после перезагрузки отсутствует в недавних и открыт home.
 - TASKS 133 остаётся открытой до следующих этапов и принятия; уточнены pipeline creature-tripo-mixamo и индекс. ARTIFACTS 61 документирует native CUA ввод и обход ошибки DOM-управления. Встроенный image_gen не вызывался: использован Chrome по выбранному пайплайну.
 - Команды: подготовка файлов через Python; `file creatures/hammerer/concept/front-v1.png`; `git diff --check`. Модель, риг и анимации не заказывались, игровые файлы не менялись.
+
+### 2026-11-05 Generation chat archival timing
+
+- Updated AGENTS, creature and creature-tripo-mixamo READMEs, ARTIFACTS 39: archive after the entire task, retain the chat for intermediate revisions and views.
+- Copied AGENTS to /Users/artem/Documents/projects/AGENTS.md as required. Game files unchanged.
