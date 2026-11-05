@@ -203,11 +203,9 @@ func _physics_process(delta: float) -> void:
 			return
 		var raiding := _move_phase in [MovePhase.RAID_OUT, MovePhase.RAID_BACK]
 		var clip := _raid_clip if raiding else "walk"
-		# Ускорение арены — для ходьбы; бег и так быстрый.
-		var rate := walk_rate if clip == "walk" else 1.0
-		_dog_play(clip, rate)
+		_dog_play(clip, walk_rate)
 		# Вылазка идёт со скоростью лап своего клипа, чтобы собака не скользила.
-		var speed: float = (_gait_speed[clip] if raiding else walk_speed) * rate
+		var speed: float = (_gait_speed[clip] if raiding else walk_speed) * walk_rate
 		_dog.global_position += to.normalized() * minf(speed * delta, to.length())
 		return
 	super._physics_process(delta)

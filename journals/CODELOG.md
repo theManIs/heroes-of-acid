@@ -1083,3 +1083,13 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ```
 
 Проверка: скрипт без окна в песочнице сессии, сцена `creature_test` и вылазки на 1 и 4 гекса.
+
+### 2026-11-05 — задача 144, уточнение
+
+`game/scenes/houndmaster_unit.gd`: ускорение боя применяется и к бегу, исключение убрано.
+
+```diff
+-		var rate := walk_rate if clip == "walk" else 1.0
+-		_dog_play(clip, rate)
++		_dog_play(clip, walk_rate)
+```
