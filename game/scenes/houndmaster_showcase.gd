@@ -5,6 +5,7 @@ extends "res://scenes/showcase.gd"
 
 const HOUND_LAB := preload("res://scenes/hound_lab.gd")
 const HOLD := 1.0
+const ESCAPE_HOLD := 2.0  # успеть увидеть павшего псаря после бегства собаки
 const PAIR_CAMERA_SIZE := 2.9
 const CLIPS := [
 	["Стойка", "idle", true], ["Ходьба", "walk", true], ["Бег", "run", true],
@@ -114,11 +115,16 @@ func _make_pair_cell(grid: GridContainer, index: int) -> void:
 	var title: String = CLIPS[index][0]
 	if index == 3:
 		title = "Команда и укус"
+	elif index == 6:
+		title = "Гибель и бегство"
 	elif index == 7:
 		title = "Поглаживание"
 		_add_petting_target(cell.view, unit, hound)
 	_make_label(cell.frame).text = title
-	_repeat_pair(unit, hound.player, index)
+	if index == 6:
+		_repeat_death_escape(unit, hound)
+	else:
+		_repeat_pair(unit, hound.player, index)
 
 
 func _reframe(view: SubViewport, frame_size: float, center_y: float) -> void:
@@ -150,6 +156,37 @@ func _repeat_hound(player: AnimationPlayer, clip: String) -> void:
 		if clip == "death_fall_on_side":
 			await get_tree().create_timer(HOLD).timeout
 		player.play(HOUND_LAB.IDLE, 0.3)
+		await get_tree().create_timer(HOLD).timeout
+
+
+func _repeat_death_escape(unit: Creature, hound: Dictionary) -> void:
+	var model: Node3D = hound.model
+	var player: AnimationPlayer = hound.player
+	var home := model.transform
+	var direction := Vector3(-1.0, 0.0, -0.35).normalized()  # от псаря, за левый край кадра
+	var turn_time := 0.35
+	var run_time := 1.7
+	var reaction_time := 0.55
+	var fall_time := unit.anim.get_animation("fall").length
+	player.get_animation("run").loop_mode = Animation.LOOP_LINEAR
+	while true:
+		unit.dead = true
+		unit.anim.play("fall", 0.2)
+		player.play(HOUND_LAB.IDLE, 0.2)
+		await get_tree().create_timer(reaction_time).timeout
+		var turn := create_tween()
+		turn.tween_property(model, "rotation:y", atan2(direction.x, direction.z), turn_time)
+		await turn.finished
+		player.play("run", 0.15)
+		var escape := create_tween()
+		escape.tween_property(model, "position", home.origin + direction * 5.5, run_time).set_trans(Tween.TRANS_LINEAR)
+		await escape.finished
+		# Псарь остаётся лежать, собака уже вне кадра.
+		await get_tree().create_timer(maxf(0.0, fall_time - reaction_time - turn_time - run_time) + ESCAPE_HOLD).timeout
+		model.transform = home
+		player.play(HOUND_LAB.IDLE, 0.2)
+		unit.dead = false
+		unit.anim.play("idle", 0.3)
 		await get_tree().create_timer(HOLD).timeout
 
 

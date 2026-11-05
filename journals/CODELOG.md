@@ -877,3 +877,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Камеры для падений/пары и запас плоскости земли; аргумент `--section=master|hound|pair` для кадров и просмотра.
 - `pipelines/creature-pair-showcase/README.md` и индекс: рецепт; обновлены SCENES, TASKS, README псаря и собаки.
 - Команды: `godot --headless --path game --import`; `godot --path game --position 10000,10000 res://scenes/houndmaster_showcase.tscn -- --section=... --shot=...` для трёх разделов; `git diff --check`. Кадры просмотрены, обрезание падений исправлено, ошибок импорта/скрипта нет, FPS кадра 60.
+
+### 2026-11-05 Задача 125: бегство собаки после гибели псаря
+
+- `game/scenes/houndmaster_showcase.gd`: парная смерть выделена в `_repeat_death_escape`, подпись «Гибель и бегство». Собака поворачивается от псаря, бежит на 5,5 м за край кадра, затем восстанавливается её исходный transform и стойка; псарь падает и остаётся лежать до сброса цикла.
+- `ESCAPE_HOLD`: 2 с для просмотра павшего псаря после завершения падения. Готовый run зациклен, новые файлы анимаций не нужны.
+- Обновлены пайплайн creature-pair-showcase и индекс, SCENES, TASKS и README псаря.
+- Команды: `godot --path game --position 10000,10000 res://scenes/houndmaster_showcase.tscn -- --section=pair --shot=...`; `git diff --check`. Кадр просмотрен: собаки в квадрате гибели нет, псарь лежит; ошибок скрипта нет, FPS кадра 60.
