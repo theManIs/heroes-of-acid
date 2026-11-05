@@ -49,5 +49,15 @@
     "name": "ride_death_crouch",
     "grip": 0,
     "keep_left_fingers": false
+  },
+  "Sitting Looking Side To Side.fbx": {
+    "name": "ride_fidget_look",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Sitting Yell Up.fbx": {
+    "name": "ride_fidget_yell",
+    "grip": 0,
+    "keep_left_fingers": false
   }
 }

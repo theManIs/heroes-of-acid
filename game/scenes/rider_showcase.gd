@@ -29,6 +29,8 @@ func _ready() -> void:
 		_make_rider_cell(grid, clip)
 	for death: Array in DEATHS:
 		_make_death_cell(grid, death)
+	for fidget: Array in FIDGETS:
+		_make_fidget_cell(grid, fidget)
 	get_viewport().size_changed.connect(_fit.bind(grid))
 	_fit(grid)
 	_finish()
@@ -212,4 +214,31 @@ func _make_death_cell(grid: GridContainer, death: Array) -> void:
 			var side := smoothstep(0.0, 0.45, t)
 			var drop := clampf((t - 0.3) / 0.7, 0.0, 1.0)
 			rider.position = Vector3(seat.x, lerpf(seat.y, 0.0, drop * drop), seat.z + death[4] * side)
+
+
+## Отклик при наведении — кандидаты из сидячего набора, копьё лежит под рукой, как в стойке.
+const FIDGETS := [["Отклик: осматривается (кандидат)", "ride_fidget_look"], ["Отклик: боевой клич (кандидат)", "ride_fidget_yell"]]
+
+
+func _make_fidget_cell(grid: GridContainer, fidget: Array) -> void:
+	var cell := _make_frame(grid, 4.2)
+	var view: SubViewport = cell.view
+	var mount := Node3D.new()
+	view.add_child(mount)
+	MOCK.build_horse(mount)
+	var rider := MOCK.make_rider(mount)
+	var lance := MOCK.add_lance(mount)
+	_make_label(cell.frame).text = fidget[0]
+	var clip: String = fidget[1]
+	var length := rider.anim.get_animation(clip).length
+	while is_instance_valid(rider):
+		rider.anim.play(clip, 0.2)
+		rider.anim.advance(0.0)
+		await get_tree().process_frame
+		MOCK.sit(rider)
+		var left := length + HOLD
+		while left > 0.0:
+			MOCK.place_lance(lance, rider, mount)
+			await get_tree().process_frame
+			left -= get_process_delta_time()
 
