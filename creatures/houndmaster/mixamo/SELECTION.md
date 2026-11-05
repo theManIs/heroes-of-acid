@@ -42,3 +42,6 @@
   Отклик псаря теперь `Neck Stretching` (Stretching Neck Rolling Side To Side, p15-29),
   имя `fidget_neck`, 3,20 с, обрезка Mixamo по умолчанию. `Petting Animal.fbx` и
   `fidget_pet.glb` оставлены в файлах.
+- Задача 151: защита `Block` выглядела как боксёрский танец и шла дольше команды.
+  Замена — `Standing Block React Large` (Block Reaction, p16-37, вариант без оружия),
+  имя `defend_block`, 1,33 с, обрезка по умолчанию. `Block.fbx` и `defend.glb` оставлены.

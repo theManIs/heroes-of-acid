@@ -10,7 +10,7 @@ const PAIR_CAMERA_SIZE := 2.9
 const CLIPS := [
 	["Стойка", "idle", true], ["Ходьба", "walk", true], ["Бег", "run", true],
 	["Команда «фас»", "command_attack", false],
-	["Реакция на удар", "hurt", false], ["Защита", "defend", false],
+	["Реакция на удар", "hurt", false], ["Защита", "defend_block", false],
 	["Смерть", "fall", false], ["Отклик: разминает шею", "fidget_neck", false],
 ]
 

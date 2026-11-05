@@ -1165,3 +1165,14 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ```
 
 Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py houndmaster`, `godot --headless --path game --import`.
+
+### 2026-11-05 — задача 151
+
+`creatures/houndmaster/mixamo/Standing Block React Large.fbx` → `game/assets/creatures/houndmaster/anims/defend_block.glb`.
+
+```diff
+-	"defend": "defend",
++	"defend": "defend_block",
+-	["Защита", "defend", false]
++	["Защита", "defend_block", false]
+```

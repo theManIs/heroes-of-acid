@@ -45,5 +45,10 @@
     "name": "fidget_neck",
     "grip": 0,
     "keep_left_fingers": false
+  },
+  "Standing Block React Large.fbx": {
+    "name": "defend_block",
+    "grip": 0,
+    "keep_left_fingers": false
   }
 }
