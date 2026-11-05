@@ -203,6 +203,7 @@ func _make_death_cell(grid: GridContainer, death: Array) -> void:
 	while is_instance_valid(rider):
 		# Повтор витрины: лежащего не тащим обратно в седло на глазах — прячем, сажаем, показываем.
 		rider.visible = false
+		rider.anim.speed_scale = 1.0
 		rider.anim.play("ride_still", 0.0)
 		rider.anim.advance(0.0)
 		await get_tree().process_frame
@@ -216,6 +217,11 @@ func _make_death_cell(grid: GridContainer, death: Array) -> void:
 		while time < length + 1.2:
 			await get_tree().process_frame
 			time += get_process_delta_time()
+			# Лежит до конца паузы: клип не доигрываем до конца, иначе Creature сам ставит стойку
+			# и мёртвый на секунду садится на землю.
+			if time >= length - 0.05 and rider.anim.speed_scale > 0.0:
+				rider.anim.seek(length - 0.05, true)
+				rider.anim.speed_scale = 0.0
 			var t := clampf((time / length - death[2]) / (death[3] - death[2]), 0.0, 1.0)
 			var side := smoothstep(0.0, 0.45, t)
 			var drop := clampf((t - 0.3) / 0.7, 0.0, 1.0)
