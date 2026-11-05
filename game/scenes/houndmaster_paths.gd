@@ -50,3 +50,26 @@ static func attacks(paths_to: Dictionary, target: Array[Vector2i]) -> Dictionary
 		if distance(footprint(h, DOG), target) == 1:
 			out[h] = paths_to[h]
 	return out
+
+
+## Все клетки, которые фигура может накрыть за ход, а не только клетки псаря.
+static func cover(moves: Dictionary, from: Vector2i) -> Dictionary:
+	var out := {}
+	for anchor: Vector2i in moves:
+		if anchor != from:
+			for cell in footprint(anchor, PAIR):
+				out[cell] = true
+	return out
+
+
+## Куда встать псарю, чтобы фигура накрыла клетку: сама клетка, иначе псарь над ней
+## с кратчайшим путём. Так собака встаёт вплотную к противнику.
+static func anchor_for(cell: Vector2i, moves: Dictionary, from: Vector2i, none: Vector2i) -> Vector2i:
+	if moves.has(cell) and cell != from:
+		return cell
+	var best := none
+	for offset in DOG:
+		var anchor := cell - offset
+		if moves.has(anchor) and anchor != from and (best == none or moves[anchor].size() < moves[best].size()):
+			best = anchor
+	return best

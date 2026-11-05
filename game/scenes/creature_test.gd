@@ -784,8 +784,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				_move_and_maybe_strike(player, enemy, reachable[from], _start_enemy_turn)  # свой гекс — пустой путь
 		return
 	var h := _hex_under(click.position)
-	if reachable.has(h) and h != _hex_of(player):
-		_move_and_maybe_strike(player, enemy, reachable[h], _start_enemy_turn)
+	var anchor := _move_anchor(h)
+	if anchor != NO_HEX:
+		_move_and_maybe_strike(player, enemy, reachable[anchor], _start_enemy_turn)
 
 
 ## Гекс атаки — от гекса, а не от модели: 6 треугольников гекса противника, продлённых за его
@@ -836,13 +837,20 @@ func _on_enemy(screen: Vector2) -> bool:
 	return _on_creature(enemy, screen)
 
 
+## Куда встать, чтобы занять клетку; у пары клетка может быть и под собакой.
+func _move_anchor(hex: Vector2i) -> Vector2i:
+	if tested == "houndmaster-pair":
+		return PAIR_PATHS.anchor_for(hex, reachable, _hex_of(player), NO_HEX)
+	return hex if reachable.has(hex) and hex != _hex_of(player) else NO_HEX
+
+
 ## Цель под курсором: гексы фигуры всегда, рамка тела — если не перекрывает гекс для шага.
 ## У пары рамка широкая и накрывает соседние клетки, поэтому свободный гекс важнее неё.
 func _over_enemy(screen: Vector2) -> bool:
 	var hex := _hex_at(_ground_point(screen))
 	if _footprint(_hex_of(enemy)).has(hex):
 		return true
-	if tested == "houndmaster-pair" and turn == Turn.PLAYER and reachable.has(hex) and hex != _hex_of(player):
+	if tested == "houndmaster-pair" and turn == Turn.PLAYER and _move_anchor(hex) != NO_HEX:
 		return false
 	return _on_enemy(screen)
 
@@ -897,17 +905,19 @@ func _paint() -> void:
 	var zone: Array[Vector2i] = []
 	if turn == Turn.PLAYER and _targeted:
 		zone = _impact_cells(player, enemy, _attack_from)
+	var area: Dictionary = PAIR_PATHS.cover(reachable, _hex_of(player)) if tested == "houndmaster-pair" else reachable
+	var anchor := _move_anchor(_hovered)
 	for h: Vector2i in tiles:
 		var mat: StandardMaterial3D = tiles[h].material_override
 		var color: Color = tiles[h].get_meta("base")
-		if reachable.has(h) and h != _hex_of(player):
+		if area.has(h) and h != _hex_of(player):
 			color = color.lerp(PLAYER_TURN, 0.25)
 			if h == _hovered:
 				color = color.lerp(PLAYER_TURN, 0.35)
 		var attack_cells := _dog_footprint(_attack_from) if tested == "houndmaster-pair" else _footprint(_attack_from)
 		if _attack_from != NO_HEX and attack_cells.has(h):
 			color = color.lerp(TARGET, 0.55)
-		elif reachable.has(_hovered) and _footprint(_hovered).has(h):
+		elif anchor != NO_HEX and _footprint(anchor).has(h):
 			color = color.lerp(PLAYER_TURN, 0.35)
 		if zone.has(h):
 			color = color.lerp(Color(1.0, 0.5, 0.1), 0.7)

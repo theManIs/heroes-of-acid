@@ -900,8 +900,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				_act(active, enemy, reachable[from])
 		return
 	var h := _hex_under(click.position)
-	if reachable.has(h) and h != cells[active]:
-		_act(active, null, reachable[h])
+	var anchor := _move_anchor(h)
+	if anchor != NO_HEX:
+		_act(active, null, reachable[anchor])
 
 
 ## Гекс атаки — как в арене: в какой клин вокруг гекса противника попадает точка под курсором,
@@ -955,7 +956,14 @@ func _enemy_under(screen: Vector2) -> Creature:
 ## Свободный гекс, на который можно шагнуть: рамка тела пары его не перекрывает.
 ## Стрелок целится в тело, поэтому для него рамка важнее гекса.
 func _free_step(hex: Vector2i) -> bool:
-	return turn == Turn.PLAYER and active != null and not active.ranged() and reachable.has(hex) and hex != cells[active]
+	return turn == Turn.PLAYER and active != null and not active.ranged() and _move_anchor(hex) != NO_HEX
+
+
+## Куда встать, чтобы занять клетку; у пары клетка может быть и под собакой.
+func _move_anchor(hex: Vector2i) -> Vector2i:
+	if _is_pair(active):
+		return PAIR_PATHS.anchor_for(hex, reachable, cells[active], NO_HEX)
+	return hex if reachable.has(hex) and hex != cells[active] else NO_HEX
 
 
 ## Своё существо под курсором: на его гексе или в экранной рамке по костям.
@@ -1057,9 +1065,13 @@ func _paint() -> void:
 		shown = _range_of(_inspected)
 		tint = ENEMY_TURN if sides[1].has(_inspected) else PLAYER_TURN
 		center = cells[_inspected]
+	var area: Dictionary = PAIR_PATHS.cover(shown, center) if preview and _is_pair(preview) else shown
+	var hover_anchor := NO_HEX
+	if preview:
+		hover_anchor = PAIR_PATHS.anchor_for(_hovered, shown, center, NO_HEX) if _is_pair(preview) else (_hovered if shown.has(_hovered) else NO_HEX)
 	for h: Vector2i in tiles:
 		var color := Color(tint, 0.0)
-		if shown.has(h) and h != center:
+		if area.has(h) and h != center:
 			color.a = RANGE_ALPHA
 			if h == _hovered:
 				color.a = lerpf(RANGE_ALPHA, 1.0, 0.5)
@@ -1070,7 +1082,7 @@ func _paint() -> void:
 			color = Color(TARGET, 0.8)
 		elif active and _is_pair(active) and _footprint(active).has(h):
 			color = Color(PLAYER_TURN if sides[0].has(active) else ENEMY_TURN, RANGE_ALPHA)
-		elif preview and shown.has(_hovered) and _footprint(preview, _hovered).has(h):
+		elif hover_anchor != NO_HEX and _footprint(preview, hover_anchor).has(h):
 			color = Color(tint, RANGE_ALPHA * 2.0)
 		if zone.has(h):
 			var occupant := _unit_on(h)

@@ -1093,3 +1093,15 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 -		_dog_play(clip, rate)
 +		_dog_play(clip, walk_rate)
 ```
+
+### 2026-11-05 — задача 146
+
+`game/scenes/houndmaster_paths.gd`: `cover`, `anchor_for`. `game/scenes/creature_test.gd`, `game/scenes/battle_test.gd`: `_move_anchor`, подсветка и клик по всей фигуре.
+
+```diff
+-	if reachable.has(h) and h != _hex_of(player):
+-		_move_and_maybe_strike(player, enemy, reachable[h], _start_enemy_turn)
++	var anchor := _move_anchor(h)
++	if anchor != NO_HEX:
++		_move_and_maybe_strike(player, enemy, reachable[anchor], _start_enemy_turn)
+```
