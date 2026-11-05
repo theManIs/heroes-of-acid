@@ -48,6 +48,15 @@ func _fit(grid: GridContainer) -> void:
 		pair[0].custom_minimum_size = Vector2.ONE * side
 
 
+## Подписи длинные: переносим по словам, иначе они распирают квадрат и сетка вылезает за окно.
+func _make_label(frame: Control) -> Label:
+	var label := super._make_label(frame)
+	label.add_theme_font_size_override("font_size", 20)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.size_flags_horizontal = Control.SIZE_FILL
+	return label
+
+
 func _make_rider_cell(grid: GridContainer, clip: Array, with_lance := false) -> void:
 	var cell := _make_frame(grid, 3.1 if not with_lance else 4.2)
 	var view: SubViewport = cell.view
