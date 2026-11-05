@@ -12,4 +12,4 @@ const MASTER := {
 
 
 static func pair() -> Dictionary:
-	return MASTER.merged({"name": "Псарь с собакой", "icon": "res://assets/creatures/houndmaster/icon.png"}, true)
+	return MASTER.merged({"name": "Псарь с собакой", "icon": "res://assets/creatures/houndmaster/icon.png", "fidget_on_hover": true}, true)

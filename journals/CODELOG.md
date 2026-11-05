@@ -1044,3 +1044,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-05 18:50 — Dog hurt before escape (140)
 
 - Lethal pair hit starts master fall and dog hurt_head_left together. Escape turn waits for actual dog hurt clip duration instead of 0.55 s. Updated paired gallery death sequence too. No dog death clip used; reset cancellation preserved. No tests run.
+
+### 2026-11-05 18:51 — Pair hover comparison and response (141)
+
+- Compared config and hover code: only hammerer opted into arena fidget; pair had petting clip and contact IK only in showcase. Other creatures remain under open 114. Enabled existing pair fidget, allied-only through existing arena guards.
+- Ported accepted showcase palm/head IK into HoundmasterUnit, targeting actual dog head and smoothly enabling only during petting. Combat/movement disable the modifier; dog stays standing. No new source motion generated; no tests run.
