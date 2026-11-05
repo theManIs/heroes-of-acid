@@ -105,7 +105,8 @@ enum Turn { PLAYER, ENEMY, BUSY, OVER }
 
 const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
 # Этот отряд пока подключён только в тест существа; большой бой использует CREATURES.
-var creatures := CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").MASTER.merged({"name": "Псарь с собакой"}, true)})
+const PAIR_PATHS := preload("res://scenes/houndmaster_paths.gd")
+var creatures := CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair()})
 
 var player: Creature
 var enemy: Creature
@@ -348,37 +349,11 @@ func _dog_footprint(anchor: Vector2i) -> Array[Vector2i]:
 ## Во время вылазки свободны только два гекса собаки; псарь остаётся препятствием.
 ## Виртуальный anchor нужен для центра между нижними клетками, псарь туда не идёт.
 func _dog_attack_paths(from: Vector2i, target: Vector2i) -> Dictionary:
-	var blocked := _footprint(target)
-	blocked.append(from)
-	var paths := {from: [] as Array[Vector2i]}
-	var queue: Array[Vector2i] = [from]
-	var attacks := {}
-	while not queue.is_empty():
-		var h: Vector2i = queue.pop_front()
-		var adjacent := false
-		for dog_hex in _dog_footprint(h):
-			for target_hex in _footprint(target):
-				if _hex_distance(dog_hex, target_hex) == 1:
-					adjacent = true
-		if adjacent:
-			attacks[h] = paths[h]
-		if paths[h].size() >= MOVE:
-			continue
-		for d in DIRS:
-			var n := h + d
-			if paths.has(n):
-				continue
-			var free := true
-			for dog_hex in _dog_footprint(n):
-				if not tiles.has(dog_hex) or blocked.has(dog_hex):
-					free = false
-			if not free:
-				continue
-			var path: Array[Vector2i] = paths[h].duplicate()
-			path.append(n)
-			paths[n] = path
-			queue.append(n)
-	return attacks
+	var blocked := {from: true}  # псарь остаётся на месте
+	for h in _footprint(target):
+		blocked[h] = true
+	var paths := PAIR_PATHS.paths(from, PAIR_PATHS.DOG, tiles, blocked)
+	return PAIR_PATHS.attacks(paths, _footprint(target))
 
 
 func _shortest_raid(options: Dictionary) -> Vector2i:

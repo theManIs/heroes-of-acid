@@ -565,16 +565,21 @@ func set_attack(anim_name: String) -> void:
 	_find_impact()
 
 
-## Ударить цель, стоящую на distance (центр к центру). Кулак не достаёт — выпад вперёд,
-## достаёт с запасом — отклон назад; к моменту попадания, потом возврат.
-func strike(target: Creature, distance: float, overlap: float) -> void:
-	face(target.position)
+## Точка ближнего контакта: у составного существа может быть несколько моделей.
+func melee_point(_from: Vector3) -> Vector3:
+	return position
+
+
+## Кулак не достаёт до выбранной части цели — выпад вперёд, затем возврат.
+func strike(target: Creature, _distance: float, overlap: float) -> void:
+	var contact := target.melee_point(position)
+	face(contact)
 	target.face(position)
 	play_once(attack_anim)
 	target.take_hit(hit_delay())
 	get_tree().create_timer(hit_delay()).timeout.connect(puff_smoke)
 	get_tree().create_timer(hit_delay()).timeout.connect(target.puff_smoke)
-	var lunge := distance - (reach + target.front() - overlap)
+	var lunge := position.distance_to(contact) - (reach + target.front() - overlap)
 	if absf(lunge) > 0.01:
 		var tween := create_tween()
 		tween.tween_property(model, "position:x", _model_base.x + lunge, hit_delay()).set_trans(Tween.TRANS_SINE)

@@ -10,6 +10,7 @@ const BITE_STEP := 0.08  # короткий шаг корпуса, основн�
 const BITE_GAP := 0.04
 enum MovePhase { NONE, DOG, MASTER, RAID_HOLD, RAID_OUT, RAID_BACK }
 signal dog_route_finished
+signal raid_impact
 
 var _dog := Node3D.new()
 var _dog_model: Node3D
@@ -33,7 +34,7 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	_dog_model = DOG_SCENE.instantiate()
 	_dog.add_child(_dog_model)
 	var box: AABB = _dog_model.find_children("*", "MeshInstance3D", true, false)[0].get_aabb()
-	var fit := DOG_HEIGHT / box.size.y
+	var fit := DOG_HEIGHT * (size / 2.0) / box.size.y
 	_dog_model.scale = Vector3.ONE * fit
 	_dog_model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * fit
 	_dog_anim = _dog_model.find_child("AnimationPlayer", true, false)
@@ -74,6 +75,11 @@ func face(point: Vector3) -> void:
 	super.face(point)
 	# Только в стойке: при проходе маршрута собака смотрит вдоль своего шага.
 	_dog_yaw = PI / 2.0 if point.x >= position.x else -PI / 2.0
+
+
+func melee_point(from: Vector3) -> Vector3:
+	var dog_position := (get_parent() as Node3D).to_local(_dog.global_position)
+	return dog_position if from.distance_squared_to(dog_position) < from.distance_squared_to(position) else position
 
 
 func walk_path(points: Array[Vector3]) -> void:
@@ -200,6 +206,9 @@ func raid(target: Creature, points: Array[Vector3], contact: Vector3) -> void:
 	_dog_play("bite_lunge")
 	# Удар засчитывается у цели при контакте, после пробежки, а не при команде.
 	target.take_hit(BITE_IMPACT)
+	get_tree().create_timer(BITE_IMPACT).timeout.connect(func():
+		if epoch == _epoch and not dead:
+			raid_impact.emit())
 	var reaction_end := Time.get_ticks_msec() + int((BITE_IMPACT + 1.5) * 1000.0)
 	var step := clampf(launch.distance_to(goal) - _bite_reach - target.front() - BITE_GAP, 0.0, BITE_STEP)
 	_bite = create_tween()

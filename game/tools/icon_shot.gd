@@ -3,6 +3,7 @@ extends Node3D
 ## Запуск: godot --path game res://tools/icon_shot.tscn [-- --id=<существо>] — пишет game/assets/creatures/<id>/icon.png.
 
 const ARENA := preload("res://scenes/creature_test.gd")
+const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
 const SIZE := 256
 
 var camera := Camera3D.new()
@@ -25,14 +26,15 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--id="):
 			only = arg.trim_prefix("--id=")
-	for id: String in ARENA.CREATURES:
+	var roster := ARENA.CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair()})
+	for id: String in roster:
 		if only == "" or only == id:
-			await _shoot(id, ARENA.CREATURES[id])
+			await _shoot(id, roster[id])
 	get_tree().quit()
 
 
 func _shoot(id: String, cfg: Dictionary) -> void:
-	var c := Creature.new()
+	var c: Creature = HOUNDMASTER_UNIT.new() if id == "houndmaster-pair" else Creature.new()
 	add_child(c)
 	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
 	if cfg.has("variants"):
@@ -45,7 +47,9 @@ func _shoot(id: String, cfg: Dictionary) -> void:
 	var head := c.bone_tip("Head")
 	# Подстройка кадра на существо: icon_up — сдвиг фокуса (доля роста), icon_dist — отъезд камеры.
 	var focus := head + Vector3(0, top * cfg.get("icon_up", -0.08), 0)
-	camera.position = focus + Vector3(0.35, 0.2, 1.0).normalized() * top * cfg.get("icon_dist", 1.15)
+	if id == "houndmaster-pair":
+		focus = Vector3(0, top * 0.55, 0.45)
+	camera.position = focus + Vector3(0.35, 0.2, 1.0).normalized() * top * (2.2 if id == "houndmaster-pair" else cfg.get("icon_dist", 1.15))
 	camera.look_at(focus)
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
@@ -55,7 +59,7 @@ func _shoot(id: String, cfg: Dictionary) -> void:
 	var rect := Rect2i((img.get_width() - side) / 2, (h - side) / 2, side, side)
 	img = img.get_region(rect)
 	img.resize(SIZE, SIZE, Image.INTERPOLATE_LANCZOS)
-	var path := ProjectSettings.globalize_path("res://assets/creatures/%s/icon.png" % id)
+	var path := ProjectSettings.globalize_path(cfg.get("icon", "res://assets/creatures/%s/icon.png" % id))
 	img.save_png(path)
 	print("icon ", path)
 	c.queue_free()

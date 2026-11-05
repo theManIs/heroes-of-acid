@@ -9,3 +9,7 @@ const MASTER := {
 	"hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "defend": "defend", "defend_from": 0.0,
 	"defend_len": 0.0, "defend_lead": 0.3, "run": "run", "fidget": "fidget_pet", "walk_speed": 1.2,
 }
+
+
+static func pair() -> Dictionary:
+	return MASTER.merged({"name": "Псарь с собакой", "icon": "res://assets/creatures/houndmaster/icon.png"}, true)

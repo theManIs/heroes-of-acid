@@ -6,6 +6,8 @@ extends Node3D
 ## Отладка: -- --auto — обе стороны играют сами, ускоренно; -- --shot=<префикс> — кадры <префикс>-start.png, -end.png.
 
 const ARENA := preload("res://scenes/creature_test.gd")  # записи существ — там
+const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
+const PAIR_PATHS := preload("res://scenes/houndmaster_paths.gd")
 const SWORD := preload("res://scenes/sword_cursor.gd")
 const BOW := preload("res://scenes/bow_cursor.gd")
 const ACTION_ICON := preload("res://scenes/action_icon.gd")
@@ -18,7 +20,7 @@ const OBSTACLES := [  # преграда занимает свои гексы: �
 ]
 const OBSTACLE_OVER := 1.15  # насколько модель шире занятых гексов: не выглядит вписанной в сетку
 const OBSTACLE_HEIGHT := 2.0  # выше не бывает, метров: не закрывает существ в ряду за ней
-const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3}  # гексов за ход: чем массивнее, тем меньше
+const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3, "houndmaster-pair": 3}  # обычное перемещение; вылазка собаки не ограничена
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
 const TILE_HEIGHT := 0.01  # заливка гекса плоская, лежит на траве
@@ -73,6 +75,9 @@ const DIRS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1),
 enum Turn { PLAYER, ENEMY, BUSY, OVER }
 
 var sides: Array[Array] = [[], []]  # 0 — левая (твоя), 1 — правая
+var creatures := ARENA.CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair()})
+var _dog_reachable := {}
+var _raid_targets := {}
 var cells := {}  # Creature -> гекс
 var active: Creature  # кто сейчас ходит
 var board := Node3D.new()
@@ -116,7 +121,7 @@ func _ready() -> void:
 		elif arg.begins_with("--shot="):
 			_shot = arg.trim_prefix("--shot=")
 	for side in sides:
-		for id: String in ARENA.CREATURES:
+		for id: String in creatures:
 			side.append(_make(id))
 	add_child(board)
 	_build_world()
@@ -131,9 +136,9 @@ func _ready() -> void:
 
 
 func _make(id: String) -> Creature:
-	var c := Creature.new()
+	var c: Creature = HOUNDMASTER_UNIT.new() if id == "houndmaster-pair" else Creature.new()
 	add_child(c)
-	var cfg: Dictionary = ARENA.CREATURES[id]
+	var cfg: Dictionary = creatures[id]
 	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size * CREATURE_SCALE, cfg.attack_from, cfg.idle)
 	if cfg.has("variants"):  # финальная генерация — последняя
 		c.set_textures(cfg.variants[-1].get("textures", {}))
@@ -155,6 +160,8 @@ func _make(id: String) -> Creature:
 	c.set_meta("move", MOVES[id])
 	c.set_meta("title", cfg.name)
 	c.set_meta("icon", cfg.icon)
+	if c is HOUNDMASTER_UNIT:
+		(c as HOUNDMASTER_UNIT).raid_impact.connect(_show_queue)
 	if cfg.get("smoke", false):
 		c.add_smoke()
 	return c
@@ -251,32 +258,45 @@ func _hex_at(point: Vector3) -> Vector2i:
 	return best if best_d < RADIUS else NO_HEX
 
 
-## Кратчайшие пути от from по свободным гексам: гекс -> путь без стартового гекса. Мёртвые не мешают.
-func _paths_from(from: Vector2i) -> Dictionary:
+func _is_pair(c: Creature) -> bool:
+	return c is HOUNDMASTER_UNIT
+
+
+func _footprint(c: Creature, anchor := NO_HEX) -> Array[Vector2i]:
+	return PAIR_PATHS.footprint(cells[c] if anchor == NO_HEX else anchor, PAIR_PATHS.PAIR if _is_pair(c) else PAIR_PATHS.SINGLE)
+
+
+func _formation_distance(a: Creature, b: Creature, anchor := NO_HEX) -> int:
+	return PAIR_PATHS.distance(_footprint(a, anchor), _footprint(b))
+
+
+func _blocked(exclude: Creature) -> Dictionary:
 	var blocked := obstacles.duplicate()
 	for side in sides:
 		for c: Creature in side:
-			if c.can_be_hit():
-				blocked[cells[c]] = true
-	var paths := {from: [] as Array[Vector2i]}
-	var queue: Array[Vector2i] = [from]
-	while not queue.is_empty():
-		var h: Vector2i = queue.pop_front()
-		for d in DIRS:
-			var n := h + d
-			if not tiles.has(n) or blocked.has(n) or paths.has(n):
-				continue
-			var p: Array[Vector2i] = paths[h].duplicate()
-			p.append(n)
-			paths[n] = p
-			queue.append(n)
-	return paths
+			if c != exclude and c.can_be_hit():
+				for h in _footprint(c):
+					blocked[h] = true
+	return blocked
+
+
+## Кратчайшие пути всей фигуры отряда. Мёртвые не мешают.
+func _paths_from(from: Vector2i, who: Creature = null) -> Dictionary:
+	if who == null:
+		who = _unit_on(from)
+	return PAIR_PATHS.paths(from, PAIR_PATHS.PAIR if _is_pair(who) else PAIR_PATHS.SINGLE, tiles, _blocked(who))
+
+
+func _raid_options(target: Creature) -> Dictionary:
+	if not _raid_targets.has(target):
+		_raid_targets[target] = PAIR_PATHS.attacks(_dog_reachable, _footprint(target))
+	return _raid_targets[target]
 
 
 func _unit_on(h: Vector2i) -> Creature:
 	for side in sides:
 		for c: Creature in side:
-			if c.can_be_hit() and cells[c] == h:
+			if c.can_be_hit() and _footprint(c).has(h):
 				return c
 	return null
 
@@ -605,7 +625,7 @@ func _reset() -> void:
 			var c: Creature = sides[s][i]
 			c.revive()
 			c.defending = false
-			cells[c] = _cell(0 if s == 0 else COLS - 1, START_ROWS[i])
+			cells[c] = _cell(1 if s == 0 else COLS - 2, 6) if _is_pair(c) else _cell(0 if s == 0 else COLS - 1, START_ROWS[i])
 			c.position = _hex_center(cells[c])
 			c.face(c.position + (Vector3.RIGHT if s == 0 else Vector3.LEFT))
 	round_no = 0
@@ -643,6 +663,12 @@ func _next_turn() -> void:
 			break
 	active.defending = false
 	reachable.clear()
+	_raid_targets.clear()
+	_dog_reachable.clear()
+	if _is_pair(active):
+		var blocked := _blocked(active)
+		blocked[cells[active]] = true  # псарь остаётся дома
+		_dog_reachable = PAIR_PATHS.paths(cells[active], PAIR_PATHS.DOG, tiles, blocked)
 	_show_queue()
 	var left: bool = sides[0].has(active)
 	if active.ranged():
@@ -675,6 +701,17 @@ func _round_order() -> Array[Creature]:
 ## остальные: рядом есть враг — бьёт, иначе идёт к ближайшему и бьёт, если дошёл.
 func _ai_move(enemy_side: int) -> void:
 	var enemies := _living(enemy_side)
+	if _is_pair(active):
+		var raid_target: Creature
+		var raid_path: Array[Vector2i] = []
+		for e: Creature in enemies:
+			for path: Array in _raid_options(e).values():
+				if raid_target == null or path.size() < raid_path.size():
+					raid_target = e
+					raid_path.assign(path)
+		if raid_target:
+			_raid(active, raid_target, raid_path)
+			return
 	if active.ranged():
 		var nearest: Creature = enemies[0]
 		for e: Creature in enemies:
@@ -687,7 +724,7 @@ func _ai_move(enemy_side: int) -> void:
 		_fire(active, nearest)
 		return
 	for e: Creature in enemies:
-		if _hex_distance(cells[active], cells[e]) == 1:
+		if not _is_pair(active) and _formation_distance(active, e) == 1:
 			_act(active, e, [] as Array[Vector2i])
 			return
 	var paths := _paths_from(cells[active])
@@ -695,7 +732,7 @@ func _ai_move(enemy_side: int) -> void:
 	var target: Creature
 	for h: Vector2i in paths:
 		for e: Creature in enemies:
-			if _hex_distance(h, cells[e]) == 1 and (target == null or paths[h].size() < best.size()):
+			if _formation_distance(active, e, h) == 1 and (target == null or paths[h].size() < best.size()):
 				best = paths[h]
 				target = e
 	_act(active, target, best.slice(0, active.get_meta("move")))
@@ -715,7 +752,7 @@ func _act(who: Creature, target: Creature, path: Array[Vector2i]) -> void:
 			points.append(_hex_center(h))
 		who.walk_path(points)
 		await who.arrived
-	if target and _hex_distance(cells[who], cells[target]) == 1:
+	if target and not _is_pair(who) and _formation_distance(who, target) == 1:
 		who.strike(target, _hex_spacing(), OVERLAP)
 		await get_tree().create_timer(who.hit_delay()).timeout
 		_show_queue()  # убитый уходит из шкалы в момент попадания
@@ -725,10 +762,31 @@ func _act(who: Creature, target: Creature, path: Array[Vector2i]) -> void:
 	_next_turn()
 
 
+## Отдельная вылазка на всё поле: cells[who] остаётся исходным до и после атаки.
+func _raid(who: Creature, target: Creature, path: Array[Vector2i]) -> void:
+	turn = Turn.BUSY
+	_set_target(null)
+	who.set_outline(null)
+	reachable.clear()
+	_attack_from = NO_HEX
+	_paint()
+	var points: Array[Vector3] = []
+	for h in path:
+		points.append(_hex_center(h))
+	var end: Vector2i = cells[who] if path.is_empty() else path[-1]
+	var dog_center := _hex_center(end) + Vector3(0, 0, RADIUS * 1.5)
+	var contact: Vector2i = cells[target]
+	for h in _footprint(target):
+		if dog_center.distance_squared_to(_hex_center(h)) < dog_center.distance_squared_to(_hex_center(contact)):
+			contact = h
+	await (who as HOUNDMASTER_UNIT).raid(target, points, _hex_center(contact))
+	_next_turn()
+
+
 ## Вплотную к существу стоит живой враг: из лука стрелять нельзя.
 func _enemy_adjacent(c: Creature) -> bool:
 	for e: Creature in _living(1 if sides[0].has(c) else 0):
-		if _hex_distance(cells[c], cells[e]) == 1:
+		if _formation_distance(c, e) == 1:
 			return true
 	return false
 
@@ -817,7 +875,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		var from := _attack_hex(click.position, enemy)
 		if from != NO_HEX:
-			_act(active, enemy, reachable[from])
+			if _is_pair(active):
+				var path: Array[Vector2i] = _raid_options(enemy)[from]
+				_raid(active, enemy, path)
+			else:
+				_act(active, enemy, reachable[from])
 		return
 	var h := _hex_under(click.position)
 	if reachable.has(h) and h != cells[active]:
@@ -834,14 +896,16 @@ func _attack_hex(screen: Vector2, enemy: Creature) -> Vector2i:
 	var pointer := Vector2(ground.x - center.x, ground.z - center.z)
 	var best := NO_HEX
 	var best_dot := -INF
-	for d in DIRS:
-		var n := target + d
-		if not reachable.has(n):
+	var options: Dictionary = _raid_options(enemy) if _is_pair(active) else reachable
+	for n: Vector2i in options:
+		if not _is_pair(active) and _formation_distance(active, enemy, n) != 1:
 			continue
 		var c := _hex_center(n)
+		if _is_pair(active):
+			c += Vector3(0, 0, RADIUS * 1.5)
 		var side := Vector2(c.x - center.x, c.z - center.z).normalized()
 		var dot := side.dot(pointer.normalized()) if pointer.length() > 0.01 else -float(_hex_distance(n, cells[active]))
-		if dot > best_dot:
+		if dot > best_dot or (is_equal_approx(dot, best_dot) and options[n].size() < options.get(best, []).size()):
 			best_dot = dot
 			best = n
 	return best
@@ -864,7 +928,7 @@ func _enemy_under(screen: Vector2) -> Creature:
 	var hex := _hex_under(screen)
 	var best: Creature
 	for c in _living(1):
-		if (cells[c] == hex or _over_body(c, screen)) and (best == null or c.position.z > best.position.z):
+		if (_footprint(c).has(hex) or _over_body(c, screen)) and (best == null or c.position.z > best.position.z):
 			best = c
 	return best
 
@@ -874,7 +938,7 @@ func _ally_under(screen: Vector2) -> Creature:
 	var hex := _hex_under(screen)
 	var best: Creature
 	for c in _living(0):
-		if (cells[c] == hex or _over_body(c, screen)) and (best == null or c.position.z > best.position.z):
+		if (_footprint(c).has(hex) or _over_body(c, screen)) and (best == null or c.position.z > best.position.z):
 			best = c
 	return best
 
@@ -883,6 +947,14 @@ func _over_body(c: Creature, screen: Vector2) -> bool:
 	var box := Rect2(camera.unproject_position(c.bone_world(0)), Vector2.ZERO)
 	for i in c.skeleton.get_bone_count():
 		box = box.expand(camera.unproject_position(c.bone_world(i)))
+	if _is_pair(c):
+		var dog: Node3D = c.get("_dog_model")
+		var rig: Skeleton3D = dog.find_children("*", "Skeleton3D", true, false)[0]
+		var dog_box := Rect2(camera.unproject_position(dog.global_position), Vector2.ZERO)
+		for i in rig.get_bone_count():
+			dog_box = dog_box.expand(camera.unproject_position(rig.global_transform * rig.get_bone_global_pose(i).origin))
+		if dog_box.grow(8.0).has_point(screen):
+			return true
 	return box.has_point(screen)
 
 
@@ -901,7 +973,7 @@ func _set_target(c: Creature) -> void:
 ## Куда существо может дойти за свой ход.
 func _range_of(c: Creature) -> Dictionary:
 	var out := {}
-	var paths := _paths_from(cells[c])
+	var paths := _paths_from(cells[c], c)
 	for h: Vector2i in paths:
 		if paths[h].size() <= c.get_meta("move"):
 			out[h] = paths[h]
@@ -912,7 +984,9 @@ func _paint() -> void:
 	var shown := reachable
 	var tint := PLAYER_TURN
 	var center: Variant = cells[active] if active else null
+	var preview := active
 	if _inspected:
+		preview = _inspected
 		shown = _range_of(_inspected)
 		tint = ENEMY_TURN if sides[1].has(_inspected) else PLAYER_TURN
 		center = cells[_inspected]
@@ -922,8 +996,15 @@ func _paint() -> void:
 			color.a = RANGE_ALPHA
 			if h == _hovered:
 				color.a = lerpf(RANGE_ALPHA, 1.0, 0.5)
-		if h == _attack_from:
+		var attack_cells: Array[Vector2i] = []
+		if _attack_from != NO_HEX:
+			attack_cells = PAIR_PATHS.footprint(_attack_from, PAIR_PATHS.DOG) if _is_pair(active) else _footprint(active, _attack_from)
+		if attack_cells.has(h):
 			color = Color(TARGET, 0.8)
+		elif active and _is_pair(active) and _footprint(active).has(h):
+			color = Color(PLAYER_TURN if sides[0].has(active) else ENEMY_TURN, RANGE_ALPHA)
+		elif preview and shown.has(_hovered) and _footprint(preview, _hovered).has(h):
+			color = Color(tint, RANGE_ALPHA * 2.0)
 		tiles[h].visible = color.a > 0.0
 		tiles[h].material_override.albedo_color = color
 
@@ -959,7 +1040,8 @@ func _process(delta: float) -> void:
 	sword.visible = from != NO_HEX
 	if sword.visible:
 		# Остриё в курсоре, меч смотрит от гекса атаки к противнику.
-		var a := camera.unproject_position(_hex_center(from))
+		var origin := _hex_center(from) + (Vector3(0, 0, RADIUS * 1.5) if _is_pair(active) else Vector3.ZERO)
+		var a := camera.unproject_position(origin)
 		var b := camera.unproject_position(_hex_center(cells[targeted]))
 		sword.position = mouse
 		sword.rotation = (b - a).angle()
@@ -984,6 +1066,8 @@ func _status_text(unit: Creature, from: Vector2i) -> String:
 		return text
 	match turn:
 		Turn.PLAYER:
+			if _is_pair(active):
+				return "Псарь с собакой: ход %d; атака на всё поле по свободному пути, собака возвращается" % active.get_meta("move")
 			if active.ranged():
 				return "%s: ход %d, %s" % [active.get_meta("title"), active.get_meta("move"), active.shots[active.shot_mode].title]
 			return "%s: ход %d" % [active.get_meta("title"), active.get_meta("move")]
