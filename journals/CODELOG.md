@@ -1200,3 +1200,12 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 +	var across := velocity - axis * velocity.dot(axis)
 +	var strike := Basis(axis.cross(z).normalized(), axis, z)
 ```
+
+### 2026-11-05 — задача 153, переделка
+
+`game/scenes/hammer_grip.gd`: поворот во время клипа (`_face_target`) убран, вместо него постоянный поворот в хвате.
+
+```diff
++const HEAD_ROLL := deg_to_rad(-80.0)
++	frame = frame * Basis(Vector3.UP, HEAD_ROLL)
+```
