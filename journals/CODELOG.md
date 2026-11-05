@@ -834,3 +834,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Added `pipelines/mixamo-catalog/build.py`, `README.md` and index entry: validation, table generation and update instructions.
 - Updated `TASKS.md` and `journals/SESSION.md`.
 - Command: `python3 pipelines/mixamo-catalog/build.py` — 26 pages, 2484 entries; checks page sequence, row counts, required fields and duplicate whole pages.
+
+### 2026-11-05 Задача 120: подбор клипов псаря
+
+- Добавлен `creatures/houndmaster/mixamo/SELECTION.md`: восемь кандидатов, исходные описания, ключи снимка каталога, ссылки и ограничения применения.
+- `creatures/houndmaster/README.md`: ссылка на подборку; `TASKS.md`: задача 120 выполнена, кандидаты ожидают принятия.
+- Подбор по `catalogs/mixamo/catalog.json` через Python и `rg`; риг, игровые файлы и FBX не менялись.

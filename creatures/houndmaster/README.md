@@ -7,3 +7,4 @@
 - `tripo/tripo.json`: `animation_batches` пуст, анимации из `game/assets/animations/`, бесплатно.
 - На витрине: запись `NEW_CREATURES` в `game/scenes/showcase.gd`. Удар `box_01`, реакция `hit_to_head`, защита `hit_to_side`: взяты как пробные.
 - Нет: бега, отклика, пиктограммы, места в бою.
+- Подбор восьми клипов Mixamo (задача 120): [`mixamo/SELECTION.md`](mixamo/SELECTION.md). Кандидаты по локальному каталогу, ожидают принятия; на модели ещё не проверены.

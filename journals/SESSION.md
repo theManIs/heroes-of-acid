@@ -2704,3 +2704,15 @@
 **User:** approved catalogue collection; noted high limit usage.
 
 **Assistant:** completed task 119: all 26 pages, 2484 entries (2439 animations, 45 packs), matching the website count. Saved catalogs/mixamo/catalog.json and catalog.md, added the update pipeline. Local search is now available. Task 120 remains open.
+
+### 2026-11-05 06:12
+
+**User:** asked whether animation selection was complete.
+
+**Assistant:** clarified that catalogue task 119 is complete, while houndmaster animation selection task 120 remains open after switching priority to 119.
+
+### 2026-11-05 06:15
+
+**User:** разрешил продолжить подбор анимаций псаря (задача 120).
+
+**Assistant:** подобрал восемь кандидатов по локальному каталогу: Unarmed Idle, Unarmed Walk Forward, Unarmed Run Forward, Angry Point, Hit Reaction (удар в корпус), Block, Death, Petting Animal. Сохранил SELECTION.md с ключами вариантов, ссылками и замечаниями. Задача 120 отмечена выполненной; принятие и проверка на модели впереди.
