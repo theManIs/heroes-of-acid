@@ -15,6 +15,7 @@ const TURN := PI / 2.0  # конь смотрит по +X, как остальн
 const LANCE_YAW := -14.0
 const HOLD := 1.0
 const FROZEN := ["ride_still", "ride_hurt", "ride_fidget_look", "ride_dodge"]
+const HANG_LEGS := ["ride_fidget_look"]  # конь щиплет траву и сильно наклоняется: ноги свисают
 ## Подпись, клип коня, клип всадника, по кругу без остановки.
 const CELLS := [
 	["Стойка", "idle_breathe", "ride_still", true],
@@ -126,6 +127,12 @@ func _make_pair_cell(grid: GridContainer, cell: Array) -> void:
 	await _settle(pair)
 	var player: AnimationPlayer = pair.player
 	var rider: Creature = pair.rider
+	if cell[2] in HANG_LEGS:
+		var hang := LegHang.new()
+		hang.rider = rider
+		hang.horse_sk = pair.sk
+		frame.view.add_child(hang)
+		hang.set_rest()
 	if cell[3]:
 		player.get_animation(cell[1]).loop_mode = Animation.LOOP_LINEAR
 		player.play(cell[1], 0.2)
@@ -299,3 +306,37 @@ func _make_strike_cell(grid: GridContainer, charge: bool) -> void:
 				await get_tree().process_frame
 				time += get_process_delta_time()
 
+
+## Ноги опускаются, когда конь опускает голову: корпус коня уходит вперёд-вниз, и колени со стопами
+## всадника должны уйти вниз вместе с ним. Доля — насколько опущена голова коня. Работает после анимации.
+class LegHang extends Node:
+	var rider: Creature
+	var horse_sk: Skeleton3D
+	var head := -1
+	var rest_y := 0.0
+	var drop := 0.6  # на сколько метров голова опускается в клипе травы
+	var thigh := 22.0  # градусов: бёдра вниз при полностью опущенной голове
+	var shin := 18.0  # градусов: голени назад-вниз
+	var sign := -1.0  # замер: при +1 колени поднимались
+
+	func _ready() -> void:
+		process_priority = 100
+		head = horse_sk.find_bone("Head")
+
+	func set_rest() -> void:
+		rest_y = (horse_sk.global_transform * horse_sk.get_bone_global_pose(head).origin).y
+
+	func _process(_delta: float) -> void:
+		if not is_instance_valid(rider) or head < 0:
+			return
+		var y: float = (horse_sk.global_transform * horse_sk.get_bone_global_pose(head).origin).y
+		var w := clampf((rest_y - y) / drop, 0.0, 1.0)
+		if w <= 0.001:
+			return
+		var sk := rider.skeleton
+		var side: Vector3 = (sk.global_basis.inverse() * rider.global_basis.z).normalized()
+		for leg in ["Left", "Right"]:
+			for part in [["UpLeg", thigh], ["Leg", -shin]]:
+				var i := sk.find_bone("mixamorig_%s%s" % [leg, part[0]])
+				var g := sk.get_bone_global_pose(i)
+				sk.set_bone_global_pose(i, Transform3D(Basis(side, deg_to_rad(part[1]) * w * sign) * g.basis, g.origin))
