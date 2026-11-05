@@ -199,10 +199,14 @@ func _make_death_cell(grid: GridContainer, death: Array) -> void:
 	var clip: String = death[1]
 	var length := rider.anim.get_animation(clip).length
 	while is_instance_valid(rider):
+		# Повтор витрины: лежащего не тащим обратно в седло на глазах — прячем, сажаем, показываем.
+		rider.visible = false
 		rider.anim.play("ride_still", 0.0)
 		rider.anim.advance(0.0)
 		await get_tree().process_frame
 		MOCK.sit(rider)
+		await get_tree().process_frame
+		rider.visible = true
 		var seat := rider.position
 		await get_tree().create_timer(1.0).timeout
 		rider.anim.play(clip, 0.2)
