@@ -1132,3 +1132,19 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 +		var side := signf(from_up) if absf(from_up) > 0.001 else (-1.0 if sin(_dog_yaw) >= 0.0 else 1.0)
 +		yaw = PI + side * UP_TILT
 ```
+
+### 2026-11-05 — задача 149
+
+`game/scenes/houndmaster_unit.gd`: `_update_petting`, поворот и наклон псаря, подход собаки.
+
+```diff
+-	_pet_ik.root_bone = &"mixamorig_RightArm"
++	_pet_ik.root_bone = &"mixamorig_Spine1"
+-		var forward := (_dog.global_position - global_position).normalized()
++	var look := rotation.y - FRONT_YAW
++	var forward := Vector3(sin(look), 0.0, cos(look))
++		_yaw = atan2(to.x, to.z) - PET_HEAD_ANGLE
++	_pet_shift = pull.normalized() * gap * weight
+```
+
+Проверка: кадры в скрытом окне, сбоку, спереди и с боевой камеры, обе стороны.
