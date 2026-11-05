@@ -1240,3 +1240,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-06 — задача 157, витрина макета
 
 Новое: `game/scenes/rider_mock.gd` (конь, бёдра, посадка), `game/scenes/rider_showcase.gd/.tscn`; `rider_lab.gd` переведён на общий макет. Шесть новых FBX в `creatures/rider/mixamo/`, клипы `game/assets/creatures/rider/anims/`.
+
+### 2026-11-06 — задача 158
+
+Новое: `game/scenes/rider_search.gd/.tscn`, `creatures/rider/mixamo/search/` (17 FBX), клипы `s_*` в `game/assets/creatures/rider/anims/`.
+`rider_showcase.gd`: обрезка «с какой секунды» в `_make_fidget_cell`, заморозка правой руки и в квадратах езды; `rider_mock.gd`: новые клипы в `ALL_CLIPS`.

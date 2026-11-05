@@ -91,6 +91,8 @@ func _make_ride_cell(grid: GridContainer, gait: Array) -> void:
 	var rider := MOCK.make_rider(mount)
 	var lance := MOCK.add_lance(mount)
 	_make_label(cell.frame).text = gait[0]
+	if gait[1] in FROZEN_ARM:
+		MOCK.freeze_bones(rider, gait[1], MOCK.RIGHT_ARM)
 	rider.anim.get_animation(gait[1]).loop_mode = Animation.LOOP_LINEAR
 	rider.anim.play(gait[1])
 	rider.anim.advance(0.0)
@@ -126,7 +128,9 @@ const CHARGE_BACK := 1.6
 ## Впритык разгона нет: конь делает короткий выпад на полшага, копьё под рукой, как в таране.
 const HURT_LEN := 2.2
 ## Копьё под рукой: правая рука неподвижна во всех таких клипах, двигается остальное тело.
-const FROZEN_ARM := ["ride_still", "ride_hurt", "ride_fidget_look", "ride_dodge"]
+const FROZEN_ARM := ["ride_still", "ride_hurt", "ride_fidget_look", "ride_dodge",
+	"s_piloting", "s_driving", "s_sitting_and_pointing_mirror", "s_sitting_victory_mirror", "s_beckoning_mirror",
+	"s_ducking", "s_sitting_dodges", "s_shoved", "s_knocked_unconscious"]
 const LUNGE := 0.5
 const LUNGE_TIME := 0.35
 
@@ -263,10 +267,13 @@ func _make_fidget_cell(grid: GridContainer, fidget: Array) -> void:
 	var clip: String = fidget[1]
 	if clip in FROZEN_ARM:
 		MOCK.freeze_bones(rider, clip, MOCK.RIGHT_ARM)
-	# Третье поле — сколько секунд клипа играть, дальше плавно в стойку.
+	# Третье поле — сколько секунд клипа играть, дальше плавно в стойку; четвёртое — с какой секунды.
 	var length: float = fidget[2] if fidget.size() > 2 else rider.anim.get_animation(clip).length
+	var from: float = fidget[3] if fidget.size() > 3 else 0.0
 	while is_instance_valid(rider):
 		rider.anim.play(clip, 0.2)
+		if from > 0.0:
+			rider.anim.seek(from, true)
 		rider.anim.advance(0.0)
 		await get_tree().process_frame
 		MOCK.sit(rider)

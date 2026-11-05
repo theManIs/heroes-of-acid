@@ -13,7 +13,10 @@ const CLIPS := [
 	["Реакция: удар по голове", "ride_hurt"],
 ]
 ## Все собранные клипы, которые грузит макет.
-const ALL_CLIPS := ["ride_still", "ride_idle", "ride_swing", "ride_swing_mirror", "ride_strike", "ride_block", "ride_dodge", "ride_hurt", "ride_death_pulled", "ride_death_crouch", "ride_fidget_look", "ride_fidget_yell"]
+const ALL_CLIPS := ["ride_still", "ride_idle", "ride_swing", "ride_swing_mirror", "ride_strike", "ride_block", "ride_dodge", "ride_hurt", "ride_death_pulled", "ride_death_crouch", "ride_fidget_look", "ride_fidget_yell",
+	# Задача 158 — найденные кандидаты:
+	"s_piloting", "s_driving", "s_sitting_and_pointing_mirror", "s_sitting_victory_mirror", "s_beckoning_mirror",
+	"s_ducking", "s_sitting_dodges", "s_shoved", "s_knocked_unconscious"]
 
 
 static func make_rider(parent: Node) -> Creature:

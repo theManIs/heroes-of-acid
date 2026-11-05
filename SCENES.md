@@ -34,3 +34,6 @@
 
 Витрина макета всадника (задача 157): семь сидячих клипов Mixamo, по квадрату на клип:
 `godot --path game res://scenes/rider_showcase.tscn`.
+
+Кандидаты анимаций всадника (задача 158), найденные поиском по каталогу Mixamo:
+`godot --path game res://scenes/rider_search.tscn`.

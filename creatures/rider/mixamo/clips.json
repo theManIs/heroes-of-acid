@@ -59,5 +59,90 @@
     "name": "ride_fidget_yell",
     "grip": 0,
     "keep_left_fingers": false
+  },
+  "search/Beckoning.fbx": {
+    "name": "s_beckoning",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Driving.fbx": {
+    "name": "s_driving",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Ducking.fbx": {
+    "name": "s_ducking",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Hold Off Assailant.fbx": {
+    "name": "s_hold_off_assailant",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Honking Horn.fbx": {
+    "name": "s_honking_horn",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Knocked Unconscious.fbx": {
+    "name": "s_knocked_unconscious",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Piloting.fbx": {
+    "name": "s_piloting",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Removing Driver.fbx": {
+    "name": "s_removing_driver",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Shoved.fbx": {
+    "name": "s_shoved",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Sitting And Pointing.fbx": {
+    "name": "s_sitting_and_pointing",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Sitting Dodges.fbx": {
+    "name": "s_sitting_dodges",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Sitting Gun Motion.fbx": {
+    "name": "s_sitting_gun_motion",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Sitting Victory.fbx": {
+    "name": "s_sitting_victory",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Upward Rifle Butt Strike.fbx": {
+    "name": "s_upward_rifle_butt_strike",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Beckoning Mirror.fbx": {
+    "name": "s_beckoning_mirror",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Sitting And Pointing Mirror.fbx": {
+    "name": "s_sitting_and_pointing_mirror",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Sitting Victory Mirror.fbx": {
+    "name": "s_sitting_victory_mirror",
+    "grip": 0,
+    "keep_left_fingers": false
   }
 }
