@@ -27,6 +27,8 @@ func _ready() -> void:
 	_make_charge_cell(grid)
 	for clip: Array in MOCK.CLIPS:
 		_make_rider_cell(grid, clip)
+	for death: Array in DEATHS:
+		_make_death_cell(grid, death)
 	get_viewport().size_changed.connect(_fit.bind(grid))
 	_fit(grid)
 	_finish()
@@ -175,4 +177,39 @@ func _make_charge_cell(grid: GridContainer) -> void:
 			var after := time - CHARGE_TIME
 			jolt = 2.0 * exp(-after * 6.0) * cos(after * 14.0)  # тяжёлое копьё: малый размах, медленно
 		MOCK.place_lance(lance, rider, mount, sin(phase - 0.9) * 2.6 * speed + jolt, sin(phase * 0.5 + 0.4) * 1.0 * speed)
+
+
+## Смерть: сидячей нет. Кандидаты: выдернут с места пилота (тот же набор) и смерть из приседа.
+## Всадник падает с коня на землю: сначала уходит вбок с седла, потом опускается.
+## Подпись, клип, доли клипа начала и конца падения, сдвиг вбок (у «сдёрнут» клип сам уводит тело).
+const DEATHS := [["Смерть: сдёрнут с седла (кандидат)", "ride_death_pulled", 0.15, 0.6, 0.0],
+	["Смерть: из приседа (кандидат)", "ride_death_crouch", 0.05, 0.45, 1.15]]
+
+
+func _make_death_cell(grid: GridContainer, death: Array) -> void:
+	var cell := _make_frame(grid, 3.4)
+	var view: SubViewport = cell.view
+	var mount := Node3D.new()
+	view.add_child(mount)
+	MOCK.build_horse(mount)
+	var rider := MOCK.make_rider(mount)
+	_make_label(cell.frame).text = death[0]
+	var clip: String = death[1]
+	var length := rider.anim.get_animation(clip).length
+	while is_instance_valid(rider):
+		rider.anim.play("ride_still", 0.0)
+		rider.anim.advance(0.0)
+		await get_tree().process_frame
+		MOCK.sit(rider)
+		var seat := rider.position
+		await get_tree().create_timer(1.0).timeout
+		rider.anim.play(clip, 0.2)
+		var time := 0.0
+		while time < length + 1.2:
+			await get_tree().process_frame
+			time += get_process_delta_time()
+			var t := clampf((time / length - death[2]) / (death[3] - death[2]), 0.0, 1.0)
+			var side := smoothstep(0.0, 0.45, t)
+			var drop := clampf((t - 0.3) / 0.7, 0.0, 1.0)
+			rider.position = Vector3(seat.x, lerpf(seat.y, 0.0, drop * drop), seat.z + death[4] * side)
 

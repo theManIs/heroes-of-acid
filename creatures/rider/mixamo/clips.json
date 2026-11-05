@@ -39,5 +39,15 @@
     "name": "ride_swing_mirror",
     "grip": 0,
     "keep_left_fingers": false
+  },
+  "Pulled From Seat.fbx": {
+    "name": "ride_death_pulled",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Crouch Death.fbx": {
+    "name": "ride_death_crouch",
+    "grip": 0,
+    "keep_left_fingers": false
   }
 }
