@@ -1,0 +1,8 @@
+{
+  "endpoint": "fal-ai/gpt-image-1.5",
+  "prompt": "Concept art for a 3D game creature model: a large black warhorse in partial medieval barding, shown strictly from the side (left profile), standing still, all four legs fully visible and separated with clear gaps between them, hooves on the ground, tail hanging. Armor: polished steel chanfron on the face with blue trim, segmented steel crinet plates along the top of the neck, a deep blue cloth caparison at the chest and over the hindquarters with steel plate panels edged in blue, blue bridle and reins, a dark leather saddle with a blue saddle cloth, empty saddle, no rider. Matte painted stylized realistic look, readable silhouette, few small details, materials: steel, blue cloth, brown leather, black horse coat. Plain neutral dark gray background, soft studio light, whole horse in frame with margin, no text, no ground props.",
+  "image_size": "1536x1024",
+  "quality": "high",
+  "num_images": 1,
+  "output_format": "png"
+}
