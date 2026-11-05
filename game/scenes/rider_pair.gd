@@ -14,6 +14,7 @@ const TURN := PI / 2.0  # конь смотрит по +X, как остальн
 ## Копьё отведено наружу от головы коня: замер — не ближе 0,34 м к голове и шее в любом клипе (было 0,13).
 const LANCE_YAW := -14.0
 const HOLD := 1.0
+const BACK_BLEND := 1.0  # возврат в стойку после разового действия, секунд (было 0,3 — руки дёргались)
 const FROZEN := ["ride_still", "ride_hurt", "ride_fidget_look", "ride_dodge"]
 const HANG_LEGS := ["ride_fidget_look"]  # конь щиплет траву и сильно наклоняется: ноги свисают
 ## Подпись, клип коня, клип всадника, по кругу без остановки.
@@ -159,8 +160,8 @@ func _make_pair_cell(grid: GridContainer, cell: Array) -> void:
 				stretched = true
 			if not back and time >= length:
 				rider.anim.speed_scale = 1.0
-				player.play("idle_breathe", 0.3)
-				rider.anim.play("ride_still", 0.3)
+				player.play("idle_breathe", BACK_BLEND)
+				rider.anim.play("ride_still", BACK_BLEND)
 				back = true
 			_follow(pair)
 			await get_tree().process_frame
