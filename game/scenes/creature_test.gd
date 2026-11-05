@@ -889,11 +889,6 @@ func _paint() -> void:
 	for h: Vector2i in tiles:
 		var mat: StandardMaterial3D = tiles[h].material_override
 		var color: Color = tiles[h].get_meta("base")
-		if tested == "houndmaster-pair":
-			if _footprint(_hex_of(player)).has(h):
-				color = color.lerp(PLAYER_TURN, 0.45)
-			elif _footprint(_hex_of(enemy)).has(h):
-				color = color.lerp(ENEMY_TURN, 0.45)
 		if reachable.has(h) and h != _hex_of(player):
 			color = color.lerp(PLAYER_TURN, 0.25)
 			if h == _hovered:

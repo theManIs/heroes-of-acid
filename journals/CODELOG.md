@@ -1036,3 +1036,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Extended preserved source sweep through 35/30 s instead of 28/30; 0.7 s recovery begins after follow-through. Clip length 1.8667 s; impact 0.49107143 preserves contact at 0.9167 s.
 - Added full_clip melee option; hammer area opts in, so play_once does not cut at hit + 0.3 s. Animation returns to idle on completion. Other attacks retain existing timing.
 - Command: build_clips.py hammerer. No tests run; manual acceptance remains with user.
+
+### 2026-11-05 18:49 — Pair footprint tint (135)
+
+- Removed creature-arena pair-only permanent blue/red footprint tint. Other creatures never had it; reachable-anchor and action footprint painting/path checks preserved. No tests run.
