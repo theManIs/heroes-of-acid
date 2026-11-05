@@ -970,3 +970,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Updated task stage, README, pipeline index, SCENES and generation metadata.
 - Commands: stage2.py hammerer; weapon.py hammerer; Blender prepare_pack.py and prepare_weapon.py; build_clips.py hammerer; pack_model.py for body and hammer; Godot asset import, pose_sheet authoring renders, showcase launch with --creature=hammerer and snapshot. No automated tests run; manual acceptance is the user.
 - Result: body 19,938 triangles, 65 Mixamo bones, weapon 7,552 triangles; 105 Tripo credits (760 to 655); eight chosen clips, walk cadence measured 1.18 m/s.
+
+### 2026-11-05 15:57 — Hammerer showcase metal lighting (133)
+
+- showcase.gd: added optional neutral procedural Sky for reflections with the existing flat backdrop, plus a cool fill light (0.75 energy).
+- hammerer_config.gd opts in; creature_gallery_page.gd applies the option per cell. Documented in the pipeline.
+- Commands: Godot launch/snapshot; local Environment enum introspection to correct REFLECTION_SOURCE_SKY; updated showcase launch. No automated tests run.

@@ -45,6 +45,7 @@ func fit_cells() -> void:
 
 func _make_action(cfg: Dictionary, action: Array) -> void:
 	var cell := _make_frame(_grid, cfg.get("showcase_size", cfg.size) * (1.2 if action[1] == "fall" else 1.0))
+	_configure_lighting(cell.view, cfg)
 	var unit := Creature.new()
 	cell.view.add_child(unit)
 	unit.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)

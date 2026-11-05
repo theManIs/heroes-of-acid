@@ -124,6 +124,7 @@ func _make_cell(id: String, grid: GridContainer) -> void:
 	var cell := _make_frame(grid, cfg.size)
 	var view: SubViewport = cell.view
 	var frame: Control = cell.frame
+	_configure_lighting(view, cfg)
 	var unit := Creature.new()
 	view.add_child(unit)
 	unit.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
@@ -145,6 +146,30 @@ func _make_cell(id: String, grid: GridContainer) -> void:
 	unit.face(unit.position + Vector3.BACK + Vector3.RIGHT)
 	var label := _make_label(frame)
 	_cycle(unit, cfg, label)
+
+
+## Metallic surfaces need an environment to reflect, even with a flat backdrop.
+func _configure_lighting(view: SubViewport, cfg: Dictionary) -> void:
+	if not cfg.get("showcase_metal_light", false):
+		return
+	var world: WorldEnvironment = view.find_children("*", "WorldEnvironment", false, false)[0]
+	var sky_material := ProceduralSkyMaterial.new()
+	sky_material.sky_top_color = Color(0.65, 0.68, 0.72)
+	sky_material.sky_horizon_color = Color(0.85, 0.85, 0.85)
+	sky_material.ground_horizon_color = Color(0.72, 0.72, 0.72)
+	sky_material.ground_bottom_color = Color(0.35, 0.36, 0.38)
+	sky_material.sky_energy_multiplier = 1.0
+	sky_material.ground_energy_multiplier = 1.0
+	var sky := Sky.new()
+	sky.sky_material = sky_material
+	world.environment.sky = sky
+	world.environment.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+	var fill := DirectionalLight3D.new()
+	fill.name = "MetalFill"
+	fill.rotation_degrees = Vector3(-30, -140, 0)
+	fill.light_color = Color(0.9, 0.94, 1.0)
+	fill.light_energy = 0.75
+	view.add_child(fill)
 
 
 func _build_world(view: SubViewport) -> void:

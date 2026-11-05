@@ -9,5 +9,5 @@ const UNIT := {
 	"attack": "attack", "attack_from": 0.0, "hurt": "hurt", "hurt_len": 0.0,
 	"idle": "idle", "run": "run", "fidget": "fidget", "defend": "defend",
 	"defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.3,
-	"size": 1.9, "walk_speed": 1.18, "showcase_size": 2.7,
+	"size": 1.9, "walk_speed": 1.18, "showcase_size": 2.7, "showcase_metal_light": true,
 }
