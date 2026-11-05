@@ -869,3 +869,11 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `creatures/houndmaster/mixamo/clips.json`: опция включена; пересобраны восемь GLB в `game/assets/creatures/houndmaster/anims/`. Риг и геометрия сохранены.
 - Обновлены TASKS, README существа, SELECTION, инструкция Mixamo и ARTIFACTS (60).
 - Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py houndmaster`; `godot --headless --path game --import`; `godot --path game --position 10000,10000 res://scenes/houndmaster_showcase.tscn -- --shot=...`; `git diff --check`. Импорт успешен, кадр восьми клипов просмотрен.
+
+### 2026-11-05 Задача 124: три набора на витрине
+
+- `game/scenes/houndmaster_showcase.gd`: три раздела по восемь квадратов, заголовки и прокрутка; готовая собака из HOUND_LAB, отдельные и парные повторы.
+- Парные циклы с общим периодом, укус после 35 % команды, общие начала реакции/защиты/смерти. При поглаживании собака стоит, правая рука плавно направляется к голове через SkeletonIK3D с небольшим движением вдоль головы. Исходные клипы и риги не менялись.
+- Камеры для падений/пары и запас плоскости земли; аргумент `--section=master|hound|pair` для кадров и просмотра.
+- `pipelines/creature-pair-showcase/README.md` и индекс: рецепт; обновлены SCENES, TASKS, README псаря и собаки.
+- Команды: `godot --headless --path game --import`; `godot --path game --position 10000,10000 res://scenes/houndmaster_showcase.tscn -- --section=... --shot=...` для трёх разделов; `git diff --check`. Кадры просмотрены, обрезание падений исправлено, ошибок импорта/скрипта нет, FPS кадра 60.
