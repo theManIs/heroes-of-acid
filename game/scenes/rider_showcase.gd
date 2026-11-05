@@ -31,7 +31,6 @@ func _ready() -> void:
 		_make_death_cell(grid, death)
 	for fidget: Array in FIDGETS:
 		_make_fidget_cell(grid, fidget)
-	_make_plant_cell(grid)
 	get_viewport().size_changed.connect(_fit.bind(grid))
 	_fit(grid)
 	_finish()
@@ -218,7 +217,8 @@ func _make_death_cell(grid: GridContainer, death: Array) -> void:
 
 
 ## Отклик при наведении — кандидаты из сидячего набора, копьё лежит под рукой, как в стойке.
-const FIDGETS := [["Отклик: осматривается (кандидат)", "ride_fidget_look"], ["Отклик: боевой клич (кандидат)", "ride_fidget_yell"]]
+## Выбор пользователя: отклик — «осматривается». Клич и «воткнуть копьё» (_make_plant_cell) не используются.
+const FIDGETS := [["Отклик: осматривается", "ride_fidget_look"]]
 ## Отклик «воткнуть копьё и крикнуть»: копьё поворачивается в кисти остриём вверх и древком
 ## втыкается в землю у правого бока коня, всадник кричит, потом берёт копьё обратно.
 const PLANT_TIME := 0.7
