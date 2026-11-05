@@ -12,20 +12,19 @@ const LEFT_HAND_CLIPS := ["ride_swing_mirror"]  # зеркальный клип 
 ## качается корпусом и переставляет ноги. Подпись, клип всадника, шагов в секунду,
 ## подъём корпуса (м), размах ног (градусы).
 const GAITS := [
-	["Едет шагом (сидит спокойно)", "ride_still", 1.6, 0.03, 18.0],
-	["Едет рысью (облегчается в седле)", "ride_still", 2.6, 0.07, 28.0],
+	["Шаг", "ride_still", 1.6, 0.03, 18.0],
+	["Бег: рысь, облегчается в седле", "ride_still", 2.6, 0.07, 28.0],
 ]
 
 
 func _ready() -> void:
 	columns = 4
 	var grid := _build_page()
-	_make_charge_cell(grid)
+	# Заявленные действия: стойка, шаг, рысь (бег), таран (атака), реакция, защита.
+	_make_rider_cell(grid, ["Стойка: сидит спокойно", "ride_still"])
 	for gait: Array in GAITS:
 		_make_ride_cell(grid, gait)
-	for clip: Array in MOCK.CLIPS:
-		if clip[1] in LANCE_CLIPS:
-			_make_rider_cell(grid, clip, true)
+	_make_charge_cell(grid)
 	for clip: Array in MOCK.CLIPS:
 		_make_rider_cell(grid, clip)
 	get_viewport().size_changed.connect(_fit.bind(grid))
@@ -134,7 +133,7 @@ func _make_charge_cell(grid: GridContainer) -> void:
 	var legs := MOCK.build_horse(mount)
 	var rider := MOCK.make_rider(mount)
 	var lance := MOCK.add_lance(mount)
-	_make_label(cell.frame).text = "Таран копьём: разгон на цель"
+	_make_label(cell.frame).text = "Атака: таран копьём"
 	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
 	rider.anim.play("ride_still")
 	rider.anim.advance(0.0)

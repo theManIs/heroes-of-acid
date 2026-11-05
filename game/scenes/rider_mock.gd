@@ -7,20 +7,19 @@ const RIDER_SIZE := 1.9
 const SADDLE := 1.55  # высота спины коня под всадника ростом около 2 м
 const LEG_SPREAD := 28.0  # градусов: бёдра в стороны, чтобы обхватить коня
 const LEG_AXIS := Vector3(1, 0, 0)  # ось разведения в пространстве скелета
-## Сидячий набор Mixamo «бой в машине»: подпись и имя клипа.
+## Сидячий набор Mixamo «бой в машине»: подпись и имя клипа. В витрине только заявленные
+## действия; прочие пробы (тряска, взмахи, уклон) лежат в файлах, см. creatures/rider/README.md.
 const CLIPS := [
-	["Стойка: сидит спокойно", "ride_still"], ["Стойка: трясёт на кочках", "ride_idle"],
-	["Удар: взмах сидя", "ride_swing"], ["Удар: взмах сидя, зеркально", "ride_swing_mirror"],
-	["Удар: сбить врага трубой", "ride_strike"],
-	["Защита: блок сверху", "ride_block"], ["Уклон вправо", "ride_dodge"],
-	["Реакция: удар по голове", "ride_hurt"],
+	["Реакция: удар по голове", "ride_hurt"], ["Защита: блок сверху (кандидат)", "ride_block"],
 ]
+## Все собранные клипы, которые грузит макет.
+const ALL_CLIPS := ["ride_still", "ride_idle", "ride_swing", "ride_swing_mirror", "ride_strike", "ride_block", "ride_dodge", "ride_hurt"]
 
 
 static func make_rider(parent: Node) -> Creature:
 	var files: Array = []
-	for clip in CLIPS:
-		files.append(ANIMS + clip[1] + ".glb")
+	for clip in ALL_CLIPS:
+		files.append(ANIMS + clip + ".glb")
 	var rider := Creature.new()
 	parent.add_child(rider)
 	rider.setup(load(RIDER), files, "ride_swing", "ride_hurt", RIDER_SIZE, 0.0, "ride_still")
