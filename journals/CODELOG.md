@@ -1176,3 +1176,15 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 -	["Защита", "defend", false]
 +	["Защита", "defend_block", false]
 ```
+
+### 2026-11-05 — задача 152
+
+`game/scenes/houndmaster_unit.gd`: защита собаки с середины клипа.
+
+```diff
++const DOG_DEFEND_FROM := 0.8
+-			_dog_play("defend_lower_head")
++			_dog_play("defend_lower_head", 1.0, DOG_DEFEND_FROM)
++		if from > 0.0:
++			_dog_anim.seek(from, true)
+```

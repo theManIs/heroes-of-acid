@@ -3,6 +3,7 @@ extends Creature
 ## затем псарь; фигура занятых клеток не вращается вместе с моделями.
 const DOG_SCENE := preload("res://assets/creatures/hound/hound.glb")
 const DOG_IDLE := "idle_breathe"
+const DOG_DEFEND_FROM := 0.8  # с; в клипе голова уходит вниз с 0,6 до 1,2 с из 4
 const DOG_FIDGET := "fidget_sniff_ground"  # свой отклик собаки, без касания псаря
 const DOG_HEIGHT := 1.05
 const BITE_IMPACT := 0.45
@@ -212,10 +213,12 @@ func set_fidget_hovered(hovered: bool) -> void:
 		_dog_play(DOG_FIDGET)
 
 
-func _dog_play(clip: String, speed := 1.0) -> void:
+func _dog_play(clip: String, speed := 1.0, from := 0.0) -> void:
 	_dog_anim.speed_scale = speed
 	if _dog_anim.current_animation != clip:
 		_dog_anim.play(clip, 0.2)
+		if from > 0.0:
+			_dog_anim.seek(from, true)
 
 
 func hit_delay() -> float:
@@ -327,7 +330,7 @@ func play_once(clip: String) -> void:
 		if clip == hurt_anim:
 			_dog_play("hurt_head_left")
 		elif clip == defend_anim:
-			_dog_play("defend_lower_head")
+			_dog_play("defend_lower_head", 1.0, DOG_DEFEND_FROM)
 
 
 func take_hit(delay: float) -> void:
