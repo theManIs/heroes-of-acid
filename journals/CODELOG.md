@@ -851,3 +851,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/tools/pose_sheet.gd`: поддержаны существа, находящиеся пока только на витрине.
 - Обновлены SCENES, TASKS (121 выполнена), журнал существа и пайплайн/индекс; по команде пользователя вход на сайты выполняет агент.
 - Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/rig_existing.py houndmaster`; `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py houndmaster`; `godot --headless --path game --import`; лист поз `res://tools/pose_sheet.tscn -- --id=houndmaster`; витрина `res://scenes/showcase.tscn -- --shot=...`. Импорт успешен; просмотрены лист поз, исправленный бег и кадр витрины; FPS кадра 60. `git diff --check` — успешно.
+
+### 2026-11-05 Завершение работы над существом
+
+- `pipelines/README.md`: отдельная витрина конкретного существа обязательна в конце работы; ссылки из creature, creature-tripo-mixamo, creature-quadruped и creature-fal-mixamo.
+- `TASKS.md`: задача 122 на отдельную витрину псаря, отложена по просьбе пользователя. Изменения только в документации.
