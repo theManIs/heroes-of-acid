@@ -149,3 +149,22 @@ static func place_hand_lance(lance: MeshInstance3D, rider: Creature, local_dir: 
 		side = Vector3.BACK
 	lance.global_transform = Transform3D(Basis(side, forward, side.cross(forward)), hand + forward * (LANCE_LENGTH * 0.5 - LANCE_BACK))
 
+
+## Смягчить размах клипа один раз для всех кадров: повороты корпуса и рук
+## тянутся к первому кадру. factor 1 — как в клипе, 0 — неподвижно.
+const UPPER_BODY := ["Spine", "Spine1", "Spine2", "Neck", "Head", "RightShoulder", "RightArm", "RightForeArm",
+	"RightHand", "LeftShoulder", "LeftArm", "LeftForeArm", "LeftHand"]
+
+
+static func damp_clip(rider: Creature, clip: String, factor: float) -> void:
+	var anim := rider.anim
+	var root_path := anim.get_node(anim.root_node).get_path_to(rider.skeleton)
+	var a := anim.get_animation(clip)
+	for bone: String in UPPER_BODY:
+		var t := a.find_track(NodePath("%s:mixamorig_%s" % [root_path, bone]), Animation.TYPE_ROTATION_3D)
+		if t < 0 or a.track_get_key_count(t) == 0:
+			continue
+		var ref: Quaternion = a.track_get_key_value(t, 0)
+		for k in a.track_get_key_count(t):
+			a.track_set_key_value(t, k, ref.slerp(a.track_get_key_value(t, k), factor))
+

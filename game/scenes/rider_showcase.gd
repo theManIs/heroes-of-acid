@@ -6,6 +6,7 @@ const MOCK := preload("res://scenes/rider_mock.gd")
 const CELL_TARGET := 460
 const HOLD := 0.6
 const LANCE_CLIPS := ["ride_swing", "ride_strike"]  # удары сидя: копьё в кисти
+const LANCE_DAMP := {"ride_swing": 0.45}  # с копьём взмах аккуратнее: доля размаха клипа
 ## Езда без клипа езды: всадник в сидячей стойке, конь-макет идёт на месте,
 ## качается корпусом и переставляет ноги. Подпись, клип всадника, шагов в секунду,
 ## подъём корпуса (м), размах ног (градусы).
@@ -48,6 +49,8 @@ func _make_rider_cell(grid: GridContainer, clip: Array, with_lance := false) -> 
 	MOCK.build_horse(mount)
 	var rider := MOCK.make_rider(mount)
 	var lance: MeshInstance3D = MOCK.add_lance(mount) if with_lance else null
+	if with_lance and LANCE_DAMP.has(clip[1]):
+		MOCK.damp_clip(rider, clip[1], LANCE_DAMP[clip[1]])
 	_make_label(cell.frame).text = clip[0] + (" с копьём" if with_lance else "")
 	_repeat(rider, clip[1], lance, mount)
 
