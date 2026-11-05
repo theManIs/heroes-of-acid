@@ -7,6 +7,8 @@ const DOG_HEIGHT := 1.05
 const BITE_IMPACT := 0.45
 const BITE_STEP := 0.08  # короткий шаг корпуса, основной выпад уже есть в клипе
 const BITE_GAP := 0.04
+const RAID_RUN_FROM := 2  # гексов: больше половины хода пары (3); ближе — шагом
+const FEET: Array[String] = ["FF.L", "FF.R", "FFB.L", "FFB.R"]
 enum MovePhase { NONE, DOG, MASTER, RAID_HOLD, RAID_OUT, RAID_BACK }
 signal dog_route_finished
 signal raid_impact
@@ -30,6 +32,8 @@ var _pet_hand_frame := Basis.IDENTITY
 var _pet_palm_offset := 0.0
 var _dog_rig: Skeleton3D
 var _dog_head := -1
+var _raid_clip := "run"
+var _gait_speed := {}  # клип -> метры в секунду при скорости клипа 1
 
 
 func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt := "", size := 2.0, attack_start := 0.0, idle := "idle") -> void:
@@ -44,6 +48,7 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	_dog_model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * fit
 	_dog_anim = _dog_model.find_child("AnimationPlayer", true, false)
 	_measure_bite_reach(box)
+	_gait_speed = {"walk": _measure_gait("walk"), "run": _measure_gait("run")}
 	for clip in [DOG_IDLE, "walk", "run"]:
 		_dog_anim.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
 	_dog_anim.animation_finished.connect(func(_clip: StringName):
@@ -106,6 +111,45 @@ func _measure_bite_reach(box: AABB) -> void:
 	_dog_anim.callback_mode_process = mode
 
 
+## Скорость земли под лапами в клипе: как быстро стопа в фазе опоры уходит назад.
+## Считается на масштабе модели, поэтому верна в обеих аренах.
+func _measure_gait(clip: String) -> float:
+	const FRAMES := 64
+	var rig: Skeleton3D = _dog_model.find_children("*", "Skeleton3D", true, false)[0]
+	var length := _dog_anim.get_animation(clip).length
+	var step := length / FRAMES
+	var mode := _dog_anim.callback_mode_process
+	_dog_anim.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+	_dog_anim.play(clip, 0.0)
+	var samples: Array[float] = []
+	var track := {}
+	for foot in FEET:
+		track[foot] = []
+	for i in FRAMES:
+		_dog_anim.seek(step * i, true)
+		_dog_anim.advance(0.0)
+		for foot in FEET:
+			track[foot].append(_dog.to_local(rig.global_transform * rig.get_bone_global_pose(rig.find_bone(foot)).origin))
+	for foot in FEET:
+		var low := INF
+		var high := -INF
+		for p: Vector3 in track[foot]:
+			low = minf(low, p.y)
+			high = maxf(high, p.y)
+		for i in FRAMES:
+			var a: Vector3 = track[foot][i]
+			var b: Vector3 = track[foot][(i + 1) % FRAMES]
+			if a.y < low + (high - low) * 0.2 and b.z < a.z:
+				samples.append((a.z - b.z) / step)
+	_dog_anim.play(DOG_IDLE, 0.0)
+	_dog_anim.advance(0.0)
+	_dog_anim.callback_mode_process = mode
+	if samples.is_empty():
+		return 0.0
+	samples.sort()
+	return samples[samples.size() / 2]
+
+
 func face(point: Vector3) -> void:
 	super.face(point)
 	# Только в стойке: при проходе маршрута собака смотрит вдоль своего шага.
@@ -157,9 +201,13 @@ func _physics_process(delta: float) -> void:
 			# На повороте стоит, а не скользит боком с играющей ходьбой.
 			_dog_play(DOG_IDLE)
 			return
-		var running := _move_phase in [MovePhase.RAID_OUT, MovePhase.RAID_BACK]
-		_dog_play("run" if running else "walk", walk_rate)
-		var speed := walk_speed * walk_rate * (2.0 if running else 1.0)
+		var raiding := _move_phase in [MovePhase.RAID_OUT, MovePhase.RAID_BACK]
+		var clip := _raid_clip if raiding else "walk"
+		# Ускорение арены — для ходьбы; бег и так быстрый.
+		var rate := walk_rate if clip == "walk" else 1.0
+		_dog_play(clip, rate)
+		# Вылазка идёт со скоростью лап своего клипа, чтобы собака не скользила.
+		var speed: float = (_gait_speed[clip] if raiding else walk_speed) * rate
 		_dog.global_position += to.normalized() * minf(speed * delta, to.length())
 		return
 	super._physics_process(delta)
@@ -234,6 +282,8 @@ func raid(target: Creature, points: Array[Vector3], contact: Vector3) -> void:
 	target.face(position)
 	play_once(attack_anim)
 	_dog_play(DOG_IDLE)
+	# Обычный поход к соседней клетке — шагом, дальний — бегом; обратно тем же ходом.
+	_raid_clip = "run" if points.size() >= RAID_RUN_FROM else "walk"
 	# Команда псаря и вылазка собаки начинаются одновременно.
 	if not outbound.is_empty():
 		_dog_route = outbound.duplicate()

@@ -1059,3 +1059,27 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - User explicitly clarified simultaneous start. Removed newly introduced command-completion wait from raid and paired gallery. Master command continues while dog starts its route immediately; bite contact and return unchanged. hit_delay compatibility has no command lead. Supersedes previous 142 interpretation.
 - Updated pair pipeline and scene guide, plus hammer follow-through documentation. Imported Godot assets and opened normal showcases; no automated tests run.
+
+### 2026-11-05 — задачи 145 и 144
+
+`game/scenes/battle_test.gd`, `game/scenes/creature_test.gd`: свободный достижимый гекс важнее рамки тела пары.
+
+```diff
++		var over_body := _over_body(c, screen) and not (_is_pair(c) and _free_step(hex))
++func _over_enemy(screen: Vector2) -> bool:
+```
+
+`game/scenes/houndmaster_unit.gd`: вылазка шагом или бегом, скорость по клипу.
+
+```diff
+-		var running := _move_phase in [MovePhase.RAID_OUT, MovePhase.RAID_BACK]
+-		_dog_play("run" if running else "walk", walk_rate)
+-		var speed := walk_speed * walk_rate * (2.0 if running else 1.0)
++		var raiding := _move_phase in [MovePhase.RAID_OUT, MovePhase.RAID_BACK]
++		var clip := _raid_clip if raiding else "walk"
++		var rate := walk_rate if clip == "walk" else 1.0
++		var speed: float = (_gait_speed[clip] if raiding else walk_speed) * rate
++	_raid_clip = "run" if points.size() >= RAID_RUN_FROM else "walk"
+```
+
+Проверка: скрипт без окна в песочнице сессии, сцена `creature_test` и вылазки на 1 и 4 гекса.
