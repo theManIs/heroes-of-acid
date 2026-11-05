@@ -6,6 +6,8 @@ const DOG_IDLE := "idle_breathe"
 const DOG_HEIGHT := 1.05
 const COMMAND_LEAD := 0.85
 const BITE_IMPACT := 0.45
+const BITE_STEP := 0.08  # короткий шаг корпуса, основной выпад уже есть в клипе
+const BITE_GAP := 0.04
 enum MovePhase { NONE, DOG, MASTER, RAID_HOLD, RAID_OUT, RAID_BACK }
 signal dog_route_finished
 
@@ -21,6 +23,7 @@ var _dog_offset := Vector3(0, 0, 0.9)  # середина двух нижних 
 var _move_phase := MovePhase.NONE
 var _dog_route: Array[Vector3] = []
 var _master_route: Array[Vector3] = []
+var _bite_reach := 1.0
 
 
 func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt := "", size := 2.0, attack_start := 0.0, idle := "idle") -> void:
@@ -34,6 +37,7 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	_dog_model.scale = Vector3.ONE * fit
 	_dog_model.position = -Vector3(box.get_center().x, box.position.y, box.get_center().z) * fit
 	_dog_anim = _dog_model.find_child("AnimationPlayer", true, false)
+	_measure_bite_reach(box)
 	for clip in [DOG_IDLE, "walk", "run"]:
 		_dog_anim.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
 	_dog_anim.animation_finished.connect(func(_clip: StringName):
@@ -41,6 +45,29 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 			_dog_play(DOG_IDLE))
 	_dog_play(DOG_IDLE)
 	_dog.global_position = global_position + _dog_offset
+
+
+## Максимальный вынос морды самим клипом, в игровых метрах, с учётом рига ×100.
+## Точка морды — передний край сетки в покое, привязанный к кости Head.
+func _measure_bite_reach(box: AABB) -> void:
+	var rig: Skeleton3D = _dog_model.find_children("*", "Skeleton3D", true, false)[0]
+	var head := rig.find_bone("Head")
+	var rest := rig.global_transform * rig.get_bone_global_rest(head)
+	var front := _dog_model.to_global(Vector3(box.get_center().x, 0, box.end.z))
+	var muzzle := rest.affine_inverse() * Vector3(rest.origin.x, rest.origin.y, front.z)
+	_bite_reach = _dog.to_local(front).z
+	var mode := _dog_anim.callback_mode_process
+	_dog_anim.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+	_dog_anim.play("bite_lunge", 0.0)
+	var length := _dog_anim.get_animation("bite_lunge").length
+	for i in 33:
+		_dog_anim.seek(minf(length * float(i) / 32.0, length - 0.001), true)
+		_dog_anim.advance(0.0)
+		var pose := rig.global_transform * rig.get_bone_global_pose(head)
+		_bite_reach = maxf(_bite_reach, _dog.to_local(pose * muzzle).z)
+	_dog_anim.play(DOG_IDLE, 0.0)
+	_dog_anim.advance(0.0)
+	_dog_anim.callback_mode_process = mode
 
 
 func face(point: Vector3) -> void:
@@ -131,9 +158,20 @@ func raid(target: Creature, points: Array[Vector3], contact: Vector3) -> void:
 		return
 	var epoch := _epoch
 	var home := _dog.global_position
+	var goal := (get_parent() as Node3D).to_global(contact)
 	var outbound: Array[Vector3] = []
 	for point in points:
 		outbound.append((get_parent() as Node3D).to_global(point) + _dog_offset)
+	var approach: Vector3 = home if outbound.is_empty() else outbound[-1]
+	var approach_direction := (goal - approach).normalized()
+	var safe_distance := _bite_reach + target.front() + BITE_GAP + BITE_STEP
+	if approach.distance_to(goal) < safe_distance:
+		# Не добегать корпусом до центра клетки цели: морда достаёт издали.
+		var stop := goal - approach_direction * safe_distance
+		if outbound.is_empty():
+			outbound.append(stop)
+		else:
+			outbound[-1] = stop
 	_move_phase = MovePhase.RAID_HOLD
 	walking = false
 	_path.clear()
@@ -151,7 +189,6 @@ func raid(target: Creature, points: Array[Vector3], contact: Vector3) -> void:
 		if epoch != _epoch or dead or not is_instance_valid(target):
 			return
 	var launch := _dog.global_position
-	var goal := (get_parent() as Node3D).to_global(contact)
 	var direction := (goal - launch).normalized()
 	var turn := wrapf(atan2(direction.x, direction.z) - _dog.rotation.y, -PI, PI)
 	var turn_time := maxf(0.01, absf(turn) / TURN_SPEED)
@@ -164,8 +201,9 @@ func raid(target: Creature, points: Array[Vector3], contact: Vector3) -> void:
 	# Удар засчитывается у цели при контакте, после пробежки, а не при команде.
 	target.take_hit(BITE_IMPACT)
 	var reaction_end := Time.get_ticks_msec() + int((BITE_IMPACT + 1.5) * 1000.0)
+	var step := clampf(launch.distance_to(goal) - _bite_reach - target.front() - BITE_GAP, 0.0, BITE_STEP)
 	_bite = create_tween()
-	_bite.tween_property(_dog, "global_position", launch + direction * maxf(0.0, launch.distance_to(goal) - 0.85), BITE_IMPACT).set_trans(Tween.TRANS_SINE)
+	_bite.tween_property(_dog, "global_position", launch + direction * step, BITE_IMPACT).set_trans(Tween.TRANS_SINE)
 	_bite.tween_property(_dog, "global_position", launch, 0.65).set_trans(Tween.TRANS_SINE)
 	await get_tree().create_timer(BITE_IMPACT + 0.65).timeout
 	if epoch != _epoch or dead:
