@@ -179,3 +179,20 @@ static func damp_clip(rider: Creature, clip: String, factor: float) -> void:
 		for k in a.track_get_key_count(t):
 			a.track_set_key_value(t, k, ref.slerp(a.track_get_key_value(t, k), factor))
 
+
+## Заморозить кости на позе первого кадра во всём клипе: рука с копьём не участвует в движении.
+const RIGHT_ARM := ["RightShoulder", "RightArm", "RightForeArm", "RightHand"]
+
+
+static func freeze_bones(rider: Creature, clip: String, bones: Array) -> void:
+	var anim := rider.anim
+	var root_path := anim.get_node(anim.root_node).get_path_to(rider.skeleton)
+	var a := anim.get_animation(clip)
+	for bone: String in bones:
+		var t := a.find_track(NodePath("%s:mixamorig_%s" % [root_path, bone]), Animation.TYPE_ROTATION_3D)
+		if t < 0 or a.track_get_key_count(t) == 0:
+			continue
+		var first: Quaternion = a.track_get_key_value(t, 0)
+		for k in a.track_get_key_count(t):
+			a.track_set_key_value(t, k, first)
+

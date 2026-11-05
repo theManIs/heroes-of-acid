@@ -125,6 +125,7 @@ const CHARGE_BACK := 1.6
 
 ## Впритык разгона нет: конь делает короткий выпад на полшага, копьё под рукой, как в таране.
 const HURT_LEN := 2.2
+const FROZEN_ARM := ["ride_hurt"]  # правая рука с копьём неподвижна, двигается остальное тело
 const LUNGE := 0.5
 const LUNGE_TIME := 0.35
 
@@ -259,6 +260,8 @@ func _make_fidget_cell(grid: GridContainer, fidget: Array) -> void:
 	var lance := MOCK.add_lance(mount)
 	_make_label(cell.frame).text = fidget[0]
 	var clip: String = fidget[1]
+	if clip in FROZEN_ARM:
+		MOCK.freeze_bones(rider, clip, MOCK.RIGHT_ARM)
 	# Третье поле — сколько секунд клипа играть, дальше плавно в стойку.
 	var length: float = fidget[2] if fidget.size() > 2 else rider.anim.get_animation(clip).length
 	while is_instance_valid(rider):
