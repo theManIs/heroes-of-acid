@@ -51,7 +51,8 @@ static func sit(rider: Creature) -> void:
 
 
 ## Условный конь: корпус, шея, голова, ноги и седло; смотрит по +X, как модели Tripo.
-static func build_horse(parent: Node) -> void:
+static func build_horse(parent: Node) -> Array[Node3D]:
+	var legs: Array[Node3D] = []
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color(0.45, 0.32, 0.22)
 	var parts := [
@@ -76,8 +77,12 @@ static func build_horse(parent: Node) -> void:
 		cyl.height = SADDLE - 0.7
 		m.mesh = cyl
 		m.material_override = mat
-		m.position = leg + Vector3(0, (SADDLE - 0.7) * 0.5, 0)
-		parent.add_child(m)
+		var hip := Node3D.new()  # нога качается от бедра
+		hip.position = leg + Vector3(0, SADDLE - 0.7, 0)
+		parent.add_child(hip)
+		m.position = Vector3(0, -(SADDLE - 0.7) * 0.5, 0)
+		hip.add_child(m)
+		legs.append(hip)
 	var saddle := MeshInstance3D.new()
 	var s := BoxMesh.new()
 	s.size = Vector3(0.6, 0.06, 0.66)
@@ -87,3 +92,4 @@ static func build_horse(parent: Node) -> void:
 	saddle.material_override = smat
 	saddle.position = Vector3(-0.1, SADDLE + 0.03, 0)
 	parent.add_child(saddle)
+	return legs

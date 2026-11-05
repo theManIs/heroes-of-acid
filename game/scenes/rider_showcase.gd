@@ -5,11 +5,20 @@ extends "res://scenes/showcase.gd"
 const MOCK := preload("res://scenes/rider_mock.gd")
 const CELL_TARGET := 460
 const HOLD := 0.6
+## Езда без клипа езды: всадник в сидячей стойке, конь-макет идёт на месте,
+## качается корпусом и переставляет ноги. Подпись, клип всадника, шагов в секунду,
+## подъём корпуса (м), размах ног (градусы).
+const GAITS := [
+	["Едет шагом (сидит спокойно)", "ride_still", 1.6, 0.03, 18.0],
+	["Едет рысью (трясёт на кочках)", "ride_idle", 2.6, 0.07, 28.0],
+]
 
 
 func _ready() -> void:
 	columns = 4
 	var grid := _build_page()
+	for gait: Array in GAITS:
+		_make_ride_cell(grid, gait)
 	for clip: Array in MOCK.CLIPS:
 		_make_rider_cell(grid, clip)
 	get_viewport().size_changed.connect(_fit.bind(grid))
@@ -44,3 +53,30 @@ func _repeat(rider: Creature, clip: String) -> void:
 		MOCK.sit(rider)
 		await get_tree().create_timer(length).timeout
 		await get_tree().create_timer(HOLD).timeout
+
+
+func _make_ride_cell(grid: GridContainer, gait: Array) -> void:
+	var cell := _make_frame(grid, 3.1)
+	var view: SubViewport = cell.view
+	var mount := Node3D.new()  # конь и всадник качаются вместе
+	view.add_child(mount)
+	var legs := MOCK.build_horse(mount)
+	var rider := MOCK.make_rider(mount)
+	_make_label(cell.frame).text = gait[0]
+	rider.anim.get_animation(gait[1]).loop_mode = Animation.LOOP_LINEAR
+	rider.anim.play(gait[1])
+	rider.anim.advance(0.0)
+	await get_tree().process_frame
+	MOCK.sit(rider)
+	var time := 0.0
+	while is_instance_valid(mount):
+		await get_tree().process_frame
+		time += get_process_delta_time()
+		var phase: float = time * gait[2] * TAU
+		mount.position.y = absf(sin(phase)) * gait[3]
+		mount.rotation.z = sin(phase) * deg_to_rad(1.5)
+		for i in legs.size():
+			# Диагональные пары ног движутся вместе, как у рыси.
+			var pair := 1.0 if i == 0 or i == 3 else -1.0
+			legs[i].rotation.z = sin(phase) * deg_to_rad(gait[4]) * pair
+
