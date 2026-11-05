@@ -1,0 +1,13 @@
+{
+  "model_task_id": "9513fefa-6ac9-4331-8644-e96f507496e7",
+  "balance_before": 785.0,
+  "rig_check": {
+    "task_id": "8ef68e3d-f900-4a72-8868-ef657717d70f",
+    "status": "success"
+  },
+  "rig": {
+    "task_id": "103b629d-77e8-4f6e-ae5c-77daffcfe96d",
+    "status": "success"
+  },
+  "balance_after": 760.0
+}

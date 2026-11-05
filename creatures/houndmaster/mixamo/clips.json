@@ -1,0 +1,43 @@
+{
+  "Unarmed Idle.fbx": {
+    "name": "idle",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Unarmed Walk Forward.fbx": {
+    "name": "walk",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Unarmed Run Forward.fbx": {
+    "name": "run",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "Angry Point.fbx": {
+    "name": "command_attack",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Hit Reaction.fbx": {
+    "name": "hurt",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Block.fbx": {
+    "name": "defend",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Death.fbx": {
+    "name": "fall",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "Petting Animal.fbx": {
+    "name": "fidget_pet",
+    "grip": 0,
+    "keep_left_fingers": false
+  }
+}

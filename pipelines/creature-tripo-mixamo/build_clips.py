@@ -9,6 +9,7 @@
 переносятся не локально, а как отклонение кости от покоя в мировых осях.
 Кости левой кисти и пальцев: кисть модели уже сжата на луке, клип сжимает её второй раз, поэтому пальцы не трогаем.
 "hip_scale" у клипа в clips.json — доля смещения таза по земле.
+"keep_left_fingers": false и "grip": 0 — обычная левая кисть без поправок для лука.
 "_arm_out" в clips.json — постоянно отвести правую руку от тела, градусы: {"arm": плечо, "fore": предплечье и кисть сверх плеча}.
 """
 
@@ -161,6 +162,8 @@ def retarget(rig_doc, rig, clip_path, name, cfg):
     height = rig_hip[1][1] / src_hip[1][1]
 
     skip = {PREFIX + "LeftHand" + f + str(i) for f in ("Thumb", "Index", "Middle", "Ring", "Pinky") for i in (1, 2, 3, 4)}
+    if not cfg.get("keep_left_fingers", True):
+        skip.clear()
     out = {b: [] for b in rig.bones}
     hip_out = []
     for f in range(len(times)):

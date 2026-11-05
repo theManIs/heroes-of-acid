@@ -840,3 +840,14 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - Добавлен `creatures/houndmaster/mixamo/SELECTION.md`: восемь кандидатов, исходные описания, ключи снимка каталога, ссылки и ограничения применения.
 - `creatures/houndmaster/README.md`: ссылка на подборку; `TASKS.md`: задача 120 выполнена, кандидаты ожидают принятия.
 - Подбор по `catalogs/mixamo/catalog.json` через Python и `rg`; риг, игровые файлы и FBX не менялись.
+
+### 2026-11-05 Задача 121: Mixamo на псаре
+
+- `pipelines/creature-tripo-mixamo/rig_existing.py`: риг для существующей оплаченной модели, отдельное состояние, сохранение ID задачи до ожидания. Новый риг `creatures/houndmaster/tripo/rig.glb`: 65 костей, 25 кредитов; исходный Tripo-риг сохранён.
+- `build_clips.py`: опция `keep_left_fingers` для обычной кисти; прежние значения по умолчанию фонарщика сохранены.
+- `creatures/houndmaster/mixamo/`: 8 FBX, конфигурация `clips.json`, обновлённая подборка. `grip: 0`, пальцы включены, у бега `hip_scale: 0`.
+- `game/assets/creatures/houndmaster/`: модель заменена новым ригом, 8 перенесённых GLB в `anims/`.
+- `game/scenes/showcase.gd`: псарь показывает команду, бег и отклик в дополнение к остальным клипам, бег зациклен.
+- `game/tools/pose_sheet.gd`: поддержаны существа, находящиеся пока только на витрине.
+- Обновлены SCENES, TASKS (121 выполнена), журнал существа и пайплайн/индекс; по команде пользователя вход на сайты выполняет агент.
+- Команды: `.venv/bin/python pipelines/creature-tripo-mixamo/rig_existing.py houndmaster`; `.venv/bin/python pipelines/creature-tripo-mixamo/build_clips.py houndmaster`; `godot --headless --path game --import`; лист поз `res://tools/pose_sheet.tscn -- --id=houndmaster`; витрина `res://scenes/showcase.tscn -- --shot=...`. Импорт успешен; просмотрены лист поз, исправленный бег и кадр витрины; FPS кадра 60. `git diff --check` — успешно.

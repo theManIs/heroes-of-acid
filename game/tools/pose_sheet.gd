@@ -3,6 +3,7 @@ extends Node3D
 ## Запуск: godot --path game res://tools/pose_sheet.tscn -- --id=<существо> --out=<файл.png> [--anims=idle,walk]
 
 const ARENA := preload("res://scenes/creature_test.gd")
+const SHOWCASE := preload("res://scenes/showcase.gd")
 const CELL := 300
 const FRAMES := 5
 
@@ -29,7 +30,7 @@ func _ready() -> void:
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-50, 30, 0)
 	add_child(sun)
-	var cfg: Dictionary = ARENA.CREATURES[id]
+	var cfg: Dictionary = ARENA.CREATURES[id] if ARENA.CREATURES.has(id) else SHOWCASE.NEW_CREATURES[id]
 	var c := Creature.new()
 	add_child(c)
 	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)

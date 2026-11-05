@@ -14,13 +14,17 @@ const CAMERA_DIR := Vector3(0.55, 0.35, 1.0)  # сбоку и немного с�
 const FRAME := 1.35  # сколько высот существа входит в кадр
 const FRAME_COLOR := Color(0.72, 0.58, 0.3)
 const GRASS_TINT := Color(0.52, 0.62, 0.46)
-const ANIMS := "res://assets/animations/"
+const HOUNDMASTER_ANIMS := "res://assets/creatures/houndmaster/anims/"
 const NEW_CREATURES := {  # ещё не в бою: в записи ARENA.CREATURES они попали бы и туда
 	"houndmaster": {
 		"name": "Псарь", "scene": "res://assets/creatures/houndmaster/houndmaster.glb", "size": 2.0,
-		"extra": [ANIMS + "idle.glb", ANIMS + "walk.glb", ANIMS + "fall.glb", ANIMS + "box_01.glb", ANIMS + "hit_to_head.glb", ANIMS + "hit_to_side.glb"],
-		"attack": "box_01", "attack_from": 0.0, "hurt": "hit_to_head", "hurt_len": 0.0, "idle": "idle",
-		"defend": "hit_to_side", "defend_from": 0.0, "defend_len": 0.0,
+		"extra": [HOUNDMASTER_ANIMS + "idle.glb", HOUNDMASTER_ANIMS + "walk.glb", HOUNDMASTER_ANIMS + "run.glb",
+			HOUNDMASTER_ANIMS + "command_attack.glb", HOUNDMASTER_ANIMS + "hurt.glb", HOUNDMASTER_ANIMS + "defend.glb",
+			HOUNDMASTER_ANIMS + "fall.glb", HOUNDMASTER_ANIMS + "fidget_pet.glb"],
+		"attack": "command_attack", "attack_label": "команда «фас»", "attack_from": 0.0,
+		"hurt": "hurt", "hurt_len": 0.0, "idle": "idle",
+		"defend": "defend", "defend_from": 0.0, "defend_len": 0.0,
+		"run": "run", "fidget": "fidget_pet",
 	},
 }
 
@@ -134,6 +138,8 @@ func _make_cell(id: String, grid: GridContainer) -> void:
 	var unit := Creature.new()
 	view.add_child(unit)
 	unit.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
+	if cfg.has("run") and unit.anim.has_animation(cfg.run):
+		unit.anim.get_animation(cfg.run).loop_mode = Animation.LOOP_LINEAR
 	if cfg.has("variants"):
 		unit.set_textures(cfg.variants[-1].get("textures", {}))
 		if cfg.variants[-1].has("glow"):
@@ -184,12 +190,16 @@ func _build_world(view: SubViewport) -> void:
 func _cycle(unit: Creature, cfg: Dictionary, label: Label) -> void:
 	var steps := [
 		["стойка", "idle", 0.0, PAUSE * 2.0],
-		["удар", cfg.attack, cfg.attack_from, 0.0],
+		[cfg.get("attack_label", "удар"), cfg.attack, cfg.attack_from, 0.0],
 		["ходьба", "walk", 0.0, WALK_TIME],
 		["реакция на удар", cfg.hurt, 0.0, cfg.hurt_len],
 		["защита", cfg.defend, cfg.defend_from, cfg.defend_len],
 		["смерть", "fall", 0.0, 0.0],
 	]
+	if cfg.has("run"):
+		steps.insert(3, ["бег", cfg.run, 0.0, WALK_TIME])
+	if cfg.has("fidget"):
+		steps.insert(steps.size() - 1, ["отклик", cfg.fidget, 0.0, 0.0])
 	while true:
 		for step: Array in steps:
 			if not unit.anim.has_animation(step[1]):
