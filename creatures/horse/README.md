@@ -27,3 +27,18 @@ Quaternius, poly.pizza, лицензия на странице: «Public Domain 
 Рыси нет: шаг и галоп. Кадры всех клипов: `screens/current/horse-donor.png` (лабораторная копия
 `game/assets/creatures/horse/lab/donor_horse.glb`). Первый лист показал 4 клипа замершими — ошибка съёмки,
 при повторе они двигаются.
+
+## Модель и привязка (2026-11-06, задача 160)
+
+- Концепт: `concept/v1.png` (fal gpt-image, вид сбоку, вороной в броне по листу `creatures/rider/concept/v1.jpg`,
+  пустое седло). Вышел коренастее и коротконогим, чем на листе; пользователь решил делать модель по нему.
+- Модель: `tripo/horse.glb` (задача Tripo `8cc675b3-1f22-4287-b8d3-b466b3f89f32`), 19 788 треугольников,
+  40 кредитов API (655 → 615).
+- Привязка: `bind_donor.py` к `donors/quaternius-horse/horse.glb` → `donors/quaternius-horse/horse-on-donor.glb`;
+  коэффициенты костей [0,929; 1,008; 0,656], сшивка 13 862 → 9 784 вершин, все вершины с весами.
+- Игровой файл: `game/assets/creatures/horse/horse.glb` (`name_clips.py`): idle_breathe, idle_look_around,
+  idle_head_low, fidget_graze, walk, run (Gallop), attack_headbutt, attack_kick, hurt_left, hurt_right,
+  death_fall_on_side, jump_leap, jump_land.
+- Витрина: `godot --path game res://scenes/horse_lab.tscn` — все 13 клипов. По кадрам сетка цела;
+  сталь брони почти чёрная без отражений — как у молотобойца до `showcase_metal_light`.
+

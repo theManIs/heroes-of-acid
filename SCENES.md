@@ -37,3 +37,6 @@
 
 Кандидаты анимаций всадника (задача 158), найденные поиском по каталогу Mixamo:
 `godot --path game res://scenes/rider_search.tscn`.
+
+Витрина коня всадника (задача 160), все 13 клипов донора на нашей модели:
+`godot --path game res://scenes/horse_lab.tscn`.

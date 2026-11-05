@@ -1245,3 +1245,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 Новое: `game/scenes/rider_search.gd/.tscn`, `creatures/rider/mixamo/search/` (17 FBX), клипы `s_*` в `game/assets/creatures/rider/anims/`.
 `rider_showcase.gd`: обрезка «с какой секунды» в `_make_fidget_cell`, заморозка правой руки и в квадратах езды; `rider_mock.gd`: новые клипы в `ALL_CLIPS`.
+
+### 2026-11-06 — задача 160, конь
+
+Команды: `python3 -I pipelines/creature-quadruped/concept.py horse v1 "<запрос>"`; `.venv/bin/python pipelines/creature-quadruped/model.py horse creatures/horse/concept/v1.png`;
+`blender -b --python pipelines/creature-quadruped/bind_donor.py -- creatures/horse/donors/quaternius-horse/horse.glb creatures/horse/tripo/horse.glb creatures/horse/donors/quaternius-horse/horse-on-donor.glb`;
+`python3 -I pipelines/creature-quadruped/name_clips.py … game/assets/creatures/horse/horse.glb Idle=idle_breathe …`.
+Новое: `game/scenes/horse_lab.gd/.tscn`.
