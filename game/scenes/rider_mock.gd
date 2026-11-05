@@ -142,9 +142,20 @@ static func calibrate_hand_lance(rider: Creature, mount: Node3D, hand_bone := "m
 	return hand_frame(rider, hand_bone).inverse() * forward
 
 
-static func place_hand_lance(lance: MeshInstance3D, rider: Creature, local_dir: Vector3, hand_bone := "mixamorig_RightHand") -> void:
+## Остриё не уходит на другую сторону от коня: поперечная часть направления
+## не меньше LANCE_OUT наружу от своей руки. Взмах остаётся сбоку, над головой коня не проходит.
+const LANCE_OUT := 0.12
+
+
+static func place_hand_lance(lance: MeshInstance3D, rider: Creature, local_dir: Vector3, hand_bone := "mixamorig_RightHand", mount: Node3D = null) -> void:
 	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone(hand_bone))
 	var forward := (hand_frame(rider, hand_bone) * local_dir).normalized()
+	if mount != null:
+		var out := 1.0 if hand_bone.contains("Right") else -1.0  # конь смотрит по +X: правая сторона — +Z
+		var d: Vector3 = mount.global_basis.inverse() * forward
+		if d.z * out < LANCE_OUT:
+			d.z = LANCE_OUT * out
+			forward = (mount.global_basis * d).normalized()
 	var side := forward.cross(Vector3.UP).normalized()
 	if side.length_squared() < 0.01:
 		side = Vector3.BACK

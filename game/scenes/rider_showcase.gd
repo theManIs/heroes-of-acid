@@ -70,7 +70,7 @@ func _repeat(rider: Creature, clip: String, lance: MeshInstance3D = null, mount:
 			var local := MOCK.calibrate_hand_lance(rider, mount, hand)
 			var left := length
 			while left > 0.0:
-				MOCK.place_hand_lance(lance, rider, local, hand)
+				MOCK.place_hand_lance(lance, rider, local, hand, mount)
 				await get_tree().process_frame
 				left -= get_process_delta_time()
 		await get_tree().create_timer(HOLD).timeout
