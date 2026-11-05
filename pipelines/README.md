@@ -33,3 +33,4 @@
 | [`3d-model`](3d-model/README.md) | то же, что `creature`, для других проектов | Tripo | Tripo | пресеты Tripo | кредиты Tripo | копия |
 | [`mixamo-catalog`](mixamo-catalog/README.md) | локальный каталог названий и описаний | — | — | метаданные Mixamo через Chrome/CUA; сборка таблицы Python | — | проба, задача 119 |
 | [`creature-pair-showcase`](creature-pair-showcase/README.md) | витрина псаря, собаки и пары | готовые игровые модели | готовые риги | готовые клипы, синхронизация, контакт руки и бегство собаки в Godot | — | проба, задачи 124–126, 128 |
+| [`creature-pair-gameplay`](creature-pair-gameplay/README.md) | парный отряд на трёх гексах в тесте существа | готовые игровые модели | готовые риги | готовые клипы, логика отряда и фигура в Godot | — | проба, задача 127 |

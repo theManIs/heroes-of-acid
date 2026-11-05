@@ -14,19 +14,7 @@ const CAMERA_DIR := Vector3(0.55, 0.35, 1.0)  # сбоку и немного с�
 const FRAME := 1.35  # сколько высот существа входит в кадр
 const FRAME_COLOR := Color(0.72, 0.58, 0.3)
 const GRASS_TINT := Color(0.52, 0.62, 0.46)
-const HOUNDMASTER_ANIMS := "res://assets/creatures/houndmaster/anims/"
-const NEW_CREATURES := {  # ещё не в бою: в записи ARENA.CREATURES они попали бы и туда
-	"houndmaster": {
-		"name": "Псарь", "scene": "res://assets/creatures/houndmaster/houndmaster.glb", "size": 2.0,
-		"extra": [HOUNDMASTER_ANIMS + "idle.glb", HOUNDMASTER_ANIMS + "walk.glb", HOUNDMASTER_ANIMS + "run.glb",
-			HOUNDMASTER_ANIMS + "command_attack.glb", HOUNDMASTER_ANIMS + "hurt.glb", HOUNDMASTER_ANIMS + "defend.glb",
-			HOUNDMASTER_ANIMS + "fall.glb", HOUNDMASTER_ANIMS + "fidget_pet.glb"],
-		"attack": "command_attack", "attack_label": "команда «фас»", "attack_from": 0.0,
-		"hurt": "hurt", "hurt_len": 0.0, "idle": "idle",
-		"defend": "defend", "defend_from": 0.0, "defend_len": 0.0,
-		"run": "run", "fidget": "fidget_pet",
-	},
-}
+const NEW_CREATURES := {"houndmaster": preload("res://scenes/houndmaster_config.gd").MASTER}
 
 var _shot := ""
 var columns := 2

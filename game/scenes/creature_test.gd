@@ -103,6 +103,10 @@ const DIRS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1),
 
 enum Turn { PLAYER, ENEMY, BUSY, OVER }
 
+const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
+# Этот отряд пока подключён только в тест существа; большой бой использует CREATURES.
+var creatures := CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").MASTER.merged({"name": "Псарь с собакой"}, true)})
+
 var player: Creature
 var enemy: Creature
 var board := Node3D.new()  # плитки и основание
@@ -116,6 +120,7 @@ var status := Label.new()
 var radius := 0.85  # радиус гекса: соседние центры — ровно на дистанции удара
 var tiles := {}  # Vector2i (осевые координаты) -> MeshInstance3D
 var turn := Turn.PLAYER
+var _round := 0  # сброс отменяет ожидающие действия предыдущего боя
 var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущего хода игрока
 var _hovered := Vector2i(999, 999)
 var _mode_button := Button.new()  # смена режима огня: только у стрелка
@@ -133,7 +138,10 @@ var _zoom_idle := INF  # секунд с последнего движения �
 
 
 func _ready() -> void:
-	for cfg: Dictionary in CREATURES.values():
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--creature=") and creatures.has(arg.trim_prefix("--creature=")):
+			tested = arg.trim_prefix("--creature=")
+	for cfg: Dictionary in creatures.values():
 		_cache.append(load(cfg.scene))
 		for path: String in cfg.extra:
 			_cache.append(load(path))
@@ -151,9 +159,9 @@ func _ready() -> void:
 
 
 func _make() -> Creature:
-	var c := Creature.new()
+	var c: Creature = HOUNDMASTER_UNIT.new() if tested == "houndmaster-pair" else Creature.new()
 	add_child(c)
-	var cfg: Dictionary = CREATURES[tested]
+	var cfg: Dictionary = creatures[tested]
 	var variant: Dictionary = _current_variant()
 	c.setup(load(variant.get("scene", cfg.scene)), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
 	c.set_textures(variant.get("textures", {}))
@@ -178,7 +186,7 @@ func _make() -> Creature:
 
 ## Показанная генерация существа. Запись в "variants": "scene" — своя модель с ригом, "textures" — другие текстуры на той же модели.
 func _current_variant() -> Dictionary:
-	var variants: Array = CREATURES[tested].get("variants", [])
+	var variants: Array = creatures[tested].get("variants", [])
 	return variants[_variant.get(tested, variants.size() - 1)] if not variants.is_empty() else {}
 
 
@@ -186,7 +194,7 @@ func _current_variant() -> Dictionary:
 func _pick_variant(id: String, index: int) -> void:
 	if turn == Turn.BUSY or turn == Turn.ENEMY:
 		return
-	if id == tested and _variant.get(id, CREATURES[id].variants.size() - 1) == index:
+	if id == tested and _variant.get(id, creatures[id].variants.size() - 1) == index:
 		return
 	_variant[id] = index
 	_show_variants()
@@ -217,7 +225,7 @@ func _switch(id: String) -> void:
 
 
 func _ranged() -> bool:
-	return CREATURES[tested].has("shots")
+	return creatures[tested].has("shots")
 
 
 ## Подпись кнопки — текущий режим огня.
@@ -226,7 +234,7 @@ func _show_mode() -> void:
 	if _ranged():
 		var adjacent := _hex_distance(_hex_of(player), _hex_of(enemy)) == 1
 		player.update_shot(adjacent)
-		_mode_button.text = "Режим огня: %s" % CREATURES[tested].shots[player.shot_mode].title
+		_mode_button.text = "Режим огня: %s" % creatures[tested].shots[player.shot_mode].title
 		_mode_button.disabled = player.allowed_shots(adjacent).size() < 2
 		bow.mode = player.shot_mode
 
@@ -310,6 +318,28 @@ func _hex_distance(a: Vector2i, b: Vector2i) -> int:
 	return (absi(d.x) + absi(d.y) + absi(d.x + d.y)) / 2
 
 
+## Якорь — верхний гекс псаря. Два нижних принадлежат собаке.
+func _footprint(anchor: Vector2i) -> Array[Vector2i]:
+	if tested == "houndmaster-pair":
+		return [anchor, anchor + Vector2i(-1, 1), anchor + Vector2i(0, 1)]
+	return [anchor]
+
+
+func _can_stand(anchor: Vector2i, blocked: Array[Vector2i]) -> bool:
+	for h in _footprint(anchor):
+		if not tiles.has(h) or blocked.has(h):
+			return false
+	return true
+
+
+func _formation_distance(a: Vector2i, b: Vector2i) -> int:
+	var distance := 999
+	for x in _footprint(a):
+		for y in _footprint(b):
+			distance = mini(distance, _hex_distance(x, y))
+	return distance
+
+
 func _hex_at(point: Vector3) -> Vector2i:
 	var best := Vector2i(999, 999)
 	var best_d := INF
@@ -329,7 +359,7 @@ func _paths_from(from: Vector2i, blocked: Vector2i) -> Dictionary:
 		var h: Vector2i = queue.pop_front()
 		for d in DIRS:
 			var n := h + d
-			if not tiles.has(n) or n == blocked or paths.has(n):
+			if paths.has(n) or not _can_stand(n, _footprint(blocked)):
 				continue
 			var p: Array[Vector2i] = paths[h].duplicate()
 			p.append(n)
@@ -422,14 +452,19 @@ func _build_hud() -> void:
 	hud.add_child(bow)
 
 	# Слева — пиктограммы существ: клик меняет проверяемое существо.
+	var roster_scroll := ScrollContainer.new()
+	roster_scroll.position = Vector2(16, 48)
+	roster_scroll.size = Vector2(220, 730)
+	roster_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	hud.add_child(roster_scroll)
 	var roster := VBoxContainer.new()
-	roster.position = Vector2(16, 48)
 	roster.add_theme_constant_override("separation", 8)
-	hud.add_child(roster)
-	for id: String in CREATURES:
+	roster_scroll.add_child(roster)
+	for id: String in creatures:
 		var b := Button.new()
-		b.icon = load(CREATURES[id].icon)
-		b.text = CREATURES[id].name
+		if creatures[id].has("icon"):
+			b.icon = load(creatures[id].icon)
+		b.text = "Псарь\nс собакой" if id == "houndmaster-pair" else creatures[id].name
 		b.expand_icon = true
 		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
@@ -444,6 +479,8 @@ func _build_hud() -> void:
 		line.add_child(b)
 		line.add_child(_variant_column(id))
 		roster.add_child(line)
+		if id == tested:
+			roster_scroll.ensure_control_visible.call_deferred(b)
 
 	var bar := HBoxContainer.new()
 	bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -470,7 +507,7 @@ func _variant_column(id: String) -> Control:
 	var column := VBoxContainer.new()
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	var buttons: Array = []
-	var variants: Array = CREATURES[id].get("variants", [])
+	var variants: Array = creatures[id].get("variants", [])
 	for i in (variants.size() if variants.size() > 1 else 0):
 		var number := Button.new()
 		number.text = ROMAN[i]
@@ -506,6 +543,9 @@ func _icon_style(state: String) -> StyleBox:
 
 
 func _reset() -> void:
+	_round += 1
+	turn = Turn.BUSY
+	_enemy_shots = 0
 	player.revive()
 	enemy.revive()
 	player.position = _hex_center(_cell(1, 1))  # как в Героях: свой — слева
@@ -545,7 +585,10 @@ func _start_enemy_turn() -> void:
 	enemy.set_outline(ENEMY_TURN)
 	reachable.clear()
 	_paint()
+	var round_id := _round
 	await get_tree().create_timer(0.6).timeout
+	if round_id != _round:
+		return
 	if _ranged():
 		_enemy_shots += 1
 		enemy.set_shot("lantern" if _enemy_shots % 3 == 0 else "arrow")
@@ -575,6 +618,7 @@ func _defend() -> void:
 
 ## Выстрел текущим режимом огня с места; когда цель отреагирует — next.
 func _fire(who: Creature, target: Creature, next: Callable) -> void:
+	var round_id := _round
 	turn = Turn.BUSY
 	_targeted = false
 	who.set_outline(null)
@@ -583,20 +627,21 @@ func _fire(who: Creature, target: Creature, next: Callable) -> void:
 	_paint()
 	var seconds := who.fire_shot(target, self)
 	await get_tree().create_timer(seconds + 1.7).timeout
-	next.call()
+	if round_id == _round:
+		next.call()
 
 
 ## Путь к ближайшему свободному соседу цели; не дальше MOVE (тогда — часть пути).
 func _approach(who: Creature, target: Creature) -> Array[Vector2i]:
 	var goal := _hex_of(target)
 	var start := _hex_of(who)
-	if _hex_distance(start, goal) == 1:
+	if _formation_distance(start, goal) == 1:
 		return []
 	var paths := _paths_from(start, goal)
 	var best: Array[Vector2i] = []
 	var found := false
 	for h: Vector2i in paths:
-		if _hex_distance(h, goal) == 1 and (not found or paths[h].size() < best.size()):
+		if _formation_distance(h, goal) == 1 and (not found or paths[h].size() < best.size()):
 			best = paths[h]
 			found = true
 	return best.slice(0, MOVE)
@@ -604,6 +649,7 @@ func _approach(who: Creature, target: Creature) -> Array[Vector2i]:
 
 ## Пройти путь; если в конце стоим рядом с целью — ударить. Потом next.
 func _move_and_maybe_strike(who: Creature, target: Creature, path: Array[Vector2i], next: Callable) -> void:
+	var round_id := _round
 	turn = Turn.BUSY
 	_targeted = false
 	who.set_outline(null)
@@ -613,12 +659,15 @@ func _move_and_maybe_strike(who: Creature, target: Creature, path: Array[Vector2
 	if not path.is_empty():
 		who.walk_path(_to_points(path))
 		await who.arrived
-	if _hex_distance(_hex_of(who), _hex_of(target)) == 1 and not _ranged():
+		if round_id != _round:
+			return
+	if _formation_distance(_hex_of(who), _hex_of(target)) == 1 and not _ranged():
 		who.strike(target, _hex_spacing(), OVERLAP)
 		await get_tree().create_timer(who.hit_delay() + 1.5).timeout  # попадание + реакция цели
 	else:
 		who.face(target.position)
-	next.call()
+	if round_id == _round:
+		next.call()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -633,7 +682,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var click := event as InputEventMouseButton
 	if turn != Turn.PLAYER or click == null or not click.pressed or click.button_index != MOUSE_BUTTON_LEFT:
 		return
-	if _on_enemy(click.position) or _hex_at(_ground_point(click.position)) == _hex_of(enemy):
+	if _on_enemy(click.position) or _footprint(_hex_of(enemy)).has(_hex_at(_ground_point(click.position))):
 		if _ranged():
 			if enemy.can_be_hit():
 				_fire(player, enemy, _start_enemy_turn)
@@ -659,14 +708,13 @@ func _attack_hex(screen: Vector2) -> Vector2i:
 	var pointer := Vector2(ground.x - center.x, ground.z - center.z)
 	var best := NO_HEX
 	var best_dot := -INF
-	for d in DIRS:
-		var n := target + d
-		if not tiles.has(n) or not (n == mine or reachable.has(n)):
+	for n: Vector2i in reachable:
+		if _formation_distance(n, target) != 1:
 			continue
 		var c := _hex_center(n)
 		var side := Vector2(c.x - center.x, c.z - center.z).normalized()
 		var dot := side.dot(pointer.normalized()) if pointer.length() > 0.01 else -float(_hex_distance(n, mine))
-		if dot > best_dot:
+		if dot > best_dot or (is_equal_approx(dot, best_dot) and reachable[n].size() < reachable.get(best, []).size()):
 			best_dot = dot
 			best = n
 	return best
@@ -695,6 +743,14 @@ func _on_enemy(screen: Vector2) -> bool:
 		box = box.expand(camera.unproject_position(enemy.bone_world(i)))
 	var center := enemy.position + Vector3.UP * enemy.height * 0.5
 	var pad := camera.unproject_position(center + camera.global_basis.x * 0.25).x - camera.unproject_position(center).x
+	if tested == "houndmaster-pair":
+		var dog: Node3D = enemy.get("_dog_model")
+		var dog_skeleton: Skeleton3D = dog.find_children("*", "Skeleton3D", true, false)[0]
+		var dog_box := Rect2(camera.unproject_position(dog.global_position), Vector2.ZERO)
+		for i in dog_skeleton.get_bone_count():
+			dog_box = dog_box.expand(camera.unproject_position(dog_skeleton.global_transform * dog_skeleton.get_bone_global_pose(i).origin))
+		if dog_box.grow(absf(pad)).has_point(screen):
+			return true
 	return box.grow(absf(pad)).has_point(screen)
 
 
@@ -704,12 +760,19 @@ func _paint() -> void:
 	for h: Vector2i in tiles:
 		var mat: StandardMaterial3D = tiles[h].material_override
 		var color: Color = tiles[h].get_meta("base")
+		if tested == "houndmaster-pair":
+			if _footprint(_hex_of(player)).has(h):
+				color = color.lerp(PLAYER_TURN, 0.45)
+			elif _footprint(_hex_of(enemy)).has(h):
+				color = color.lerp(ENEMY_TURN, 0.45)
 		if reachable.has(h) and h != _hex_of(player):
 			color = color.lerp(PLAYER_TURN, 0.25)
 			if h == _hovered:
 				color = color.lerp(PLAYER_TURN, 0.35)
-		if h == _attack_from:
+		if _attack_from != NO_HEX and _footprint(_attack_from).has(h):
 			color = color.lerp(TARGET, 0.55)
+		elif reachable.has(_hovered) and _footprint(_hovered).has(h):
+			color = color.lerp(PLAYER_TURN, 0.35)
 		mat.albedo_color = color
 
 
@@ -733,7 +796,7 @@ func _process(delta: float) -> void:
 		_zoom = lerpf(_zoom, _zoom_target, 1.0 - exp(-10.0 * delta))
 		_apply_zoom()
 	var mouse := get_viewport().get_mouse_position()
-	var over_enemy := not player.dead and (_on_enemy(mouse) or _hex_at(_ground_point(mouse)) == _hex_of(enemy))
+	var over_enemy := not player.dead and (_on_enemy(mouse) or _footprint(_hex_of(enemy)).has(_hex_at(_ground_point(mouse))))
 	var targeted := turn == Turn.PLAYER and over_enemy and enemy.can_be_hit()
 	if targeted != _targeted:
 		_targeted = targeted
@@ -757,7 +820,7 @@ func _process(delta: float) -> void:
 	var text := ""
 	match turn:
 		Turn.PLAYER:
-			text = "Твой ход: гекс — идти (до %d), противник — стрелять (%s), «Защита» — ждать удара" % [MOVE, CREATURES[tested].shots[player.shot_mode].title] if _ranged() else "Твой ход: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % MOVE
+			text = "Твой ход: гекс — идти (до %d), противник — стрелять (%s), «Защита» — ждать удара" % [MOVE, creatures[tested].shots[player.shot_mode].title] if _ranged() else "Твой ход: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % MOVE
 		Turn.ENEMY, Turn.BUSY:
 			text = "Ход…" if turn == Turn.BUSY else "Ход противника"
 		Turn.OVER:
@@ -766,6 +829,8 @@ func _process(delta: float) -> void:
 		text = "Противник: удары %d/%d" % [enemy.hits, Creature.HITS_TO_KILL]
 		if targeted and from == NO_HEX and not _ranged():
 			text += ". Не дотянуться: нет свободной стороны в пределах хода"
+	if tested == "houndmaster-pair" and turn == Turn.PLAYER:
+		text += " · Псарь сверху, собака на двух нижних; выбирай верхний гекс назначения"
 	status.text = text
 
 
@@ -792,7 +857,7 @@ func _shoot_ranged(prefix: String) -> void:
 	await get_tree().create_timer(0.3).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-cursor.png")
 	_fire(player, enemy, func() -> void: pass)
-	var arrow: Dictionary = CREATURES[tested].shots.arrow
+	var arrow: Dictionary = creatures[tested].shots.arrow
 	await get_tree().create_timer(player.anim.get_animation(arrow.anim).length * arrow.release / arrow.rate * 0.8).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-aim.png")
 	await get_tree().create_timer(0.25).timeout
@@ -801,7 +866,7 @@ func _shoot_ranged(prefix: String) -> void:
 	player.next_shot_mode()
 	_show_mode()
 	_fire(player, enemy, func() -> void: pass)
-	var lantern: Dictionary = CREATURES[tested].shots.lantern
+	var lantern: Dictionary = creatures[tested].shots.lantern
 	await get_tree().create_timer(player.anim.get_animation(lantern.anim).length * lantern.release / lantern.rate + 0.35).timeout
 	get_viewport().get_texture().get_image().save_png(prefix + "-lantern.png")
 	await get_tree().create_timer(0.8).timeout
