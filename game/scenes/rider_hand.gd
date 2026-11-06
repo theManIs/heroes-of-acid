@@ -1,50 +1,36 @@
 extends "res://scenes/showcase.gd"
-## Витрина кисти всадника: только рыцарь, без коня и копья. Кисть как в клипе, пальцы в кулак, палка по каналу кулака.
+## Витрина кисти всадника: только рыцарь, без коня и копья. Рука как в витрине пары, пальцы в кулак,
+## палка идёт по кулаку; в каждом квадрате кулак повёрнут «как при выливании воды» на свой угол.
 ## Запуск: godot --path game res://scenes/rider_hand.tscn
 
 const MOCK := preload("res://scenes/rider_mock.gd")
 const PAIR := preload("res://scenes/rider_pair.gd")
-## Подпись, откуда смотрит камера (от кулака), ширина кадра в метрах; пустое направление — весь рыцарь.
-const VIEWS := [
-	["Рыцарь целиком", Vector3.ZERO, 0.0],
-	["Кисть снаружи", Vector3(0.0, 0.15, 1.0), 0.6],
-	["Кисть сверху снаружи", Vector3(0.1, 1.0, 0.8), 0.6],
-	["Кисть спереди снаружи", Vector3(1.0, 0.2, 0.7), 0.6],
-]
-
-
+const POURS := [-60.0, -70.0, -80.0]  # кандидаты: остриё 6°, 10°, 13° вниз (замер)
+const LOOK := Vector3(0.35, 0.25, 1.0)  # камера снаружи справа, чуть спереди и сверху
+const WIDTH := 0.8  # ширина кадра у кулака, метров
 const STICK_RADIUS := 0.02  # палка в кулаке вместо копья: видно, как её держит кисть
-const STICK_LENGTH := 1.0
-## Направления в осях всадника: +X вперёд, +Y вверх, +Z — его правый бок.
-const ARM_DIR := Vector3(-0.1, -1.0, 0.75)  # плечо вниз вдоль бока, локоть чуть назад и наружу
-const FOREARM_DIR := Vector3(1.0, 0.1, 0.3)  # предплечье вперёд почти горизонтально: кулак над коленом
-const LANCE_DIR := Vector3(1.0, -0.15, 0.15)  # остриё вперёд и чуть вниз: колоть, а не как удочка
-const WRIST_LIMIT := 30.0  # запястье к мизинцу не больше, градусов
+const STICK_LENGTH := 1.6
 var _sticks: Array = []
 
 
 func _ready() -> void:
-	columns = 2
-	cell_size = 460
+	columns = 3
+	cell_size = 520
 	var grid := _build_page()
-	for v: Array in VIEWS:
-		_make_hand_cell(grid, v[0], v[1], v[2])
+	for angle: float in POURS:
+		_make_hand_cell(grid, angle)
 	_finish()
 
 
-func _make_hand_cell(grid: GridContainer, title: String, from: Vector3, width: float) -> void:
+func _make_hand_cell(grid: GridContainer, angle: float) -> void:
 	var cell := _make_frame(grid, MOCK.RIDER_SIZE)
-	_make_label(cell.frame).text = title
+	_make_label(cell.frame).text = "Поворот %d°" % int(angle)
 	preload("res://scenes/metal_lighting.gd").apply(cell.view)  # как в витрине пары
 	var rider := MOCK.make_rider(cell.view)
 	MOCK.freeze_bones(rider, "ride_still", MOCK.RIGHT_ARM)
-	# Копьё вдоль тела: плечо вниз вдоль бока, предплечье чуть вперёд, кулак большим пальцем вперёд.
-	var to_skeleton := (rider.global_basis.orthonormalized().inverse() * rider.skeleton.global_basis.orthonormalized()).inverse()
-	MOCK.aim_bone(rider, "ride_still", "RightArm", "RightForeArm", to_skeleton * ARM_DIR)
-	MOCK.aim_bone(rider, "ride_still", "RightForeArm", "RightHand", to_skeleton * FOREARM_DIR)
-	MOCK.roll_fist(rider, "ride_still", to_skeleton * LANCE_DIR)
-	MOCK.bend_wrist(rider, "ride_still", to_skeleton * LANCE_DIR, WRIST_LIMIT)
-	MOCK.curl_fingers(rider, "ride_still", PAIR.GRIP_CURL)  # кисть как в клипе, согнуты только пальцы
+	MOCK.arm_out(rider, "ride_still", PAIR.ARM_OUT, PAIR.ARM_UP)  # рука как в витрине пары
+	MOCK.pour(rider, "ride_still", angle)
+	MOCK.curl_fingers(rider, "ride_still", PAIR.GRIP_CURL)
 	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
 	rider.anim.play("ride_still", 0.0)
 	var stick := MeshInstance3D.new()
@@ -58,22 +44,21 @@ func _make_hand_cell(grid: GridContainer, title: String, from: Vector3, width: f
 	stick.mesh = mesh
 	cell.view.add_child(stick)
 	_sticks.append([stick, rider])
-	if width > 0.0:
-		_aim.call_deferred(cell.view, rider, from, width)
+	_aim.call_deferred(cell.view, rider)
 
 
-## Камера на кулак: ждём, пока поза применится, и ставим её по направлению from.
-func _aim(view: SubViewport, rider: Creature, from: Vector3, width: float) -> void:
+## Камера на кулак: ждём, пока поза применится.
+func _aim(view: SubViewport, rider: Creature) -> void:
 	for i in 3:
 		await get_tree().process_frame
 	var focus := MOCK.fist(rider)
 	var camera: Camera3D = view.find_children("*", "Camera3D", true, false)[0]
 	camera.near = 0.02
-	var distance := width * 0.5 / tan(deg_to_rad(camera.fov * 0.5))
-	camera.look_at_from_position(focus + from.normalized() * distance, focus)
+	var distance := WIDTH * 0.5 / tan(deg_to_rad(camera.fov * 0.5))
+	camera.look_at_from_position(focus + LOOK.normalized() * distance, focus)
 
 
-## Палка идёт за кулаком: центр — в кулаке, ось — канал кулака.
+## Палка идёт за кулаком: центр — в кулаке, ось — канал кулака (кисть ведёт палку, а не наоборот).
 func _process(delta: float) -> void:
 	super._process(delta)
 	for pair: Array in _sticks:

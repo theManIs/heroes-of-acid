@@ -381,3 +381,12 @@ static func bend_wrist(rider: Creature, clip: String, direction: Vector3, limit:
 	if axis.length_squared() < 1e-8:
 		return
 	_turn_bone(rider, a, sk.find_bone("mixamorig_%sHand" % side), Quaternion(axis.normalized(), angle))
+
+
+## Поворот предплечья вокруг своей оси на degrees, как при выливании воды из стаканчика: кулак наклоняется, запястье не гнётся.
+static func pour(rider: Creature, clip: String, degrees: float, side := "Right") -> void:
+	var sk := rider.skeleton
+	var a := rider.anim.get_animation(clip)
+	var forearm := sk.find_bone("mixamorig_%sForeArm" % side)
+	var axis := _clip_global(rider, a, sk.find_bone("mixamorig_%sHand" % side)).origin - _clip_global(rider, a, forearm).origin
+	_turn_bone(rider, a, forearm, Quaternion(axis.normalized(), deg_to_rad(degrees)))
