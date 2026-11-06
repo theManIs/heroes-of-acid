@@ -1305,3 +1305,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `rider_mock.gd`: + `place_fist_lance` (копьё по каналу кулака), + `LanceKeeper` (модификатор: разворот плеча и предплечья, точное решение угла), канал кулака наискось; удалены `grip_hand`, `level_lance`, `fist_pitch`, `_clip_global_at`, `bend_wrist`, `roll_fist`, `aim_bone`, `palm`, параметр `turn_out`.
 - `rider_pair.gd`: `POUR −70`, `LANCE_PITCH −8`, `LANCE_YAW 3`, хранитель копья в каждой паре, выключен в смерти; убраны `LANCE_YAW −8` (старый), `ARM_TURN`, `LEVEL_SLACK`.
 - Проверка (scratchpad): keep.gd (наклон и разворот копья по кадрам), lancemesh.gd (зазор до шеи/головы покадрово + кадр худшего момента), lancebody.gd, closecell.gd (кисть вблизи).
+
+### 2026-11-06 10:03
+
+- `rider_pair.gd`: `ARM_OUT` −50 → −35, `ARM_UP` 25 → 0 — кулак ниже на 14 см. Замер: тело 0,20 м, шея/голова коня 0,31–0,52 м.
