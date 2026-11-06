@@ -6,9 +6,7 @@ extends "res://scenes/hammerer_search.gd"
 const OVERLAY := [
 	["Стойка: 2hand Idle", "c_2hand_idle", true],
 	["Удар: тяжёлый взмах", "c_heavy_swing", false],
-	["Ходьба: шаг с винтовкой + руки стойки", "c2_walk_rifle", true],
 	["Ходьба: прежний шаг + руки стойки", "c2_walk_sword", true],
-	["Бег: с винтовкой + руки стойки", "c2_run_rifle", true],
 	["Бег: прежний + руки стойки", "c2_run_sword", true],
 	["Реакция: прежняя + руки стойки", "c2_hurt", false],
 	["Отклик: озирается + руки стойки", "c2_look", false],
