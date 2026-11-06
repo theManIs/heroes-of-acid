@@ -59,6 +59,7 @@ func _make_label(frame: Control) -> Label:
 
 ## Конь, всадник на седле и копьё под рукой. Возвращает {horse, player, rider, lance, sk, bone, offset}.
 func _make_pair(view: SubViewport) -> Dictionary:
+	preload("res://scenes/metal_lighting.gd").apply(view)  # латы и броня коня: без отражений сталь почти чёрная
 	var horse: Node3D = load(HORSE).instantiate()
 	view.add_child(horse)
 	var box: AABB = horse.find_children("*", "MeshInstance3D", true, false)[0].get_aabb()

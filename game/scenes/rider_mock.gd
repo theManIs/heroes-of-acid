@@ -1,7 +1,7 @@
 extends RefCounted
 ## Общие части макета всадника (задача 157): условный конь, разведённые бёдра, посадка в седло.
 
-const RIDER := "res://assets/creatures/hammerer/body.glb"  # макет: тело молотобойца без молота
+const RIDER := "res://assets/creatures/rider/body.glb"  # всадник (задача 163): своя модель Tripo, риг Mixamo
 const ANIMS := "res://assets/creatures/rider/anims/"
 const RIDER_SIZE := 1.9
 const SADDLE := 1.55  # высота спины коня под всадника ростом около 2 м

@@ -1,0 +1,5 @@
+# back view
+
+Attachment: ../front.png. Same ChatGPT conversation.
+
+Use the attached approved front.png as the authoritative reference for this exact armored knight. Generate one full-body orthographic turnaround image for 3D reconstruction. Preserve the body proportions, natural waist and pelvis, narrow stance with legs nearly vertical, helmet shape, steel plate shapes, chainmail, cobalt-blue accents and belt. Same unarmed T-pose in 3D: both arms straight and horizontal sideways at shoulder height, empty hands; do not move the arms forward to make them visible. No weapon, no shield, no text, no ground or cast shadow, plain light-grey background, soft even lighting, generous empty margin around the entire figure. Do not redesign the character. BACK VIEW: camera directly behind the character, strict rear orthographic view, we see the back of the helmet, back plate, back of the legs and heels; arms horizontal sideways exactly as in the front view. Keep the full helmet, body and feet inside the frame. Generate the image itself.

@@ -1252,3 +1252,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 `blender -b --python pipelines/creature-quadruped/bind_donor.py -- creatures/horse/donors/quaternius-horse/horse.glb creatures/horse/tripo/horse.glb creatures/horse/donors/quaternius-horse/horse-on-donor.glb`;
 `python3 -I pipelines/creature-quadruped/name_clips.py … game/assets/creatures/horse/horse.glb Idle=idle_breathe …`.
 Новое: `game/scenes/horse_lab.gd/.tscn`.
+
+### 2026-11-06 — задачи 162–163, копьё и всадник
+
+Команды: `python3 -I pipelines/creature-quadruped/concept.py rider lance "<запрос>"`; `.venv/bin/python weapon.py rider ../../creatures/rider/concept/lance.png lance.glb`;
+`blender -b --python pipelines/creature-tripo-mixamo/prepare_weapon.py -- creatures/rider/weapon/lance.glb game/assets/creatures/rider/lance.glb`;
+`.venv/bin/python pipelines/creature-tripo-mixamo/stage2.py rider`; `pack_model.py creatures/rider/tripo/rig.glb game/assets/creatures/rider/body.glb`; `build_clips.py rider`.
+Код: `rider_mock.gd` — `set_lance`, `tip`, модель копья, `RIDER` на `body.glb`; `rider_pair.gd` — `metal_lighting` в каждом квадрате; `weapon.py` — картинка и имя файла аргументами, создание папки.

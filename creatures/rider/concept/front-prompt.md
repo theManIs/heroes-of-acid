@@ -1,0 +1,5 @@
+# Front T-pose — rider (knight)
+
+Attachment: v1.jpg (user's sheet). New ChatGPT conversation.
+
+Use the attached character sheet as the reference for this mounted knight's armor design. Generate the KNIGHT ALONE, standing on foot, without the horse, for 3D model reconstruction and auto-rigging. Strict front orthographic view, symmetrical neutral T-pose: both arms straight and horizontal sideways at shoulder height, palms down, empty open hands, legs straight with feet directly below the hips and a small natural gap. Natural adult human proportions with a distinct waist and pelvis. Keep the same design: closed rounded steel great helm with a visor, polished steel plate armor over chainmail, cobalt-blue fabric accents and blue trim on the pauldrons, gauntlets, steel greaves and sabatons, dark leather straps and belt. No lance, no shield, no weapon, no horse, no cape. Readable silhouette, few small details. Full figure including hands and feet, generous margins, plain light-grey background, soft even lighting, no ground shadow, no text. Generate the image itself.

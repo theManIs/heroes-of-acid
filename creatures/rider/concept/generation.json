@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-11-06T04:07:00+04:00",
+  "service": "ChatGPT in Chrome",
+  "conversation_url": "https://chatgpt.com/c/6aed19bb-37b0-83eb-a65c-b2ffe2865fd5",
+  "conversation_archived": false,
+  "reference": "creatures/rider/concept/v1.jpg",
+  "outputs": {
+    "front": "creatures/rider/concept/front.png",
+    "views": "creatures/rider/concept/views/{front,left,back,right}.png"
+  },
+  "prompts": ["creatures/rider/concept/front-prompt.md", "creatures/rider/concept/views/{left,back,right}-prompt.md"],
+  "note": "Чат не архивирован: задача ждёт принятия пользователем, возможны правки."
+}
