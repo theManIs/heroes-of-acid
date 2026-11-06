@@ -1355,3 +1355,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `rider_mock.gd`: хвост копья не сжат, а вырезан (`CUT_FROM` 0,70, `CUT_LEN` 0,21: торец сдвинут целиком), `LANCE_GRIP` 0,605 → 0,565 — кулак у гарды.
 - `rider_unit.gd`: обводка выбора и на копье (обводка рыцаря закрывала древко у кулака).
 - Проверка: scratchpad lanceview.gd (копьё до/после), draw.gd (кисть у гарды).
+
+### 2026-11-06 14:28
+
+- + `creatures/hammerer/mixamo/search/*.fbx` (13), записи `search/…` в `clips.json`, `game/assets/creatures/hammerer/anims/c_*.glb`.
+- `hammer_grip.gd`: `right_at` (по умолчанию 0,2 — без изменений для текущих клипов).
+- + `game/scenes/hammerer_search.gd/.tscn`; `SCENES.md`.
+- Команды: Chrome/Mixamo (Without Skin, In Place), `build_clips.py hammerer`, `godot --import`; рендер scratchpad hsshot.gd.

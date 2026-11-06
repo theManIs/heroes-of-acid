@@ -11,6 +11,9 @@ var _calibrated := false
 ## Постоянный поворот молота в кисти вокруг рукояти: боёк (напротив клюва) идёт
 ## вперёд в обоих ударах. Замер 153: нужно −106° в ударе по площади и −50° в точечном.
 const HEAD_ROLL := deg_to_rad(-80.0)
+## Где на рукояти правая кисть, доля длины от навершия. 0,2 — хват меча, руки рядом у навершия.
+## Хват по листу (задача 167): правая у бойка, левая дальше по рукояти — около 0,8.
+var right_at := 0.20
 
 
 func _ready() -> void:
@@ -67,4 +70,4 @@ func _process(_delta: float) -> void:
 	frame = frame * Basis(Vector3.UP, HEAD_ROLL)
 	axis = frame.y
 	var length := 1.5 * _unit.height / 1.9
-	_weapon.global_transform = Transform3D(frame.scaled(Vector3.ONE * length), right - axis * length * 0.20)
+	_weapon.global_transform = Transform3D(frame.scaled(Vector3.ONE * length), right - axis * length * right_at)

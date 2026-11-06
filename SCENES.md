@@ -6,6 +6,9 @@
 Витрина молотобойца (задачи 133–134), девять анимаций с отдельным двуручным молотом, включая площадной и точечный удары:
 `godot --path game res://scenes/showcase.tscn -- --creature=hammerer`.
 
+Кандидаты Mixamo молотобойца под хват по листу (задача 167): 13 клипов винтовки, посоха, двуручной дубины:
+`godot --path game res://scenes/hammerer_search.tscn`.
+
 Молотобоец в сцене существа:
 `godot --path game res://scenes/creature_test.tscn -- --creature=hammerer`.
 Переключатель «По площади / Точечный»; площадной удар поражает три соседних

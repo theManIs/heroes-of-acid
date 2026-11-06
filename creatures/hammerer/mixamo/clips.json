@@ -89,5 +89,70 @@
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
+  },
+  "search/Rifle Idle Lowered.fbx": {
+    "name": "c_rifle_idle_low",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Rifle Idle Two Hand.fbx": {
+    "name": "c_rifle_idle",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Rifle Idle Looking Around.fbx": {
+    "name": "c_rifle_look",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/2hand Idle.fbx": {
+    "name": "c_2hand_idle",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Walk With Rifle.fbx": {
+    "name": "c_rifle_walk",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Rifle Run.fbx": {
+    "name": "c_rifle_run",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Smash.fbx": {
+    "name": "c_smash",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Heavy Weapon Swing.fbx": {
+    "name": "c_heavy_swing",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Two Hand Club Combo.fbx": {
+    "name": "c_club_combo",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Block With Rifle.fbx": {
+    "name": "c_block_rifle",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Rifle Block.fbx": {
+    "name": "c_rifle_block",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Rifle Death Front.fbx": {
+    "name": "c_death_front",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "search/Rifle Death Right.fbx": {
+    "name": "c_death_right",
+    "grip": 0,
+    "keep_left_fingers": false
   }
 }
