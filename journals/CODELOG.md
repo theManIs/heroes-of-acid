@@ -1431,3 +1431,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/scenes/houndmaster_unit.gd`: `walk_path` выбирает `_gait`; собака в обычном ходе играет `_gait`, бег — `walk_speed × run/walk` лап собаки.
 - `game/scenes/battle_test.gd`: `c.move_range = MOVES[id]`; `creature_test.gd`: `c.move_range = MOVE`.
 - Проверка: headless скрипт — молотобоец, всадник, пара: 1 гекс шагом, 3 гекса бегом; фонарщик без клипа бега — шагом. battle_test/creature_test headless без ошибок.
+
+## 2026-11-07 00:50 — задача 172: иконка альтернативного огня
+
+- `game/scenes/battle_test.gd`: убрана текстовая `melee_mode_button`; `mode_button` («Альтернативный огонь», иконка FIRE_MODE, вид постоянный) видна в каждый ход игрока; `_alternative_text(unit)` — режим удара (молотобоец) или огня (стрелок); пусто — кнопка неактивна (0,4). `_switch_mode` прежний.
+- Задача 173 (удар всадника с разбега) заведена, не начата.
+- Проверка: headless battle_test без ошибок.

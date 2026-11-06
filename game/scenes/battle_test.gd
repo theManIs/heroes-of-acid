@@ -94,8 +94,7 @@ var turn := Turn.PLAYER
 var reachable := {}  # Vector2i -> путь (Array[Vector2i]) для текущего хода игрока
 var sword: Control
 var bow: Control
-var mode_button: Button  # смена режима огня: видна, когда ходит свой стрелок
-var melee_mode_button := Button.new()
+var mode_button: Button  # 172: альтернативный огонь — одна иконка у всех, смысл у каждого свой
 var queue_bar := HBoxContainer.new()  # шкала инициативы
 var wait_button: Button
 var round_no := 0  # номер игрового хода
@@ -514,11 +513,8 @@ func _build_hud() -> void:
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	bar.add_theme_constant_override("separation", 18)
 	hud.add_child(bar)
-	mode_button = _action_button("Режим огня", _switch_mode, ACTION_ICON.Kind.FIRE_MODE)
+	mode_button = _action_button("Альтернативный огонь", _switch_mode, ACTION_ICON.Kind.FIRE_MODE)
 	bar.add_child(mode_button)
-	melee_mode_button.custom_minimum_size = Vector2(240, 64)
-	melee_mode_button.pressed.connect(_switch_mode)
-	bar.add_child(melee_mode_button)
 	wait_button = _action_button("Ждать", _wait, ACTION_ICON.Kind.WAIT)
 	bar.add_child(wait_button)
 	bar.add_child(_action_button("Защита", _defend, ACTION_ICON.Kind.DEFEND))
@@ -858,6 +854,15 @@ func _game_over() -> void:
 		get_tree().quit()
 
 
+## Что сейчас включено альтернативным огнём этого существа; пусто — альтернативы нет.
+func _alternative_text(unit: Creature) -> String:
+	if unit.melee_modes.size() > 1:
+		return "атака %s (%s)" % [unit.melee_title().to_lower(), "3 гекса, включая своих" if unit.wide_melee() else "только выбранная цель"]
+	if unit.ranged() and unit.allowed_shots(_enemy_adjacent(unit)).size() > 1:
+		return "огонь: " + str(unit.shots[unit.shot_mode].get("title", unit.shot_mode))
+	return ""
+
+
 ## Смена режима огня: не тратит ход.
 func _switch_mode() -> void:
 	if turn == Turn.PLAYER and not active.melee_modes.is_empty():
@@ -1168,16 +1173,14 @@ func _process(delta: float) -> void:
 		var b := camera.unproject_position(_hex_center(cells[targeted]))
 		sword.position = mouse
 		sword.rotation = (b - a).angle()
-	mode_button.visible = shooter
-	melee_mode_button.visible = turn == Turn.PLAYER and not active.melee_modes.is_empty()
-	if melee_mode_button.visible:
-		melee_mode_button.text = "Атака: " + active.melee_title()
-		melee_mode_button.tooltip_text = "3 гекса, включая своих" if active.wide_melee() else "Только выбранная цель"
+	# 172: иконка одна и та же у всех; что она переключает — у каждого существа своё.
+	mode_button.visible = turn == Turn.PLAYER
+	if mode_button.visible:
+		var alternative := _alternative_text(active)
+		mode_button.disabled = alternative == ""
+		mode_button.modulate.a = 0.4 if mode_button.disabled else 1.0
+		mode_button.tooltip_text = "Альтернативный огонь: " + (alternative if alternative != "" else "нет")
 	if shooter:
-		var single: bool = active.allowed_shots(_enemy_adjacent(active)).size() < 2
-		mode_button.disabled = single
-		mode_button.modulate.a = 0.4 if single else 1.0
-		mode_button.get_child(0).mode = active.shot_mode
 		bow.mode = active.shot_mode
 	bow.visible = shooter and targeted != null
 	bow.position = mouse
