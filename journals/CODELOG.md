@@ -1413,3 +1413,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/assets/creatures/hammerer2/generations/silver/{albedo.jpg,normal.jpg,orm.png}` + .import (mode 2, limit 2048, mipmaps, normal_map 0); `icon.png` перерисован.
 - `game/scenes/hammerer_config.gd`: `variants` [бронза, светлая сталь].
 - Команды: `recolor_by_pair.py`; `retexture.py hammerer2 creatures/hammerer2/concept/views-final silver`; проверка позиций+UV (5D, 0 расхождений); `extract_textures.py hammerer2 silver`; Godot `--import`; `icon_shot`; снимок витрины.
+
+## 2026-11-06 23:45 — задача 171: боёк молота от владельца
+
+- `game/scenes/hammer_grip.gd`: `HEAD_ROLL` 59° → −38°, комментарий обновлён.
+- Замер: скрипт в scratchpad (`face_out.gd`), угол между −Z молота и направлением от груди (Spine2) к бойку поперёк рукояти; в стойке было −97°, стало ±8°. Снимок витрины до/после.
