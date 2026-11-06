@@ -5,7 +5,7 @@ extends "res://scenes/showcase.gd"
 
 const UNIT := preload("res://scenes/hammerer_config.gd").UNIT
 const ANIMS := "res://assets/creatures/hammerer/anims/"
-const RIGHT_AT := 0.8  # правая кисть у бойка, левая дальше по рукояти
+const RIGHT_AT := 0.62  # руки ближе к середине рукояти (было 0,8 — правая у самого бойка)
 const HOLD := 1.0
 ## Подпись, клип, идёт по кругу.
 const CELLS := [

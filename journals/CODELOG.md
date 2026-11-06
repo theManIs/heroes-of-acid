@@ -1381,3 +1381,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `clips.json`: `round2/c2_defend`, `round2/c2_fall` (прежние блок и смерть, руки из стойки); + `anims/c2_defend.glb`, `c2_fall.glb`.
 - `hammerer_overlay.gd`: ячейки защиты и смерти; `hammerer_search.gd`: `c2_fall` лежит до повтора.
+
+### 2026-11-06 15:14
+
+- `hammerer_search.gd`: `RIGHT_AT` 0,8 → 0,62 (руки ближе к середине рукояти).
