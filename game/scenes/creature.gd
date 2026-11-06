@@ -92,7 +92,8 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	if idle != "idle" and anim.has_animation(idle):
 		# Своя стойка: подменяем idle выбранной анимацией, остальной код знает только «idle».
 		var library := anim.get_animation_library(&"")
-		library.remove_animation("idle")
+		if library.has_animation("idle"):  # у коня всадника своего idle нет (169)
+			library.remove_animation("idle")
 		library.add_animation("idle", anim.get_animation(idle).duplicate())
 	for anim_name in anim.get_animation_list():
 		anim.get_animation(anim_name).loop_mode = Animation.LOOP_LINEAR if anim_name in LOOPED else Animation.LOOP_NONE

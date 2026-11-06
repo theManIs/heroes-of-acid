@@ -1,7 +1,7 @@
 {
   "service": "ChatGPT in Chrome",
   "conversation_url": "https://chatgpt.com/c/6aedbcfe-9b18-83eb-bea0-601c830c7bba",
-  "conversation_archived": false,
+  "conversation_archived": true,
   "reference": "references/hammerer/character-sheet.jpg",
   "prompts": [
     "creatures/hammerer2/concept/front-prompt.md",

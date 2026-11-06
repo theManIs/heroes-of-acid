@@ -1418,3 +1418,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/hammer_grip.gd`: `HEAD_ROLL` 59° → −38°, комментарий обновлён.
 - Замер: скрипт в scratchpad (`face_out.gd`), угол между −Z молота и направлением от груди (Spine2) к бойку поперёк рукояти; в стойке было −97°, стало ±8°. Снимок витрины до/после.
+
+## 2026-11-06 23:55 — задача 169: ошибка idle у всадника
+
+- `game/scenes/creature.gd` (setup, подмена idle): `remove_animation("idle")` только при `has_animation("idle")` — у коня всадника своего idle нет. Поведение прежнее: idle добавлялся и раньше.
+- Проверка: headless `battle_test.tscn --quit-after 600` и `creature_test.tscn --quit-after 300` — 0 строк с error.
+- Архивирован чат ChatGPT молотобойца (`creatures/hammerer2/concept/generation.json`: archived true).
