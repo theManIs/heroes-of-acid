@@ -13,8 +13,10 @@
     "front": "creatures/hammerer2/concept/front.png",
     "rejected": [
       "creatures/hammerer2/concept/front-v1.png",
-      "creatures/hammerer2/concept/front-v2.png"
-    ]
+      "creatures/hammerer2/concept/front-v2.png",
+      "creatures/hammerer2/concept/front-v3.png"
+    ],
+    "front_source": "дал пользователь в чате (2026-11-06), рогатый шлем"
   },
   "generated_at": "2026-11-06 15:43"
 }
