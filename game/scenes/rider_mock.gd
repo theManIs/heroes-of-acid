@@ -340,3 +340,26 @@ static func fist_axis(rider: Creature, side := "Right") -> Vector3:
 	var index: Vector3 = rider.bone_world(sk.find_bone("mixamorig_%sHandIndex1" % side))
 	var pinky: Vector3 = rider.bone_world(sk.find_bone("mixamorig_%sHandPinky1" % side))
 	return (index - pinky).normalized()
+
+
+## Направить кость на direction (пространство скелета): кратчайший поворот, во всех ключах клипа.
+static func aim_bone(rider: Creature, clip: String, bone: String, child: String, direction: Vector3) -> void:
+	var sk := rider.skeleton
+	var a := rider.anim.get_animation(clip)
+	var index := sk.find_bone("mixamorig_" + bone)
+	var from := _clip_global(rider, a, sk.find_bone("mixamorig_" + child)).origin - _clip_global(rider, a, index).origin
+	_turn_bone(rider, a, index, Quaternion(from.normalized(), direction.normalized()))
+
+
+## Повернуть предплечье вокруг своей оси так, чтобы канал кулака (мизинец → указательный)
+## смотрел как можно ближе к direction. Кисть в запястье не гнётся.
+static func roll_fist(rider: Creature, clip: String, direction: Vector3, side := "Right") -> void:
+	var sk := rider.skeleton
+	var a := rider.anim.get_animation(clip)
+	var at := func(n: String) -> Vector3: return _clip_global(rider, a, sk.find_bone("mixamorig_%s%s" % [side, n])).origin
+	var forearm: int = sk.find_bone("mixamorig_%sForeArm" % side)
+	var axis: Vector3 = (at.call("Hand") - at.call("ForeArm")).normalized()
+	var channel: Vector3 = at.call("HandIndex1") - at.call("HandPinky1")
+	var have := (channel - axis * channel.dot(axis)).normalized()
+	var want := (direction - axis * direction.dot(axis)).normalized()
+	_turn_bone(rider, a, forearm, Quaternion(axis, have.signed_angle_to(want, axis)))

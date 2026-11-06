@@ -7,14 +7,18 @@ const PAIR := preload("res://scenes/rider_pair.gd")
 ## Подпись, откуда смотрит камера (от кулака), ширина кадра в метрах; пустое направление — весь рыцарь.
 const VIEWS := [
 	["Рыцарь целиком", Vector3.ZERO, 0.0],
-	["Кисть сбоку (снаружи)", Vector3(0.0, 0.15, 1.0), 0.35],
-	["Кисть сверху", Vector3(0.05, 1.0, 0.15), 0.35],
-	["Кисть спереди", Vector3(1.0, 0.15, 0.1), 0.35],
+	["Кисть снаружи", Vector3(0.0, 0.15, 1.0), 0.6],
+	["Кисть сверху снаружи", Vector3(0.1, 1.0, 0.8), 0.6],
+	["Кисть спереди снаружи", Vector3(1.0, 0.2, 0.7), 0.6],
 ]
 
 
 const STICK_RADIUS := 0.02  # палка в кулаке вместо копья: видно, как её держит кисть
 const STICK_LENGTH := 1.0
+## Направления в осях всадника: +X вперёд, +Y вверх, +Z — его правый бок.
+const ARM_DIR := Vector3(0.1, -1.0, 0.8)  # плечо вниз, чуть наружу и вперёд
+const FOREARM_DIR := Vector3(1.0, -0.8, 0.5)  # предплечье вниз и вперёд: кулак у бедра
+const LANCE_DIR := Vector3(1.0, 0.0, 0.15)  # копьё вперёд и чуть наружу: мимо колена
 var _sticks: Array = []
 
 
@@ -33,7 +37,11 @@ func _make_hand_cell(grid: GridContainer, title: String, from: Vector3, width: f
 	preload("res://scenes/metal_lighting.gd").apply(cell.view)  # как в витрине пары
 	var rider := MOCK.make_rider(cell.view)
 	MOCK.freeze_bones(rider, "ride_still", MOCK.RIGHT_ARM)
-	MOCK.arm_out(rider, "ride_still", PAIR.ARM_OUT, PAIR.ARM_UP)
+	# Копьё вдоль тела: плечо вниз вдоль бока, предплечье чуть вперёд, кулак большим пальцем вперёд.
+	var to_skeleton := (rider.global_basis.orthonormalized().inverse() * rider.skeleton.global_basis.orthonormalized()).inverse()
+	MOCK.aim_bone(rider, "ride_still", "RightArm", "RightForeArm", to_skeleton * ARM_DIR)
+	MOCK.aim_bone(rider, "ride_still", "RightForeArm", "RightHand", to_skeleton * FOREARM_DIR)
+	MOCK.roll_fist(rider, "ride_still", to_skeleton * LANCE_DIR)
 	MOCK.curl_fingers(rider, "ride_still", PAIR.GRIP_CURL)  # кисть как в клипе, согнуты только пальцы
 	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
 	rider.anim.play("ride_still", 0.0)
