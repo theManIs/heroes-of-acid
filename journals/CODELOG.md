@@ -1376,3 +1376,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-06 14:47
 
 - `hammerer_overlay.gd`: `_cells()`; + `hammerer_rest.gd/.tscn` (стойка, два блока, Smash, две смерти); `SCENES.md`.
+
+### 2026-11-06 15:07
+
+- `clips.json`: `round2/c2_defend`, `round2/c2_fall` (прежние блок и смерть, руки из стойки); + `anims/c2_defend.glb`, `c2_fall.glb`.
+- `hammerer_overlay.gd`: ячейки защиты и смерти; `hammerer_search.gd`: `c2_fall` лежит до повтора.

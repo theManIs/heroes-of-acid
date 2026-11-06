@@ -65,7 +65,7 @@ func _make_candidate(grid: GridContainer, title: String, clip: String, endless: 
 
 
 func _repeat(unit: Creature, clip: String) -> void:
-	var death := clip.begins_with("c_death")
+	var death := clip.begins_with("c_death") or clip == "c2_fall"
 	while is_instance_valid(unit):
 		unit.dead = death  # смерть: Creature не возвращает в стойку, лежит до повтора
 		unit.anim.play(clip, 0.2)

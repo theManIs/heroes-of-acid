@@ -199,5 +199,21 @@
     "arms_from": "c_2hand_idle",
     "file": "search/Rifle Idle Looking Around.fbx",
     "name": "c2_look"
+  },
+  "round2/c2_defend": {
+    "name": "c2_defend",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0,
+    "file": "great sword blocking.fbx",
+    "arms_from": "c_2hand_idle"
+  },
+  "round2/c2_fall": {
+    "name": "c2_fall",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0,
+    "file": "two handed sword death.fbx",
+    "arms_from": "c_2hand_idle"
   }
 }
