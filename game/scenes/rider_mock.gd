@@ -102,8 +102,8 @@ static func build_horse(parent: Node) -> Array[Node3D]:
 ## остриё в y = 0, торец в y = 1, рукоять за воронкой около y = 0,62. Направление задаёт всадник, не клип.
 const LANCE_MODEL := "res://assets/creatures/rider/lance.glb"
 const LANCE_LENGTH := 2.6  # было 3,2: остриё сильно выпирало вперёд, хватало ткнуть далеко за соседний гекс
-const LANCE_GRIP := 0.605  # доля длины от острия до руки: кулак на кожаной обмотке
-const LANCE_BACK := LANCE_LENGTH * (REAR_KEEP - LANCE_GRIP + (1.0 - REAR_KEEP) * REAR_SQUEEZE)  # сколько копья за кистью
+const LANCE_GRIP := 0.565  # доля длины от острия до руки: кулак сразу за гардой (её задний край — 0,555)
+const LANCE_BACK := LANCE_LENGTH * (1.0 - CUT_LEN - LANCE_GRIP)  # сколько копья за кистью
 const LANCE_THICK := 0.55 * 3.2 / 2.6  # толщина модели относительно длины: древко той же толщины, что при 3,2 м
 const LANCE_DOWN := 0.16  # наклон остриём вниз: цель ниже седла
 
@@ -117,10 +117,10 @@ static func add_lance(parent: Node) -> Node3D:
 	return lance
 
 
-## Хвост за кулаком короче: от конца обмотки (REAR_KEEP, доля от острия) до торца сжат в REAR_SQUEEZE раз.
-## Без этого за кулаком торчал метр древка.
-const REAR_KEEP := 0.68
-const REAR_SQUEEZE := 0.45
+## Хвост за кулаком короче: кусок древка за обмоткой вырезан (CUT_FROM — CUT_FROM + CUT_LEN, доли от острия),
+## торец сдвинут к обмотке целиком, без растяжения. Раньше хвост сжимали — полосы и торец сплющивались.
+const CUT_FROM := 0.70
+const CUT_LEN := 0.21
 static var _short_mesh: Mesh
 
 
@@ -132,8 +132,10 @@ static func _short_tail(source: Mesh) -> Mesh:
 		var arrays := source.surface_get_arrays(i)
 		var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 		for v in verts.size():
-			if verts[v].y > REAR_KEEP:
-				verts[v].y = REAR_KEEP + (verts[v].y - REAR_KEEP) * REAR_SQUEEZE
+			if verts[v].y > CUT_FROM + CUT_LEN:
+				verts[v].y -= CUT_LEN
+			elif verts[v].y > CUT_FROM:
+				verts[v].y = CUT_FROM
 		arrays[Mesh.ARRAY_VERTEX] = verts
 		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 		out.surface_set_material(i, source.surface_get_material(i))

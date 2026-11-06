@@ -251,7 +251,8 @@ func revive() -> void:
 
 ## Обводка: толщина по масштабу каждой сетки — у коня внутри файла свой масштаб, общий даёт обводку во весь экран.
 func set_outline(color: Variant) -> void:
-	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+	# Копьё — тоже часть существа: без своей обводки обводка рыцаря ложилась поверх древка у кулака.
+	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false) + lance.find_children("*", "MeshInstance3D", true, false):
 		for i in mesh.mesh.get_surface_count():
 			if color == null:
 				mesh.set_surface_override_material(i, null)
