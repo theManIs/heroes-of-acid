@@ -56,6 +56,7 @@ func _make_candidate(grid: GridContainer, title: String, clip: String, endless: 
 	for grip in unit.find_children("*", "Node3D", true, false):
 		if "right_at" in grip:
 			grip.right_at = RIGHT_AT
+			grip.rigid_clips = ["attack_point"]
 	_make_label(cell.frame).text = title
 	if endless:
 		unit.anim.get_animation(clip).loop_mode = Animation.LOOP_LINEAR

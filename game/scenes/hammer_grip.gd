@@ -14,6 +14,11 @@ const HEAD_ROLL := deg_to_rad(-80.0)
 ## Где на рукояти правая кисть, доля длины от навершия. 0,2 — хват меча, руки рядом у навершия.
 ## Хват по листу (задача 167): правая у бойка, левая дальше по рукояти — около 0,8.
 var right_at := 0.20
+## Клипы, в которых молот жёстко в правой кисти, как в стойке (калибровка — первый кадр):
+## руки в клипе свои, молот не перекладывается под них. Переход — плавно.
+var rigid_clips: Array = []
+var _rigid := 0.0
+const RIGID_BLEND := 8.0
 
 
 func _ready() -> void:
@@ -42,9 +47,11 @@ func _palm(side: String) -> Vector3:
 	return _point(side + "Hand").lerp(_point(side + "HandMiddle1"), 0.75)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not is_instance_valid(_weapon):
 		return
+	var want_rigid := 1.0 if String(_unit.anim.current_animation) in rigid_clips else 0.0
+	_rigid = lerpf(_rigid, want_rigid, 1.0 - exp(-RIGID_BLEND * delta))
 	var right := _palm("Right")
 	var left := _palm("Left")
 	var axis := (right - left).normalized()
@@ -65,7 +72,7 @@ func _process(_delta: float) -> void:
 		_calibrated = true
 	# When the death clip opens the hands, retain the rigid attachment to the
 	# right hand; the left hand is free to leave the shaft naturally.
-	var release := smoothstep(0.38 * _unit.height / 1.9, 0.55 * _unit.height / 1.9, right.distance_to(left))
+	var release := maxf(_rigid, smoothstep(0.38 * _unit.height / 1.9, 0.55 * _unit.height / 1.9, right.distance_to(left)))
 	frame = Basis(frame.get_rotation_quaternion().slerp((hand_frame * _right_grip).get_rotation_quaternion(), release))
 	frame = frame * Basis(Vector3.UP, HEAD_ROLL)
 	axis = frame.y

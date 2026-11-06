@@ -1385,3 +1385,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-06 15:14
 
 - `hammerer_search.gd`: `RIGHT_AT` 0,8 → 0,62 (руки ближе к середине рукояти).
+
+### 2026-11-06 15:16
+
+- `hammer_grip.gd`: `rigid_clips` — в этих клипах молот жёстко в правой кисти с хватом стойки (калибровка первым кадром), переход плавный.
+- `hammerer_search.gd`: прежний `attack_point` в жёстком режиме; `hammerer_overlay.gd`: ячейка точечного удара.
