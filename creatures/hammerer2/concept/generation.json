@@ -4,11 +4,13 @@
   "conversation_archived": false,
   "reference": "references/hammerer/character-sheet.jpg",
   "prompts": [
-    "creatures/hammerer2/concept/front-prompt.md"
+    "creatures/hammerer2/concept/front-prompt.md",
+    "creatures/hammerer2/concept/front-prompt-v2.md"
   ],
   "note": "Задача 168: новый молотобоец. Чат держать до конца задачи.",
   "outputs": {
-    "front": "creatures/hammerer2/concept/front.png"
+    "front": "creatures/hammerer2/concept/front.png",
+    "front_v1_rejected": "creatures/hammerer2/concept/front-v1.png"
   },
   "generated_at": "2026-11-06 15:43"
 }
