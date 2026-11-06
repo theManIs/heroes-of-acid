@@ -1269,3 +1269,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `rider_mock.gd`: + `arm_out` (постоянный поворот плеча в клипе), + `palm` (центр ладони); `place_lance` хватает по ладони.
 - `rider_pair.gd`: `ARM_OUT −50`, `ARM_UP 25`, `LANCE_YAW −8`; плечо отводится в `ride_still` после заморозки руки.
 - Проверка: скрытые замеры зазоров (scratchpad lancebody.gd, lancemesh.gd), крупный рендер.
+
+### 2026-11-06 09:12
+
+- `rider_mock.gd`: + `_clip_global`, `_turn_bone`, `grip_bones`, `grip_hand`, `fist`; `place_lance` берёт центр кулака; `LANCE_GRIP` 0,62 → 0,605.
+- `rider_pair.gd`: `GRIP_CURL 45`, хват в `ride_still`, кисть и пальцы в `pin_to` замороженных клипов.
+- Проверка: рендеры кисти с четырёх сторон (scratchpad hand.gd), замеры lancebody.gd / lancemesh.gd.

@@ -102,7 +102,7 @@ static func build_horse(parent: Node) -> Array[Node3D]:
 ## остриё в y = 0, торец в y = 1, рукоять за воронкой около y = 0,62. Направление задаёт всадник, не клип.
 const LANCE_MODEL := "res://assets/creatures/rider/lance.glb"
 const LANCE_LENGTH := 3.2
-const LANCE_GRIP := 0.62  # доля длины от острия до руки
+const LANCE_GRIP := 0.605  # доля длины от острия до руки: кулак на кожаной обмотке
 const LANCE_BACK := LANCE_LENGTH * (1.0 - LANCE_GRIP)  # сколько копья за кистью
 const LANCE_THICK := 0.55  # толщина модели относительно длины, иначе древко 20 см
 const LANCE_DOWN := 0.16  # наклон остриём вниз: цель ниже седла
@@ -133,7 +133,7 @@ static func set_lance(lance: Node3D, forward: Vector3, hand: Vector3, slide := 0
 ## pitch и yaw — раскачивание на весу, градусы: длинная палка качается при движении.
 ## slide — сдвиг копья вдоль древка (м): назад для замаха, вперёд для укола.
 static func place_lance(lance: Node3D, rider: Creature, mount: Node3D, pitch := 0.0, yaw := 0.0, slide := 0.0) -> void:
-	var hand: Vector3 = palm(rider)
+	var hand: Vector3 = fist(rider)
 	var local := Vector3(1.0, -LANCE_DOWN, 0.0).normalized()
 	local = local.rotated(Vector3.BACK, deg_to_rad(pitch)).rotated(Vector3.UP, deg_to_rad(yaw))
 	var forward: Vector3 = (mount.global_basis.orthonormalized() * local).normalized()
@@ -255,3 +255,71 @@ static func palm(rider: Creature, side := "Right") -> Vector3:
 	var middle: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_%sHandMiddle1" % side))
 	return wrist.lerp(middle, 0.8)
 
+
+
+## Поза кости в клипе на первом кадре, в пространстве скелета (родители — тоже по клипу или по покою).
+static func _clip_global(rider: Creature, a: Animation, bone: int) -> Transform3D:
+	var sk := rider.skeleton
+	var root_path := rider.anim.get_node(rider.anim.root_node).get_path_to(sk)
+	var path := NodePath("%s:%s" % [root_path, sk.get_bone_name(bone)])
+	var local := sk.get_bone_rest(bone)
+	var rt := a.find_track(path, Animation.TYPE_ROTATION_3D)
+	if rt >= 0 and a.track_get_key_count(rt) > 0:
+		local.basis = Basis(a.track_get_key_value(rt, 0)).scaled(local.basis.get_scale())
+	var pt := a.find_track(path, Animation.TYPE_POSITION_3D)
+	if pt >= 0 and a.track_get_key_count(pt) > 0:
+		local.origin = a.track_get_key_value(pt, 0)
+	var parent := sk.get_bone_parent(bone)
+	return local if parent < 0 else _clip_global(rider, a, parent) * local
+
+
+## Повернуть кость на turn (в пространстве скелета) во всех ключах клипа.
+static func _turn_bone(rider: Creature, a: Animation, bone: int, turn: Quaternion) -> void:
+	var sk := rider.skeleton
+	var root_path := rider.anim.get_node(rider.anim.root_node).get_path_to(sk)
+	var path := NodePath("%s:%s" % [root_path, sk.get_bone_name(bone)])
+	var t := a.find_track(path, Animation.TYPE_ROTATION_3D)
+	if t < 0:
+		return
+	var parent := _clip_global(rider, a, sk.get_bone_parent(bone)).basis.get_rotation_quaternion()
+	var local_turn := parent.inverse() * turn * parent
+	for k in a.track_get_key_count(t):
+		a.track_set_key_value(t, k, (local_turn * a.track_get_key_value(t, k)).normalized())
+
+
+const FINGERS := ["Index", "Middle", "Ring", "Pinky"]
+## Кости кисти, которые держат древко: кисть и пальцы — их копируют во все клипы с копьём.
+static func grip_bones(side := "Right") -> Array:
+	var bones := ["%sHand" % side]
+	for finger in FINGERS + ["Thumb"]:
+		for i in [1, 2, 3]:
+			bones.append("%sHand%s%d" % [side, finger, i])
+	return bones
+
+
+## Хват палки: кисть поворачивается так, чтобы линия костяшек шла вдоль древка (forward — в пространстве скелета),
+## пальцы сгибаются вокруг него на curl градусов в каждом суставе.
+static func grip_hand(rider: Creature, clip: String, forward: Vector3, curl: float, side := "Right") -> void:
+	var sk := rider.skeleton
+	var a := rider.anim.get_animation(clip)
+	var bone := func(n: String) -> int: return sk.find_bone("mixamorig_%s%s" % [side, n])
+	var at := func(n: String) -> Vector3: return _clip_global(rider, a, bone.call(n)).origin
+	var hand: int = bone.call("Hand")
+	var knuckles: Vector3 = (at.call("HandIndex1") - at.call("HandPinky1")).normalized()
+	_turn_bone(rider, a, hand, Quaternion(knuckles, forward.normalized()))
+	var axis: Vector3 = (at.call("HandIndex1") - at.call("HandPinky1")).normalized()
+	# Знак сгиба: кончик среднего пальца должен идти к большому, то есть в ладонь.
+	var tip: Vector3 = at.call("HandMiddle4") - at.call("HandMiddle1")
+	var toward: Vector3 = at.call("HandThumb1") - at.call("HandMiddle1")
+	var sign := 1.0 if (Quaternion(axis, 0.3) * tip).dot(toward) > tip.dot(toward) else -1.0
+	for finger: String in FINGERS:
+		for i in [1, 2, 3]:
+			_turn_bone(rider, a, bone.call("Hand%s%d" % [finger, i]), Quaternion(axis, deg_to_rad(curl * sign)))
+
+
+## Центр кулака: середина кольца среднего пальца — через него идёт ось древка.
+static func fist(rider: Creature, side := "Right") -> Vector3:
+	var sum := Vector3.ZERO
+	for i in [1, 2, 3, 4]:
+		sum += rider.bone_world(rider.skeleton.find_bone("mixamorig_%sHandMiddle%d" % [side, i]))
+	return sum / 4.0

@@ -16,6 +16,8 @@ const LANCE_YAW := -8.0
 ## Рука с копьём отведена от корпуса вправо и вверх (плечо −50° наружу, 25° вверх, копьё −8°): замер — не ближе 0,26 м к костям всадника и 0,41 м к шее коня во всех клипах.
 const ARM_OUT := -50.0
 const ARM_UP := 25.0
+## Кисть держит древко как палку: костяшки вдоль копья, пальцы согнуты вокруг него (градусов на сустав).
+const GRIP_CURL := 45.0
 const HOLD := 1.0
 const BACK_BLEND := 1.0  # возврат в стойку после разового действия, секунд (было 0,3 — руки дёргались)
 const FROZEN := ["ride_still", "ride_hurt", "ride_fidget_look", "ride_dodge"]
@@ -78,10 +80,13 @@ func _make_pair(view: SubViewport) -> Dictionary:
 	var rider := MOCK.make_rider(view)
 	MOCK.freeze_bones(rider, "ride_still", MOCK.RIGHT_ARM)
 	MOCK.arm_out(rider, "ride_still", ARM_OUT, ARM_UP)
+	var to_skeleton := (rider.global_basis.orthonormalized().inverse() * rider.skeleton.global_basis.orthonormalized()).inverse()
+	var forward := Vector3(1.0, -MOCK.LANCE_DOWN, 0.0).rotated(Vector3.UP, deg_to_rad(LANCE_YAW))
+	MOCK.grip_hand(rider, "ride_still", to_skeleton * forward, GRIP_CURL)
 	for clip in FROZEN:
 		if clip != "ride_still":
 			# Рука с копьём и посадка — как в стойке: иначе копьё отъезжает при смене клипа.
-			MOCK.pin_to(rider, clip, MOCK.RIGHT_ARM)
+			MOCK.pin_to(rider, clip, MOCK.RIGHT_ARM + MOCK.grip_bones())
 			MOCK.pin_seat(rider, clip)
 	MOCK.pin_seat(rider, "idle")  # копия стойки, которую Creature включает сам
 	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
