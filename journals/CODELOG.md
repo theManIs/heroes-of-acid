@@ -1345,3 +1345,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `tools/icon_shot.gd`: всадник (вполоборота, рыцарь и голова коня); `rider_config.gd`: `icon`, `icon_dist`.
 - + `game/assets/creatures/rider/icon.png`.
 - Проверка: scratchpad battle.gd (`--auto`, бой до конца, всадники ходят, бьют, гибнут), rider5.gd (тест существа без изменений).
+
+### 2026-11-06 11:01
+
+- `rider_mock.gd`: `LANCE_LENGTH` 3,2 → 2,6 (толщина прежняя), хвост за обмоткой сжат (`_short_tail`: от 0,68 до торца ×0,45), `LANCE_BACK` по новой форме. Замер: остриё впереди 2,51 → 2,20 м; зазоры до коня 0,38–0,52 м.
