@@ -12,6 +12,7 @@ const UNIT := {
 	"fidget_on_hover": true,
 	"defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.3,
 	"size": 2.3, "walk_speed": 1.43,  # 168: новая модель с рогами, крупнее псаря (2,0); шаг в той же доле
+	"variants": [{"title": "бронза"}, {"title": "светлая сталь", "textures": {"albedo": "res://assets/creatures/hammerer2/generations/silver/albedo.jpg", "normal": "res://assets/creatures/hammerer2/generations/silver/normal.jpg", "orm": "res://assets/creatures/hammerer2/generations/silver/orm.png"}}],  # 170
 	"showcase_size": 3.2, "showcase_metal_light": true,
 	"melee_modes": {
 		"area": {"title": "По площади", "anim": "attack", "area": true, "impact": 0.383, "reach": 1.13, "full_clip": true, "no_backstep": true},  # 167: тяжёлый взмах

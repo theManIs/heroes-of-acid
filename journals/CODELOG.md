@@ -1405,3 +1405,11 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/assets/creatures/hammerer2/`: body.glb, anims/*, hammerer.tscn (копия прежней с новым body), icon.png.
 - `game/scenes/hammerer_config.gd`: icon/scene/extra → hammerer2; `size 1.9→2.3`, `walk_speed 1.18→1.43`, `showcase_size 2.7→3.2`.
 - Команды: `stage2.py hammerer2`; `pack_model.py creatures/hammerer2/tripo/rig.glb game/assets/creatures/hammerer2/body.glb`; `build_clips.py hammerer2`; Godot `--import`; `icon_shot.tscn -- --id=hammerer`; снимок витрины `--shot`; headless battle_test/creature_test (ошибка idle у всадника — была и до изменений).
+
+## 2026-11-06 23:35 — задача 170: раскраска молотобойца «светлая сталь»
+
+- `pipelines/creature-recolor/recolor_by_pair.py` (новый) + строка в README пайплайна.
+- `creatures/hammerer2/concept/views-final/*`, `tripo/generations/silver/*`.
+- `game/assets/creatures/hammerer2/generations/silver/{albedo.jpg,normal.jpg,orm.png}` + .import (mode 2, limit 2048, mipmaps, normal_map 0); `icon.png` перерисован.
+- `game/scenes/hammerer_config.gd`: `variants` [бронза, светлая сталь].
+- Команды: `recolor_by_pair.py`; `retexture.py hammerer2 creatures/hammerer2/concept/views-final silver`; проверка позиций+UV (5D, 0 расхождений); `extract_textures.py hammerer2 silver`; Godot `--import`; `icon_shot`; снимок витрины.

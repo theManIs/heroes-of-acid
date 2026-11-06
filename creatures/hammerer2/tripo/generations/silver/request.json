@@ -1,0 +1,14 @@
+{
+  "source_model_task": "ae3603b6-494a-427f-b124-990a0b149033",
+  "views_from": "creatures/hammerer2/concept/views-final",
+  "texture_version": "v3.0-20250812",
+  "texture_quality": "detailed",
+  "texture_alignment": "original_image",
+  "views": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "pad": 0.15
+}
