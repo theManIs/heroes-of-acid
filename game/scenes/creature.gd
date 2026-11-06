@@ -10,7 +10,9 @@ const TURN_SPEED := 8.0
 const FRONT_YAW := -PI / 2.0  # модель Tripo смотрит по +X, а не по +Z
 const MAX_ONESHOT := 3.0  # разовая анимация не длиннее, секунд
 const BLEND := 0.2
-const LOOPED := ["idle", "walk"]
+const LOOPED := ["idle", "walk", "run"]
+## Стопы для замера шага по клипу: носок у человека Mixamo, копыто/лапа у донора четвероногих.
+const GAIT_FEET := ["mixamorig_LeftToeBase", "mixamorig_RightToeBase", "FF.L", "FF.R", "FFB.L", "FFB.R"]
 const LIMB_RADIUS := 0.12  # от кости до поверхности тела снизу у лежащего, метров
 const FLINCH_PUSH := 0.15  # насколько отбрасывает назад при ударе
 const FLINCH_TILT := 0.17  # наклон назад, радиан
@@ -32,6 +34,10 @@ var dead := false
 var walking := false
 var walk_rate := 1.0  # ускорение ходьбы: анимация и движение вместе, чтобы ноги не скользили
 var walk_speed := WALK_SPEED  # метров в секунду при walk_rate 1: своя у клипов другой длины шага
+## 118: бег — путь длиннее половины хода. move_range задаёт арена; 0 — всегда шагом.
+var move_range := 0
+var run_ratio := 0.0  # скорость бега к скорости шага по стопам клипов; 0 — клипа бега нет
+var _gait := "walk"
 var impact := 0.5  # момент попадания, доля проигрываемой части удара
 var _strike_id := 0
 var reach := 1.0  # вынос кулака вперёд в момент попадания, метров
@@ -100,6 +106,9 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	_align_hips()
 	anim.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 	anim.animation_finished.connect(_on_animation_finished)
+	if anim.has_animation("run") and anim.has_animation("walk"):
+		var walk_gait := _measure_step_speed("walk")
+		run_ratio = _measure_step_speed("run") / walk_gait if walk_gait > 0.0 else 0.0
 	_play("idle")
 	anim.advance(0.0)
 	_center_on_hip()
@@ -358,8 +367,53 @@ func walk_path(points: Array[Vector3]) -> void:
 	if points.is_empty():
 		arrived.emit()
 		return
+	_gait = "run" if wants_run(points.size()) else "walk"
 	_path = points.duplicate()
 	walk_to(_path.pop_front())
+
+
+## Бежать ли по пути из steps гексов: дальше половины своего хода и есть клип бега.
+func wants_run(steps: int) -> bool:
+	return run_ratio > 0.0 and move_range > 0 and steps * 2 > move_range
+
+
+func gait_speed() -> float:
+	return walk_speed * (run_ratio if _gait == "run" else 1.0) * walk_rate
+
+
+## Скорость стопы на опоре в клипе (без направления: клипы на месте), для отношения бег/шаг.
+func _measure_step_speed(clip: String) -> float:
+	const FRAMES := 64
+	var feet := GAIT_FEET.map(func(n): return skeleton.find_bone(n)).filter(func(i): return i >= 0)
+	if feet.is_empty():
+		return 0.0
+	var length := anim.get_animation(clip).length
+	var step := length / FRAMES
+	anim.play(clip, 0.0)
+	var track := {}
+	for foot in feet:
+		track[foot] = []
+	for i in FRAMES:
+		anim.seek(step * i, true)
+		anim.advance(0.0)
+		for foot in feet:
+			track[foot].append(skeleton.get_bone_global_pose(foot).origin * model.scale)
+	var samples: Array[float] = []
+	for foot in feet:
+		var low := INF
+		var high := -INF
+		for q: Vector3 in track[foot]:
+			low = minf(low, q.y)
+			high = maxf(high, q.y)
+		for i in FRAMES - 1:  # без стыка конца с началом
+			var a: Vector3 = track[foot][i]
+			var b: Vector3 = track[foot][i + 1]
+			if a.y < low + (high - low) * 0.2:
+				samples.append(Vector2(b.x - a.x, b.z - a.z).length() / step)
+	if samples.is_empty():
+		return 0.0
+	samples.sort()
+	return samples[samples.size() / 2]
 
 
 func walk_to(point: Vector3) -> void:
@@ -367,7 +421,7 @@ func walk_to(point: Vector3) -> void:
 		return
 	_target = Vector3(point.x, 0.0, point.z)
 	walking = true
-	_play("walk")
+	_play(_gait)
 
 
 func face(point: Vector3) -> void:
@@ -736,7 +790,7 @@ func revive() -> void:
 
 func _play(anim_name: String) -> void:
 	if anim.current_animation != anim_name:
-		anim.play(anim_name, BLEND, walk_rate if anim_name == "walk" else 1.0)
+		anim.play(anim_name, BLEND, walk_rate if anim_name in ["walk", "run"] else 1.0)
 
 
 func _on_animation_finished(anim_name: StringName) -> void:
@@ -797,8 +851,9 @@ func _physics_process(delta: float) -> void:
 			_target = _path.pop_front()
 			return
 		walking = false
+		_gait = "walk"
 		_play("idle")
 		arrived.emit()
 		return
-	position += to.normalized() * minf(walk_speed * walk_rate * delta, to.length())
+	position += to.normalized() * minf(gait_speed() * delta, to.length())
 	face(_target)

@@ -185,6 +185,7 @@ func _make() -> Creature:
 	c.hurt_len = cfg.hurt_len
 	c.turn_bones(cfg.get("bone_turn", {}))
 	c.walk_speed = cfg.get("walk_speed", Creature.WALK_SPEED)
+	c.move_range = MOVE  # 118: дальше половины хода — бег
 	c.shots = cfg.get("shots", {})
 	c.set_shot(c.shots.keys()[0] if c.ranged() else "")
 	c.configure_melee(cfg.get("melee_modes", {}))

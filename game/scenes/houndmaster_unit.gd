@@ -152,6 +152,7 @@ func walk_path(points: Array[Vector3]) -> void:
 	_strike_id += 1
 	walking = false
 	_path.clear()
+	_gait = "run" if wants_run(points.size()) else "walk"  # 118: собака и псарь одним аллюром
 	_master_route = points.duplicate()
 	_dog_route.clear()
 	for point in points:
@@ -184,10 +185,12 @@ func _physics_process(delta: float) -> void:
 			_dog_play(DOG_IDLE)
 			return
 		var raiding := _move_phase in [MovePhase.RAID_OUT, MovePhase.RAID_BACK]
-		var clip := _raid_clip if raiding else "walk"
+		var clip := _raid_clip if raiding else _gait
 		_dog_play(clip, walk_rate)
 		# Вылазка идёт со скоростью лап своего клипа, чтобы собака не скользила.
-		var speed: float = (_gait_speed[clip] if raiding else walk_speed) * walk_rate
+		# Обычный ход: шаг — скорость псаря, бег — та же доля бега к шагу, что у лап собаки.
+		var speed: float = _gait_speed[clip] if raiding else walk_speed * (_gait_speed["run"] / _gait_speed["walk"] if clip == "run" else 1.0)
+		speed *= walk_rate
 		_dog.global_position += to.normalized() * minf(speed * delta, to.length())
 		return
 	super._physics_process(delta)

@@ -171,6 +171,7 @@ func _make(id: String) -> Creature:
 	c.fidget_anim = cfg.get("fidget", "") if cfg.get("fidget_on_hover", false) else ""
 	c.walk_rate = WALK_RATE
 	c.set_meta("move", MOVES[id])
+	c.move_range = MOVES[id]  # 118: дальше половины хода — бег
 	c.set_meta("title", cfg.name)
 	c.set_meta("icon", cfg.icon)
 	if c is HOUNDMASTER_UNIT:

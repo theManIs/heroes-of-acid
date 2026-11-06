@@ -1424,3 +1424,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/scenes/creature.gd` (setup, подмена idle): `remove_animation("idle")` только при `has_animation("idle")` — у коня всадника своего idle нет. Поведение прежнее: idle добавлялся и раньше.
 - Проверка: headless `battle_test.tscn --quit-after 600` и `creature_test.tscn --quit-after 300` — 0 строк с error.
 - Архивирован чат ChatGPT молотобойца (`creatures/hammerer2/concept/generation.json`: archived true).
+
+## 2026-11-07 00:30 — задача 118: бег дальше половины хода
+
+- `game/scenes/creature.gd`: `LOOPED` + "run"; `GAIT_FEET`; `move_range`, `run_ratio`, `_gait`; в `setup` замер `_measure_step_speed("walk"/"run")` (скорость носка/лапы на опоре, медиана); `wants_run(steps)` — `steps * 2 > move_range`; `walk_path` выбирает аллюр; `walk_to` играет `_gait`; `_play` — `walk_rate` и для run; движение `gait_speed()`; по прибытии `_gait = "walk"`.
+- `game/scenes/houndmaster_unit.gd`: `walk_path` выбирает `_gait`; собака в обычном ходе играет `_gait`, бег — `walk_speed × run/walk` лап собаки.
+- `game/scenes/battle_test.gd`: `c.move_range = MOVES[id]`; `creature_test.gd`: `c.move_range = MOVE`.
+- Проверка: headless скрипт — молотобоец, всадник, пара: 1 гекс шагом, 3 гекса бегом; фонарщик без клипа бега — шагом. battle_test/creature_test headless без ошибок.
