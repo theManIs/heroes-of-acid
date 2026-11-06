@@ -1275,3 +1275,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `rider_mock.gd`: + `_clip_global`, `_turn_bone`, `grip_bones`, `grip_hand`, `fist`; `place_lance` берёт центр кулака; `LANCE_GRIP` 0,62 → 0,605.
 - `rider_pair.gd`: `GRIP_CURL 45`, хват в `ride_still`, кисть и пальцы в `pin_to` замороженных клипов.
 - Проверка: рендеры кисти с четырёх сторон (scratchpad hand.gd), замеры lancebody.gd / lancemesh.gd.
+
+### 2026-11-06 09:15
+
+- + `game/scenes/rider_hand.gd/.tscn`: витрина одного рыцаря (поза стойки с хватом из витрины пары), 4 вида: целиком и кисть сбоку, сверху, спереди.
