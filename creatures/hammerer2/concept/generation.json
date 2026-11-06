@@ -6,7 +6,10 @@
   "prompts": [
     "creatures/hammerer2/concept/front-prompt.md",
     "creatures/hammerer2/concept/front-prompt-v2.md",
-    "creatures/hammerer2/concept/front-prompt-v3.md"
+    "creatures/hammerer2/concept/front-prompt-v3.md",
+    "creatures/hammerer2/concept/views/left-prompt.md",
+    "creatures/hammerer2/concept/views/back-prompt.md",
+    "creatures/hammerer2/concept/views/right-prompt.md"
   ],
   "note": "Задача 168: новый молотобоец. Чат держать до конца задачи.",
   "outputs": {
@@ -16,7 +19,13 @@
       "creatures/hammerer2/concept/front-v2.png",
       "creatures/hammerer2/concept/front-v3.png"
     ],
-    "front_source": "дал пользователь в чате (2026-11-06), рогатый шлем"
+    "front_source": "дал пользователь в чате (2026-11-06), рогатый шлем",
+    "views": {
+      "front": "creatures/hammerer2/concept/views/front.png",
+      "left": "creatures/hammerer2/concept/views/left.png",
+      "back": "creatures/hammerer2/concept/views/back.png",
+      "right": "creatures/hammerer2/concept/views/right.png"
+    }
   },
   "generated_at": "2026-11-06 15:43"
 }
