@@ -4,7 +4,7 @@ extends Creature
 const MOCK := preload("res://scenes/rider_mock.gd")
 const PAIR := preload("res://scenes/rider_pair.gd")
 ## Клип коня → клип рыцаря.
-const RIDER_CLIPS := {"idle": "ride_still", "walk": "ride_still", "run": "ride_still", "attack": "ride_still",
+const RIDER_CLIPS := {"idle": "ride_still", "walk": "ride_still", "run": "ride_still", "attack": "ride_still", "attack_charge": "ride_still",
 	"hurt_left": "ride_hurt", "idle_head_low": "ride_dodge", "fidget_graze": "ride_fidget_look", "fall": "ride_still"}
 ## Удар с места, как в витрине пары: полшага назад шагом, рывок галопом, стойка.
 const STEP_BACK := 0.6  # × scale_k
@@ -12,6 +12,10 @@ const STEP_BACK_TIME := 0.6
 const LUNGE_TIME := 0.35
 const SETTLE_TIME := 0.5
 const BAKE_FPS := 30.0
+## 173: удар с разбега — сразу после пути, без шага назад: галоп в цель, попадание на ходу, стойка.
+const CHARGE_RUN := 0.3
+const CHARGE_IMPACT := 0.12  # секунд от начала: копьё входит, пока конь ещё скачет
+const CHARGE_PUSH := 0.35  # × scale_k: конь по инерции проходит чуть вперёд и встаёт на место
 ## Всадник в бою меньше, чем в витрине пары: конь 2,46 м в длину, вплотную между носами около 0,5 м.
 ## Рост коня в записи (rider_config) уже умножен; здесь — рыцарь и копьё.
 const HORSE_BASE := 1.9  # рост коня в витрине пары: при нём рыцарь RIDER_SIZE и копьё LANCE_LENGTH
@@ -30,6 +34,8 @@ var _horse_len := 0.0
 var _clip_time := 0.0
 var _stretched := false
 var _attack_time := -1.0
+var _charge := false  # идёт удар с разбега
+var _arrived_frame := -10
 ## Два гекса в ряд, как двухклеточные в Героях: точка существа — левый гекс, тело — посередине пары.
 ## Сдвиг тела в мире задаёт арена (полшага гекса по +X); конь смотрит только влево или вправо.
 var body_shift := Vector3.ZERO
@@ -41,7 +47,9 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	scale_k = size / HORSE_BASE
 	var library := anim.get_animation_library(&"")
 	library.add_animation("fall", anim.get_animation("death_fall_on_side").duplicate())
-	library.add_animation("attack", _bake_attack())
+	library.add_animation("attack", _bake_attack([["walk", STEP_BACK_TIME, -1.0], ["run", LUNGE_TIME, 1.0], ["idle", SETTLE_TIME, 1.0]]))
+	library.add_animation("attack_charge", _bake_attack([["run", CHARGE_RUN, 1.0], ["idle", SETTLE_TIME, 1.0]]))
+	arrived.connect(func(): _arrived_frame = Engine.get_process_frames())
 	attack_anim = "attack"
 	attack_from = 0.0
 	impact = (STEP_BACK_TIME + LUNGE_TIME) / anim.get_animation("attack").length
@@ -100,7 +108,7 @@ func _process(delta: float) -> void:
 	var lunge := 0.0
 	if _attack_time >= 0.0:
 		_attack_time += delta
-		lunge = _lunge_shift(_attack_time)
+		lunge = _charge_shift(_attack_time) if _charge else _lunge_shift(_attack_time)
 	var local := global_basis.orthonormalized().inverse() * body_shift
 	var pinned := dead or (defend_anim != "" and defend_pin and anim.current_animation == defend_anim)
 	if not pinned:
@@ -137,8 +145,9 @@ func _on_horse_clip(clip: StringName) -> void:
 	rider.anim.play(mine, PAIR.BACK_BLEND if name == "idle" else 0.2)
 	_hang.set_process(name == "fidget_graze")
 	keeper.active = name != "fall"
-	if name == "attack":
+	if name == "attack" or name == "attack_charge":
 		_attack_time = 0.0
+		_charge = name == "attack_charge"
 	elif _attack_time >= 0.0:
 		_attack_time = -1.0
 
@@ -153,12 +162,18 @@ func _lunge_shift(t: float) -> float:
 	return 0.0
 
 
-## Клип удара из клипов коня: шаг назад (шаг задом наперёд), рывок (галоп), стойка.
-func _bake_attack() -> Animation:
-	var parts := [["walk", STEP_BACK_TIME, -1.0], ["run", LUNGE_TIME, 1.0], ["idle", SETTLE_TIME, 1.0]]
+## Удар с разбега: конь по инерции чуть проходит вперёд и возвращается на свой гекс.
+func _charge_shift(t: float) -> float:
+	return CHARGE_PUSH * scale_k * sin(PI * clampf(t / (CHARGE_RUN + SETTLE_TIME), 0.0, 1.0))
+
+
+## Клип удара из клипов коня: части [клип, секунд, направление]. С места: шаг назад (шаг задом
+## наперёд), рывок (галоп), стойка. С разбега: галоп, стойка.
+func _bake_attack(parts: Array) -> Animation:
 	var out := Animation.new()
 	var idle_clip := anim.get_animation("idle")
-	out.length = STEP_BACK_TIME + LUNGE_TIME + SETTLE_TIME
+	for part: Array in parts:
+		out.length += part[1]
 	for t in idle_clip.get_track_count():
 		var kind := idle_clip.track_get_type(t)
 		if kind != Animation.TYPE_ROTATION_3D and kind != Animation.TYPE_POSITION_3D:
@@ -232,6 +247,10 @@ func strike(target: Creature, _distance: float, _overlap: float, collateral: Arr
 	var contact := target.melee_point(center())
 	face(contact)
 	target.face_foe(center())
+	# 173: только что пришёл — бьёт с разбега; стоял — полшага назад и рывок.
+	var charging := Engine.get_process_frames() - _arrived_frame <= 2
+	attack_anim = "attack_charge" if charging else "attack"
+	impact = CHARGE_IMPACT / anim.get_animation(attack_anim).length if charging else (STEP_BACK_TIME + LUNGE_TIME) / anim.get_animation(attack_anim).length
 	play_once(attack_anim)
 	target.take_hit(hit_delay())
 	for victim: Creature in collateral:

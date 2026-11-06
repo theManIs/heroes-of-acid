@@ -1437,3 +1437,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/scenes/battle_test.gd`: убрана текстовая `melee_mode_button`; `mode_button` («Альтернативный огонь», иконка FIRE_MODE, вид постоянный) видна в каждый ход игрока; `_alternative_text(unit)` — режим удара (молотобоец) или огня (стрелок); пусто — кнопка неактивна (0,4). `_switch_mode` прежний.
 - Задача 173 (удар всадника с разбега) заведена, не начата.
 - Проверка: headless battle_test без ошибок.
+
+## 2026-11-07 01:05 — задача 173: удар всадника с разбега
+
+- `game/scenes/rider_unit.gd`: `_bake_attack(parts)` — части параметром; новый клип `attack_charge` (run 0,3 с + idle 0,5 с); `CHARGE_IMPACT 0.12`, `CHARGE_PUSH 0.35 × scale_k`, `_charge_shift` (синус: вперёд и обратно); `_arrived_frame` по сигналу `arrived`; `strike` — пришёл в этом же кадре (≤2) → `attack_charge`, иначе прежний `attack`; `impact` по выбранному клипу; RIDER_CLIPS + attack_charge.
+- Проверка: headless скрипт — после пути `attack_charge`, hit_delay 0,12; стоя `attack`, 0,95; battle_test/creature_test без ошибок.
