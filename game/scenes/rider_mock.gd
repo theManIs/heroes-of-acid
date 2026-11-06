@@ -307,6 +307,15 @@ static func grip_hand(rider: Creature, clip: String, forward: Vector3, curl: flo
 	var hand: int = bone.call("Hand")
 	var knuckles: Vector3 = (at.call("HandIndex1") - at.call("HandPinky1")).normalized()
 	_turn_bone(rider, a, hand, Quaternion(knuckles, forward.normalized()))
+	curl_fingers(rider, clip, curl, side)
+
+
+## Кулак без поворота кисти: только пальцы согнуты на curl градусов в каждом суставе вокруг линии костяшек.
+static func curl_fingers(rider: Creature, clip: String, curl: float, side := "Right") -> void:
+	var sk := rider.skeleton
+	var a := rider.anim.get_animation(clip)
+	var bone := func(n: String) -> int: return sk.find_bone("mixamorig_%s%s" % [side, n])
+	var at := func(n: String) -> Vector3: return _clip_global(rider, a, bone.call(n)).origin
 	var axis: Vector3 = (at.call("HandIndex1") - at.call("HandPinky1")).normalized()
 	# Знак сгиба: кончик среднего пальца должен идти к большому, то есть в ладонь.
 	var tip: Vector3 = at.call("HandMiddle4") - at.call("HandMiddle1")
@@ -323,3 +332,11 @@ static func fist(rider: Creature, side := "Right") -> Vector3:
 	for i in [1, 2, 3, 4]:
 		sum += rider.bone_world(rider.skeleton.find_bone("mixamorig_%sHandMiddle%d" % [side, i]))
 	return sum / 4.0
+
+
+## Канал кулака в мире: от мизинца к указательному — так через кулак идёт палка, остриём вперёд.
+static func fist_axis(rider: Creature, side := "Right") -> Vector3:
+	var sk := rider.skeleton
+	var index: Vector3 = rider.bone_world(sk.find_bone("mixamorig_%sHandIndex1" % side))
+	var pinky: Vector3 = rider.bone_world(sk.find_bone("mixamorig_%sHandPinky1" % side))
+	return (index - pinky).normalized()

@@ -1,5 +1,5 @@
 extends "res://scenes/showcase.gd"
-## Витрина кисти всадника: только рыцарь, без коня и копья. Поза стойки с хватом, как в витрине пары.
+## Витрина кисти всадника: только рыцарь, без коня и копья. Кисть как в клипе, пальцы в кулак, палка по каналу кулака.
 ## Запуск: godot --path game res://scenes/rider_hand.tscn
 
 const MOCK := preload("res://scenes/rider_mock.gd")
@@ -11,6 +11,11 @@ const VIEWS := [
 	["Кисть сверху", Vector3(0.05, 1.0, 0.15), 0.35],
 	["Кисть спереди", Vector3(1.0, 0.15, 0.1), 0.35],
 ]
+
+
+const STICK_RADIUS := 0.02  # палка в кулаке вместо копья: видно, как её держит кисть
+const STICK_LENGTH := 1.0
+var _sticks: Array = []
 
 
 func _ready() -> void:
@@ -29,11 +34,20 @@ func _make_hand_cell(grid: GridContainer, title: String, from: Vector3, width: f
 	var rider := MOCK.make_rider(cell.view)
 	MOCK.freeze_bones(rider, "ride_still", MOCK.RIGHT_ARM)
 	MOCK.arm_out(rider, "ride_still", PAIR.ARM_OUT, PAIR.ARM_UP)
-	var to_skeleton := (rider.global_basis.orthonormalized().inverse() * rider.skeleton.global_basis.orthonormalized()).inverse()
-	var forward := Vector3(1.0, -MOCK.LANCE_DOWN, 0.0).rotated(Vector3.UP, deg_to_rad(PAIR.LANCE_YAW))
-	MOCK.grip_hand(rider, "ride_still", to_skeleton * forward, PAIR.GRIP_CURL)
+	MOCK.curl_fingers(rider, "ride_still", PAIR.GRIP_CURL)  # кисть как в клипе, согнуты только пальцы
 	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
 	rider.anim.play("ride_still", 0.0)
+	var stick := MeshInstance3D.new()
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = STICK_RADIUS
+	mesh.bottom_radius = STICK_RADIUS
+	mesh.height = STICK_LENGTH
+	var paint := StandardMaterial3D.new()
+	paint.albedo_color = Color(0.55, 0.35, 0.18)
+	mesh.material = paint
+	stick.mesh = mesh
+	cell.view.add_child(stick)
+	_sticks.append([stick, rider])
 	if width > 0.0:
 		_aim.call_deferred(cell.view, rider, from, width)
 
@@ -47,3 +61,13 @@ func _aim(view: SubViewport, rider: Creature, from: Vector3, width: float) -> vo
 	camera.near = 0.02
 	var distance := width * 0.5 / tan(deg_to_rad(camera.fov * 0.5))
 	camera.look_at_from_position(focus + from.normalized() * distance, focus)
+
+
+## Палка идёт за кулаком: центр — в кулаке, ось — канал кулака.
+func _process(delta: float) -> void:
+	super._process(delta)
+	for pair: Array in _sticks:
+		var stick: MeshInstance3D = pair[0]
+		var axis := MOCK.fist_axis(pair[1])
+		var side := axis.cross(Vector3.UP).normalized()
+		stick.global_transform = Transform3D(Basis(side, axis, side.cross(axis)), MOCK.fist(pair[1]))
