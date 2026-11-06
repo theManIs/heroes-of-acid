@@ -64,7 +64,7 @@ func _make_rider_cell(grid: GridContainer, clip: Array, with_lance := false) -> 
 	view.add_child(mount)
 	MOCK.build_horse(mount)
 	var rider := MOCK.make_rider(mount)
-	var lance: MeshInstance3D = MOCK.add_lance(mount) if with_lance else null
+	var lance: Node3D = MOCK.add_lance(mount) if with_lance else null
 	if with_lance and LANCE_DAMP.has(clip[1]):
 		MOCK.damp_clip(rider, clip[1], LANCE_DAMP[clip[1]])
 	_make_label(cell.frame).text = clip[0] + (" с копьём" if with_lance else "")
@@ -72,7 +72,7 @@ func _make_rider_cell(grid: GridContainer, clip: Array, with_lance := false) -> 
 	_repeat(rider, clip[1], lance, mount, hand)
 
 
-func _repeat(rider: Creature, clip: String, lance: MeshInstance3D = null, mount: Node3D = null, hand := "mixamorig_RightHand") -> void:
+func _repeat(rider: Creature, clip: String, lance: Node3D = null, mount: Node3D = null, hand := "mixamorig_RightHand") -> void:
 	var length := rider.anim.get_animation(clip).length
 	while true:
 		rider.anim.play(clip, 0.0)
@@ -184,7 +184,7 @@ func _make_charge_cell(grid: GridContainer, label := "Атака: таран к�
 			x = CHARGE_HIT  # удар и короткая остановка
 			if not placed:
 				# Столб ровно там, куда пришло остриё.
-				var tip: Vector3 = lance.global_transform * Vector3(0, MOCK.LANCE_LENGTH * 0.5, 0)
+				var tip: Vector3 = MOCK.tip(lance)
 				post.global_position = Vector3(tip.x + 0.15, 1.1, tip.z)
 				placed = true
 			post.rotation.z = -deg_to_rad(8.0 * gallop) * (1.0 - (time - run) / 0.5)
@@ -318,7 +318,10 @@ func _make_plant_cell(grid: GridContainer) -> void:
 		var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_RightHand"))
 		var side: Vector3 = mount.global_basis * Vector3(0, 0, 1)
 		var butt := Vector3(hand.x, -PLANT_DEPTH, hand.z) + side * PLANT_SIDE
-		var planted := Transform3D(Basis(Vector3.RIGHT, Vector3.UP, Vector3.BACK), butt + Vector3.UP * MOCK.LANCE_LENGTH * 0.5)
+		var planted := lance.global_transform
+		MOCK.set_lance(lance, Vector3.UP, butt + Vector3.UP * MOCK.LANCE_BACK)
+		planted = lance.global_transform
+		lance.global_transform = start
 		await _move_lance(lance, start, planted, PLANT_TIME, true)
 		rider.anim.play("ride_fidget_yell", 0.25)
 		await get_tree().create_timer(yell).timeout
@@ -332,7 +335,7 @@ func _make_plant_cell(grid: GridContainer) -> void:
 		await _hold_couched(lance, rider, mount, HOLD)
 
 
-func _hold_couched(lance: MeshInstance3D, rider: Creature, mount: Node3D, seconds: float) -> void:
+func _hold_couched(lance: Node3D, rider: Creature, mount: Node3D, seconds: float) -> void:
 	var left := seconds
 	while left > 0.0:
 		MOCK.place_lance(lance, rider, mount)
@@ -341,7 +344,7 @@ func _hold_couched(lance: MeshInstance3D, rider: Creature, mount: Node3D, second
 
 
 ## Плавный перенос копья; в конце втыкания — короткий толчок вниз, будто вошло в землю.
-func _move_lance(lance: MeshInstance3D, from: Transform3D, to: Transform3D, seconds: float, stab: bool) -> void:
+func _move_lance(lance: Node3D, from: Transform3D, to: Transform3D, seconds: float, stab: bool) -> void:
 	var time := 0.0
 	while time < seconds:
 		await get_tree().process_frame

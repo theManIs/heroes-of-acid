@@ -1,0 +1,8 @@
+{
+  "endpoint": "fal-ai/gpt-image-1.5",
+  "prompt": "Technical reference for a 3D game weapon model: a single medieval cavalry lance shown alone, standing perfectly vertical, centered, the whole weapon fully in frame from the butt at the bottom to the tip at the top, nothing cropped. Long smooth wooden shaft painted dark blue with a thin steel spiral band, a polished steel conical vamplate hand guard shaped like a funnel near the lower third, a short wrapped leather grip just below the guard, a slim leaf-shaped polished steel spearhead on top, a small steel butt cap at the bottom. Matte painted stylized realistic look matching steel and blue knight armor, readable shape, few small details. Plain neutral light gray background, soft even studio light, no hands, no rider, no text, no shadow on the ground.",
+  "image_size": "1536x1024",
+  "quality": "high",
+  "num_images": 1,
+  "output_format": "png"
+}

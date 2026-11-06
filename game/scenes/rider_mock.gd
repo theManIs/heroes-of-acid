@@ -98,38 +98,46 @@ static func build_horse(parent: Node) -> Array[Node3D]:
 	return legs
 
 
-## Палка вместо копья: лежит под правой рукой остриём вперёд, вдоль коня.
-## Держится за кисть, но направление задаёт конь, а не клип: копьё не крутится в руке.
+## Копьё всадника — модель Tripo (задача 162), `assets/creatures/rider/lance.glb`, длина 1 по оси Y:
+## остриё в y = 0, торец в y = 1, рукоять за воронкой около y = 0,62. Направление задаёт всадник, не клип.
+const LANCE_MODEL := "res://assets/creatures/rider/lance.glb"
 const LANCE_LENGTH := 3.2
-const LANCE_BACK := 0.9  # сколько палки остаётся за кистью
+const LANCE_GRIP := 0.62  # доля длины от острия до руки
+const LANCE_BACK := LANCE_LENGTH * (1.0 - LANCE_GRIP)  # сколько копья за кистью
+const LANCE_THICK := 0.55  # толщина модели относительно длины, иначе древко 20 см
 const LANCE_DOWN := 0.16  # наклон остриём вниз: цель ниже седла
 
 
-static func add_lance(parent: Node) -> MeshInstance3D:
-	var lance := MeshInstance3D.new()
-	var cyl := CylinderMesh.new()
-	cyl.top_radius = 0.025
-	cyl.bottom_radius = 0.035
-	cyl.height = LANCE_LENGTH
-	lance.mesh = cyl
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.62, 0.5, 0.33)
-	lance.material_override = mat
+static func add_lance(parent: Node) -> Node3D:
+	var lance: Node3D = load(LANCE_MODEL).instantiate()
 	parent.add_child(lance)
 	lance.top_level = true
 	return lance
 
 
+## Остриё копья в мире.
+static func tip(lance: Node3D) -> Vector3:
+	return lance.global_transform.origin
+
+
+## Поставить копьё: forward — куда смотрит остриё, hand — точка хвата, slide — сдвиг вдоль древка.
+static func set_lance(lance: Node3D, forward: Vector3, hand: Vector3, slide := 0.0) -> void:
+	var side := forward.cross(Vector3.UP).normalized()
+	if side.length_squared() < 0.01:
+		side = Vector3.BACK
+	var along := -forward  # ось Y модели идёт от острия к торцу
+	var basis := Basis(side * LANCE_LENGTH * LANCE_THICK, along * LANCE_LENGTH, side.cross(along).normalized() * LANCE_LENGTH * LANCE_THICK)
+	lance.global_transform = Transform3D(basis, hand + forward * (LANCE_LENGTH * LANCE_GRIP + slide))
+
+
 ## pitch и yaw — раскачивание на весу, градусы: длинная палка качается при движении.
 ## slide — сдвиг копья вдоль древка (м): назад для замаха, вперёд для укола.
-static func place_lance(lance: MeshInstance3D, rider: Creature, mount: Node3D, pitch := 0.0, yaw := 0.0, slide := 0.0) -> void:
+static func place_lance(lance: Node3D, rider: Creature, mount: Node3D, pitch := 0.0, yaw := 0.0, slide := 0.0) -> void:
 	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_RightHand"))
 	var local := Vector3(1.0, -LANCE_DOWN, 0.0).normalized()
 	local = local.rotated(Vector3.BACK, deg_to_rad(pitch)).rotated(Vector3.UP, deg_to_rad(yaw))
-	var forward: Vector3 = (mount.global_basis * local).normalized()
-	var side := forward.cross(Vector3.UP).normalized()
-	# Цилиндр Godot вытянут по Y: ось копья — Y, базис правый (z = x × y).
-	lance.global_transform = Transform3D(Basis(side, forward, side.cross(forward)), hand + forward * (LANCE_LENGTH * 0.5 - LANCE_BACK + slide))
+	var forward: Vector3 = (mount.global_basis.orthonormalized() * local).normalized()
+	set_lance(lance, forward, hand, slide)
 
 
 ## Копьё в кисти для ударов сидя: идёт за кистью, как молот в хвате.
@@ -150,7 +158,7 @@ static func calibrate_hand_lance(rider: Creature, mount: Node3D, hand_bone := "m
 const LANCE_OUT := 0.12
 
 
-static func place_hand_lance(lance: MeshInstance3D, rider: Creature, local_dir: Vector3, hand_bone := "mixamorig_RightHand", mount: Node3D = null) -> void:
+static func place_hand_lance(lance: Node3D, rider: Creature, local_dir: Vector3, hand_bone := "mixamorig_RightHand", mount: Node3D = null) -> void:
 	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone(hand_bone))
 	var forward := (hand_frame(rider, hand_bone) * local_dir).normalized()
 	if mount != null:
@@ -159,10 +167,7 @@ static func place_hand_lance(lance: MeshInstance3D, rider: Creature, local_dir: 
 		if d.z * out < LANCE_OUT:
 			d.z = LANCE_OUT * out
 			forward = (mount.global_basis * d).normalized()
-	var side := forward.cross(Vector3.UP).normalized()
-	if side.length_squared() < 0.01:
-		side = Vector3.BACK
-	lance.global_transform = Transform3D(Basis(side, forward, side.cross(forward)), hand + forward * (LANCE_LENGTH * 0.5 - LANCE_BACK))
+	set_lance(lance, forward, hand)
 
 
 ## Смягчить размах клипа один раз для всех кадров: повороты корпуса и рук

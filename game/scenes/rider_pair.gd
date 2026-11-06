@@ -222,8 +222,8 @@ func _make_post(view: SubViewport) -> MeshInstance3D:
 	return post
 
 
-func _tip(lance: MeshInstance3D) -> Vector3:
-	return lance.global_transform * Vector3(0, MOCK.LANCE_LENGTH * 0.5, 0)
+func _tip(lance: Node3D) -> Vector3:
+	return MOCK.tip(lance)
 
 
 func _make_strike_cell(grid: GridContainer, charge: bool) -> void:
