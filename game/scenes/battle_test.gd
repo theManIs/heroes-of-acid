@@ -993,9 +993,17 @@ func _free_step(hex: Vector2i) -> bool:
 
 ## Куда встать, чтобы занять клетку; у пары клетка может быть и под собакой.
 func _move_anchor(hex: Vector2i) -> Vector2i:
-	if _is_pair(active):
-		return PAIR_PATHS.anchor_for(hex, reachable, cells[active], NO_HEX)
-	return hex if reachable.has(hex) and hex != cells[active] else NO_HEX
+	return _anchor_of(active, hex, reachable)
+
+
+## Клетка под курсором → куда встаёт якорь фигуры: у пары клетка может быть под собакой,
+## у всадника — голова коня по ходу движения (174).
+func _anchor_of(c: Creature, hex: Vector2i, moves: Dictionary) -> Vector2i:
+	if _is_pair(c):
+		return PAIR_PATHS.anchor_for(hex, moves, cells[c], NO_HEX)
+	if c is RIDER_UNIT:
+		return PAIR_PATHS.head_anchor(hex, moves, cells[c], NO_HEX, RIDER_SHAPE)
+	return hex if moves.has(hex) and hex != cells[c] else NO_HEX
 
 
 ## Своё существо под курсором: на его гексе или в экранной рамке по костям.
@@ -1097,10 +1105,10 @@ func _paint() -> void:
 		shown = _range_of(_inspected)
 		tint = ENEMY_TURN if sides[1].has(_inspected) else PLAYER_TURN
 		center = cells[_inspected]
-	var area: Dictionary = PAIR_PATHS.cover(shown, center) if preview and _is_pair(preview) else shown
+	var area: Dictionary = PAIR_PATHS.cover(shown, center, _shape(preview)) if preview and (_is_pair(preview) or preview is RIDER_UNIT) else shown
 	var hover_anchor := NO_HEX
 	if preview:
-		hover_anchor = PAIR_PATHS.anchor_for(_hovered, shown, center, NO_HEX) if _is_pair(preview) else (_hovered if shown.has(_hovered) else NO_HEX)
+		hover_anchor = _anchor_of(preview, _hovered, shown)
 	for h: Vector2i in tiles:
 		var color := Color(tint, 0.0)
 		if area.has(h) and h != center:

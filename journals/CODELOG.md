@@ -1442,3 +1442,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/rider_unit.gd`: `_bake_attack(parts)` — части параметром; новый клип `attack_charge` (run 0,3 с + idle 0,5 с); `CHARGE_IMPACT 0.12`, `CHARGE_PUSH 0.35 × scale_k`, `_charge_shift` (синус: вперёд и обратно); `_arrived_frame` по сигналу `arrived`; `strike` — пришёл в этом же кадре (≤2) → `attack_charge`, иначе прежний `attack`; `impact` по выбранному клипу; RIDER_CLIPS + attack_charge.
 - Проверка: headless скрипт — после пути `attack_charge`, hit_delay 0,12; стоя `attack`, 0,95; battle_test/creature_test без ошибок.
+
+## 2026-11-07 01:25 — задача 174: дальность всадника по всей фигуре
+
+- `game/scenes/houndmaster_paths.gd`: `cover(moves, from, shape = PAIR)`; новый `head_anchor(cell, moves, from, none, shape)` — клетка = голова по ходу движения (вправо — правая клетка фигуры, влево — левая), иначе другая клетка фигуры.
+- `game/scenes/battle_test.gd`: `_anchor_of(c, hex, moves)` (пара / всадник / одиночный) для клика и наведения; подсветка всадника — `cover` с `RIDER_SHAPE`.
+- `game/scenes/creature_test.gd`: `RIDER_SHAPE`, `_move_anchor` и подсветка для всадника так же; `_footprint` через форму.
+- Проверка: скрипт — при ходе 5 голова вправо до x=6, влево до −5; клик (6,0)→якорь (5,0), (−5,0)→(−5,0); обе арены headless без ошибок.

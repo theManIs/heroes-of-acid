@@ -107,6 +107,7 @@ enum Turn { PLAYER, ENEMY, BUSY, OVER }
 const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
 # Этот отряд пока подключён только в тест существа; большой бой использует CREATURES.
 const PAIR_PATHS := preload("res://scenes/houndmaster_paths.gd")
+const RIDER_SHAPE: Array[Vector2i] = [Vector2i.ZERO, Vector2i(1, 0)]
 const MELEE_AREA := preload("res://scenes/melee_area.gd")
 const RIDER_UNIT := preload("res://scenes/rider_unit.gd")
 var creatures := CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair(),
@@ -347,7 +348,7 @@ func _footprint(anchor: Vector2i) -> Array[Vector2i]:
 	if tested == "houndmaster-pair":
 		return [anchor, anchor + Vector2i(-1, 1), anchor + Vector2i(0, 1)]
 	if tested == "rider":
-		return [anchor, anchor + Vector2i(1, 0)]  # всадник: два гекса в ряд, якорь — левый
+		return PAIR_PATHS.footprint(anchor, RIDER_SHAPE)  # всадник: два гекса в ряд, якорь — левый
 	return [anchor]
 
 
@@ -848,6 +849,8 @@ func _on_enemy(screen: Vector2) -> bool:
 func _move_anchor(hex: Vector2i) -> Vector2i:
 	if tested == "houndmaster-pair":
 		return PAIR_PATHS.anchor_for(hex, reachable, _hex_of(player), NO_HEX)
+	if tested == "rider":  # 174: голова коня по ходу движения
+		return PAIR_PATHS.head_anchor(hex, reachable, _hex_of(player), NO_HEX, RIDER_SHAPE)
 	return hex if reachable.has(hex) and hex != _hex_of(player) else NO_HEX
 
 
@@ -912,7 +915,7 @@ func _paint() -> void:
 	var zone: Array[Vector2i] = []
 	if turn == Turn.PLAYER and _targeted:
 		zone = _impact_cells(player, enemy, _attack_from)
-	var area: Dictionary = PAIR_PATHS.cover(reachable, _hex_of(player)) if tested == "houndmaster-pair" else reachable
+	var area: Dictionary = PAIR_PATHS.cover(reachable, _hex_of(player)) if tested == "houndmaster-pair" else PAIR_PATHS.cover(reachable, _hex_of(player), RIDER_SHAPE) if tested == "rider" else reachable
 	var anchor := _move_anchor(_hovered)
 	for h: Vector2i in tiles:
 		var mat: StandardMaterial3D = tiles[h].material_override

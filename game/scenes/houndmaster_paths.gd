@@ -53,11 +53,11 @@ static func attacks(paths_to: Dictionary, target: Array[Vector2i]) -> Dictionary
 
 
 ## Все клетки, которые фигура может накрыть за ход, а не только клетки псаря.
-static func cover(moves: Dictionary, from: Vector2i) -> Dictionary:
+static func cover(moves: Dictionary, from: Vector2i, shape: Array[Vector2i] = PAIR) -> Dictionary:
 	var out := {}
 	for anchor: Vector2i in moves:
 		if anchor != from:
-			for cell in footprint(anchor, PAIR):
+			for cell in footprint(anchor, shape):
 				out[cell] = true
 	return out
 
@@ -73,3 +73,16 @@ static func anchor_for(cell: Vector2i, moves: Dictionary, from: Vector2i, none: 
 		if moves.has(anchor) and anchor != from and (best == none or moves[anchor].size() < moves[best].size()):
 			best = anchor
 	return best
+
+
+## 174: фигура в ряд (всадник): клетка — место головы по ходу движения. Вправо — правая клетка
+## фигуры, влево — левая; не дойти так — другая клетка фигуры.
+static func head_anchor(cell: Vector2i, moves: Dictionary, from: Vector2i, none: Vector2i, shape: Array[Vector2i]) -> Vector2i:
+	var rightward := cell.x + cell.y * 0.5 > from.x + from.y * 0.5 + (shape.size() - 1) * 0.5
+	var offsets := shape.duplicate()
+	offsets.sort_custom(func(a: Vector2i, b: Vector2i): return a.x > b.x if rightward else a.x < b.x)
+	for offset: Vector2i in offsets:
+		var anchor := cell - offset
+		if moves.has(anchor) and anchor != from:
+			return anchor
+	return none
