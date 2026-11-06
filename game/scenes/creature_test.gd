@@ -171,6 +171,8 @@ func _make() -> Creature:
 	var c: Creature = HOUNDMASTER_UNIT.new() if tested == "houndmaster-pair" else RIDER_UNIT.new() if tested == "rider" else Creature.new()
 	add_child(c)
 	var cfg: Dictionary = creatures[tested]
+	if c is RIDER_UNIT:
+		c.body_shift = Vector3(_hex_spacing() * 0.5, 0.0, 0.0)
 	var variant: Dictionary = _current_variant()
 	c.setup(load(variant.get("scene", cfg.scene)), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
 	c.set_textures(variant.get("textures", {}))
@@ -343,6 +345,8 @@ func _hex_distance(a: Vector2i, b: Vector2i) -> int:
 func _footprint(anchor: Vector2i) -> Array[Vector2i]:
 	if tested == "houndmaster-pair":
 		return [anchor, anchor + Vector2i(-1, 1), anchor + Vector2i(0, 1)]
+	if tested == "rider":
+		return [anchor, anchor + Vector2i(1, 0)]  # всадник: два гекса в ряд, якорь — левый
 	return [anchor]
 
 

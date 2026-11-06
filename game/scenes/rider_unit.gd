@@ -24,6 +24,9 @@ var _horse_len := 0.0
 var _clip_time := 0.0
 var _stretched := false
 var _attack_time := -1.0
+## Два гекса в ряд, как двухклеточные в Героях: точка существа — левый гекс, тело — посередине пары.
+## Сдвиг тела в мире задаёт арена (полшага гекса по +X); конь смотрит только влево или вправо.
+var body_shift := Vector3.ZERO
 var _fit_base := Vector3.ZERO  # положение модели, при котором низ коня по центру в точке существа
 
 
@@ -85,9 +88,17 @@ func _saddle_frame() -> Transform3D:
 
 func _process(delta: float) -> void:
 	super._process(delta)
+	var lunge := 0.0
 	if _attack_time >= 0.0:
 		_attack_time += delta
-		model.position.x = _model_base.x + _lunge_shift(_attack_time)
+		lunge = _lunge_shift(_attack_time)
+	var local := global_basis.orthonormalized().inverse() * body_shift
+	var pinned := dead or (defend_anim != "" and defend_pin and anim.current_animation == defend_anim)
+	if not pinned:
+		model.position.x = _model_base.x + lunge - jolt
+		model.position.z = _model_base.z
+	model.position.x += local.x
+	model.position.z += local.z
 	_clip_time += delta
 	if not _stretched and _rider_len < _horse_len and _clip_time >= _rider_len * 0.95:
 		rider.anim.speed_scale = (_rider_len * 0.05) / maxf(_horse_len - _rider_len * 0.95, 0.01)
@@ -121,7 +132,6 @@ func _on_horse_clip(clip: StringName) -> void:
 		_attack_time = 0.0
 	elif _attack_time >= 0.0:
 		_attack_time = -1.0
-		model.position.x = _model_base.x
 
 
 ## Сдвиг коня вперёд-назад в ударе: полшага назад, рывок в цель, стоит.
@@ -165,6 +175,25 @@ func _bake_attack() -> Animation:
 				out.track_insert_key(nt, start + local, value)
 			start += part[1]
 	return out
+
+
+## Середина двух гексов в мире.
+func center() -> Vector3:
+	return position + body_shift
+
+
+## Конь стоит по середине своей рамки, а не по кости таза: таз у него сзади, тело уезжало вперёд на соседа.
+func _center_on_hip() -> void:
+	pass
+
+
+## Только влево или вправо; цель строго над или под — не поворачиваться.
+## На ходу — по направлению движения, иначе — от середины двух гексов.
+func face(point: Vector3) -> void:
+	var to := point - (position if walking or body_shift == Vector3.ZERO else center())
+	if absf(to.x) < 0.05:
+		return
+	super.face(position + Vector3(signf(to.x), 0.0, 0.0))
 
 
 func die() -> void:

@@ -1316,3 +1316,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `rider_pair.gd`: подготовка руки вынесена в `prepare_lancer`, хранитель — в `add_keeper`; «idle» рыцаря заменён стойкой с копьём.
 - `creature_test.gd`: «rider» в списке существ, `RIDER_UNIT`.
 - Проверка: `--shot` (арена, удар), scratchpad riderct.gd (шаг, реакция, защита, отклик, смерть), riderdbg.gd (копьё −8° у обоих).
+
+### 2026-11-06 10:31
+
+- `rider_unit.gd`: `body_shift`, `center()`, `face()` только ±X (на ходу — по движению), `_center_on_hip` отключён, сдвиг тела и рывка в `_process` с учётом `jolt`.
+- `creature_test.gd`: `_footprint` всадника — якорь и сосед справа; `body_shift` = полшага гекса.
+- Проверка: scratchpad rider2.gd (подход, удар, ответ), hlen.gd (длина коня 2,90 м).
