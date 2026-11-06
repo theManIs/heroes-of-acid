@@ -33,5 +33,6 @@ func _ready() -> void:
 	for death: Array in SEARCH_DEATHS:
 		_make_death_cell(grid, death)
 	get_viewport().size_changed.connect(_fit.bind(grid))
+	_zoom_grid = grid
 	_fit(grid)
 	_finish()

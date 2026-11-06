@@ -21,6 +21,9 @@ var _shot := ""
 var columns := 2
 var cell_size := CELL
 var _views: Array = []  # пары квадрат и его мир: мир за кадром не рисуем
+## Масштаб квадратов: щипок на трекпаде или Ctrl+колесо. Подкласс с _fit(grid) кладёт сетку в _zoom_grid.
+var cell_zoom := 1.0
+var _zoom_grid: GridContainer
 
 
 func _ready() -> void:
@@ -211,3 +214,20 @@ func _cycle(unit: Creature, cfg: Dictionary, label: Label) -> void:
 				unit.anim.play("idle", 0.3)
 				await get_tree().create_timer(PAUSE).timeout
 		await get_tree().create_timer(PAUSE).timeout
+
+
+func _input(event: InputEvent) -> void:
+	var factor := 1.0
+	if event is InputEventMagnifyGesture:
+		factor = event.factor
+	elif event is InputEventMouseButton and event.pressed and (event.ctrl_pressed or event.meta_pressed):
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			factor = 1.1
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			factor = 1.0 / 1.1
+	if factor == 1.0 or _zoom_grid == null or not has_method("_fit"):
+		return
+	cell_zoom = clampf(cell_zoom * factor, 0.5, 4.0)
+	call("_fit", _zoom_grid)
+	get_viewport().set_input_as_handled()
+

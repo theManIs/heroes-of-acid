@@ -1259,3 +1259,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 `blender -b --python pipelines/creature-tripo-mixamo/prepare_weapon.py -- creatures/rider/weapon/lance.glb game/assets/creatures/rider/lance.glb`;
 `.venv/bin/python pipelines/creature-tripo-mixamo/stage2.py rider`; `pack_model.py creatures/rider/tripo/rig.glb game/assets/creatures/rider/body.glb`; `build_clips.py rider`.
 Код: `rider_mock.gd` — `set_lance`, `tip`, модель копья, `RIDER` на `body.glb`; `rider_pair.gd` — `metal_lighting` в каждом квадрате; `weapon.py` — картинка и имя файла аргументами, создание папки.
+
+### 2026-11-06 — задача 164
+
+`game/scenes/showcase.gd`: `cell_zoom`, `_zoom_grid`, `_input` — щипок (`InputEventMagnifyGesture`) и Ctrl/Cmd+колесо. `rider_pair.gd`, `horse_lab.gd`, `rider_showcase.gd`, `rider_search.gd`: размер квадрата `CELL_TARGET * cell_zoom`.

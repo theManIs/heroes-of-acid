@@ -38,13 +38,14 @@ func _ready() -> void:
 			_make_strike_cell(grid, false)
 	_make_death_cell(grid)
 	get_viewport().size_changed.connect(_fit.bind(grid))
+	_zoom_grid = grid
 	_fit(grid)
 	_finish()
 
 
 func _fit(grid: GridContainer) -> void:
 	var width := get_viewport_rect().size.x
-	grid.columns = clampi(floori((width - GAP) / (CELL_TARGET + GAP)), 1, columns)
+	grid.columns = clampi(floori((width - GAP) / (CELL_TARGET * cell_zoom + GAP)), 1, columns)
 	var side := maxi(90, floori((width - GAP * (grid.columns + 1)) / grid.columns) - 6)
 	for pair: Array in _views:
 		pair[0].custom_minimum_size = Vector2.ONE * side
