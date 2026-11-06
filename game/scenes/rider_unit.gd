@@ -7,7 +7,7 @@ const PAIR := preload("res://scenes/rider_pair.gd")
 const RIDER_CLIPS := {"idle": "ride_still", "walk": "ride_still", "run": "ride_still", "attack": "ride_still",
 	"hurt_left": "ride_hurt", "idle_head_low": "ride_dodge", "fidget_graze": "ride_fidget_look", "fall": "ride_still"}
 ## Удар с места, как в витрине пары: полшага назад шагом, рывок галопом, стойка.
-const STEP_BACK := 0.6
+const STEP_BACK := 0.6 * 0.85  # × SCALE
 const STEP_BACK_TIME := 0.6
 const LUNGE_TIME := 0.35
 const SETTLE_TIME := 0.5
@@ -209,6 +209,24 @@ func _on_arrived() -> void:
 	var ahead := global_basis.orthonormalized().x
 	if absf(ahead.x) > 0.01:
 		super.face(position + Vector3(signf(ahead.x), 0.0, 0.0))
+
+
+## Куда бьют всадника: середина двух гексов.
+func melee_point(_from: Vector3) -> Vector3:
+	return center()
+
+
+## Удар без общего отъезда модели (Creature.strike двигает модель твином): у всадника свой
+## полшага назад и рывок в _process, вместе они давали езду взад-вперёд и рывок на место после удара.
+func strike(target: Creature, _distance: float, _overlap: float, collateral: Array[Creature] = []) -> void:
+	var contact := target.melee_point(center())
+	face(contact)
+	target.face_foe(center())
+	play_once(attack_anim)
+	target.take_hit(hit_delay())
+	for victim: Creature in collateral:
+		if victim != target and victim != self:
+			victim.take_hit(hit_delay())
 
 
 func die() -> void:

@@ -1329,3 +1329,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `rider_mock.gd`: `make_rider(size)`, `set_lance`/`place_fist_lance` с масштабом.
 - `rider_config.gd`: рост коня 1,615.
 - Проверка: scratchpad rider2.gd (зазор вплотную), rider3.gd (поворот на ходу и после).
+
+### 2026-11-06 10:42
+
+- `rider_unit.gd`: свой `strike` без твина модели (двойной сдвиг: ездил взад-вперёд и рывком возвращался), `melee_point` — середина пары, `STEP_BACK` × 0,85. Проверка: scratchpad rider4.gd — сдвиг модели по кадрам.
