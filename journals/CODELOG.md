@@ -1376,9 +1376,3 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-06 14:47
 
 - `hammerer_overlay.gd`: `_cells()`; + `hammerer_rest.gd/.tscn` (стойка, два блока, Smash, две смерти); `SCENES.md`.
-
-### 2026-11-06 14:52
-
-- `hammer_grip.gd`: `grip_by_clip` — хват по клипу, руки скользят по рукояти к новому месту (`GRIP_SLIDE`).
-- `hammerer_search.gd`: `_grips()`; смерть `fall` лежит до повтора. `hammerer_overlay.gd`: `_columns()`.
-- `hammerer_rest.gd`: прежние защита, точечный удар, смерть (хват 0,2) со стойкой (0,8).
