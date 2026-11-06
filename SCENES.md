@@ -12,6 +12,9 @@
 Второй круг (167): полный набор под выбранные стойку и удар, руки с молотом из стойки:
 `godot --path game res://scenes/hammerer_set.tscn`.
 
+Только наложенные клипы (руки из стойки) со стойкой и ударом (167):
+`godot --path game res://scenes/hammerer_overlay.tscn`.
+
 Молотобоец в сцене существа:
 `godot --path game res://scenes/creature_test.tscn -- --creature=hammerer`.
 Переключатель «По площади / Точечный»; площадной удар поражает три соседних

@@ -1368,3 +1368,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `build_clips.py`: `file`, `arms_from`, `arms_from()`.
 - `clips.json`: записи `round2/c2_*`; + `anims/c2_*.glb`.
 - `hammerer_search.gd`: `_cells()`, `_idle_clip()`; + `hammerer_set.gd/.tscn`; `SCENES.md`.
+
+### 2026-11-06 14:40
+
+- + `game/scenes/hammerer_overlay.gd/.tscn` (только c2_* + стойка и удар); `SCENES.md`.
