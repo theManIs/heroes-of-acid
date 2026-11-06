@@ -1309,3 +1309,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-06 10:03
 
 - `rider_pair.gd`: `ARM_OUT` −50 → −35, `ARM_UP` 25 → 0 — кулак ниже на 14 см. Замер: тело 0,20 м, шея/голова коня 0,31–0,52 м.
+
+### 2026-11-06 10:22
+
+- + `game/scenes/rider_unit.gd`, `game/scenes/rider_config.gd`, `game/assets/creatures/rider/rider_unit.tscn`.
+- `rider_pair.gd`: подготовка руки вынесена в `prepare_lancer`, хранитель — в `add_keeper`; «idle» рыцаря заменён стойкой с копьём.
+- `creature_test.gd`: «rider» в списке существ, `RIDER_UNIT`.
+- Проверка: `--shot` (арена, удар), scratchpad riderct.gd (шаг, реакция, защита, отклик, смерть), riderdbg.gd (копьё −8° у обоих).

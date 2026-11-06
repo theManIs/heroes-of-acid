@@ -80,6 +80,16 @@ func _make_pair(view: SubViewport) -> Dictionary:
 	player.play("idle_breathe")
 	var sk: Skeleton3D = horse.find_children("*", "Skeleton3D", true, false)[0]
 	var rider := MOCK.make_rider(view)
+	prepare_lancer(rider)
+	rider.rotation.y = TURN - PI / 2.0  # модель смотрит по +X, конь — по своему +Z
+	rider.set("_yaw", rider.rotation.y)
+	var lance := MOCK.add_lance(view)
+	var keeper := add_keeper(rider)
+	return {"horse": horse, "player": player, "rider": rider, "lance": lance, "sk": sk, "bone": sk.find_bone(SADDLE_BONE), "offset": Transform3D.IDENTITY, "keeper": keeper}
+
+
+## Рука с копьём и посадка всадника — одна на витрину пары и на существо (rider_unit.gd).
+static func prepare_lancer(rider: Creature) -> void:
 	MOCK.freeze_bones(rider, "ride_still", MOCK.RIGHT_ARM)
 	MOCK.arm_out(rider, "ride_still", ARM_OUT, ARM_UP)
 	MOCK.pour(rider, "ride_still", POUR)
@@ -89,18 +99,22 @@ func _make_pair(view: SubViewport) -> Dictionary:
 			# Рука с копьём и посадка — как в стойке: иначе копьё отъезжает при смене клипа.
 			MOCK.pin_to(rider, clip, MOCK.RIGHT_ARM + MOCK.grip_bones())
 			MOCK.pin_seat(rider, clip)
-	MOCK.pin_seat(rider, "idle")  # копия стойки, которую Creature включает сам
 	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
-	rider.rotation.y = TURN - PI / 2.0  # модель смотрит по +X, конь — по своему +Z
-	rider.set("_yaw", rider.rotation.y)
-	var lance := MOCK.add_lance(view)
-	# Наклонился всадник или конь — кулак доворачивается, остриё всегда чуть вниз.
+	# Creature сам возвращается в «idle» — это должна быть та же стойка с копьём.
+	var library := rider.anim.get_animation_library(&"")
+	if library.has_animation("idle"):
+		library.remove_animation("idle")
+	library.add_animation("idle", rider.anim.get_animation("ride_still").duplicate())
+
+
+## Наклонился всадник или конь — кулак доворачивается, остриё всегда чуть вниз.
+static func add_keeper(rider: Creature) -> MOCK.LanceKeeper:
 	var keeper := MOCK.LanceKeeper.new()
 	keeper.rider = rider
 	keeper.pitch = LANCE_PITCH
 	keeper.yaw = LANCE_YAW
 	rider.skeleton.add_child(keeper)
-	return {"horse": horse, "player": player, "rider": rider, "lance": lance, "sk": sk, "bone": sk.find_bone(SADDLE_BONE), "offset": Transform3D.IDENTITY, "keeper": keeper}
+	return keeper
 
 
 func _bone_frame(pair: Dictionary) -> Transform3D:

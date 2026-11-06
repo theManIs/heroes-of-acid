@@ -108,7 +108,9 @@ const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
 # Этот отряд пока подключён только в тест существа; большой бой использует CREATURES.
 const PAIR_PATHS := preload("res://scenes/houndmaster_paths.gd")
 const MELEE_AREA := preload("res://scenes/melee_area.gd")
-var creatures := CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair()})
+const RIDER_UNIT := preload("res://scenes/rider_unit.gd")
+var creatures := CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair(),
+	"rider": preload("res://scenes/rider_config.gd").UNIT})
 
 var player: Creature
 var enemy: Creature
@@ -166,7 +168,7 @@ func _ready() -> void:
 
 
 func _make() -> Creature:
-	var c: Creature = HOUNDMASTER_UNIT.new() if tested == "houndmaster-pair" else Creature.new()
+	var c: Creature = HOUNDMASTER_UNIT.new() if tested == "houndmaster-pair" else RIDER_UNIT.new() if tested == "rider" else Creature.new()
 	add_child(c)
 	var cfg: Dictionary = creatures[tested]
 	var variant: Dictionary = _current_variant()

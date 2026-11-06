@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/creatures/horse/horse.glb" id="1"]
+
+[node name="RiderUnit" type="Node3D"]
+
+[node name="Horse" parent="." instance=ExtResource("1")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, 0)
