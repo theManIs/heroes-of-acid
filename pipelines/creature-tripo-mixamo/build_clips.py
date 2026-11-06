@@ -12,6 +12,9 @@
 "keep_left_fingers": false и "grip": 0 — обычная левая кисть без поправок для лука.
 "_match_leg_rest": true — согласовать исходные направления сегментов ног с Mixamo.
 "_arm_out" в clips.json — постоянно отвести правую руку от тела, градусы: {"arm": плечо, "fore": предплечье и кисть сверх плеча}.
+"file" — исходный FBX, если ключ записи не путь (один FBX в нескольких записях).
+"arms_from" — имя уже собранного клипа: обе руки с пальцами на весь клип берутся из его первого кадра
+(хват оружия как в стойке, ноги и корпус — свои; задача 167).
 """
 
 import json
@@ -286,6 +289,26 @@ def write(rig_doc, rig, name, times, rotations, hips, target):
                              + struct.pack("<I4s", len(blob), b"BIN\0") + bytes(blob))
 
 
+ARM_PARTS = ("Shoulder", "Arm", "ForeArm", "Hand")
+
+
+def arms_from(rotations, clip_path):
+    """Both arms and fingers from the first frame of another built clip: same weapon grip as there."""
+    doc, binary = read_glb(clip_path)
+    anim = doc["animations"][0]
+    pose = {}
+    for channel in anim["channels"]:
+        if channel["target"]["path"] == "rotation":
+            node = doc["nodes"][channel["target"]["node"]]["name"]
+            pose[node] = accessor(doc, binary, anim["samplers"][channel["sampler"]]["output"])[0]
+    for bone, values in rotations.items():
+        short = bone[len(PREFIX):] if bone.startswith(PREFIX) else bone
+        side = "Left" if short.startswith("Left") else "Right" if short.startswith("Right") else ""
+        if side and short[len(side):].startswith(ARM_PARTS) and bone in pose:
+            rotations[bone] = [pose[bone]] * len(values)
+    return rotations
+
+
 def finish_in_idle(times, rotations, hips, idle_path, recovery):
     """Replace only the post-contact sword recovery with a smooth return to idle."""
     doc, binary = read_glb(idle_path)
@@ -327,7 +350,7 @@ def main(creature_id):
         cfg["match_leg_rest"] = match_leg_rest
         glb = tmp / (cfg["name"] + ".glb")
         if not glb.exists():
-            subprocess.run(["blender", "-b", "--python", str(HERE / "fbx2glb.py"), "--", str(base / "mixamo" / fbx), str(glb)],
+            subprocess.run(["blender", "-b", "--python", str(HERE / "fbx2glb.py"), "--", str(base / "mixamo" / cfg.get("file", fbx)), str(glb)],
                            check=True, capture_output=True)
         times, rotations, hips = retarget(rig_doc, rig, glb, cfg["name"], cfg)
         if cfg.get("trim_start", 0.0) > 0.0:
@@ -337,6 +360,8 @@ def main(creature_id):
             rotations = {bone: values[first:] for bone, values in rotations.items()}
             hips = hips[first:]
         times = [t * cfg.get("time_scale", 1.0) for t in times]
+        if cfg.get("arms_from"):
+            rotations = arms_from(rotations, out_dir / (cfg["arms_from"] + ".glb"))
         if cfg.get("recovery"):
             times, rotations, hips = finish_in_idle(times, rotations, hips, out_dir / "idle.glb", cfg["recovery"])
         write(rig_doc, rig, cfg["name"], times, rotations, hips, out_dir / (cfg["name"] + ".glb"))

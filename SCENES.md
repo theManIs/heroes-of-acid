@@ -9,6 +9,9 @@
 Кандидаты Mixamo молотобойца под хват по листу (задача 167): 13 клипов винтовки, посоха, двуручной дубины:
 `godot --path game res://scenes/hammerer_search.tscn`.
 
+Второй круг (167): полный набор под выбранные стойку и удар, руки с молотом из стойки:
+`godot --path game res://scenes/hammerer_set.tscn`.
+
 Молотобоец в сцене существа:
 `godot --path game res://scenes/creature_test.tscn -- --creature=hammerer`.
 Переключатель «По площади / Точечный»; площадной удар поражает три соседних

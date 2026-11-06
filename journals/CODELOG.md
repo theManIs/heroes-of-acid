@@ -1362,3 +1362,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `hammer_grip.gd`: `right_at` (по умолчанию 0,2 — без изменений для текущих клипов).
 - + `game/scenes/hammerer_search.gd/.tscn`; `SCENES.md`.
 - Команды: Chrome/Mixamo (Without Skin, In Place), `build_clips.py hammerer`, `godot --import`; рендер scratchpad hsshot.gd.
+
+### 2026-11-06 14:38
+
+- `build_clips.py`: `file`, `arms_from`, `arms_from()`.
+- `clips.json`: записи `round2/c2_*`; + `anims/c2_*.glb`.
+- `hammerer_search.gd`: `_cells()`, `_idle_clip()`; + `hammerer_set.gd/.tscn`; `SCENES.md`.

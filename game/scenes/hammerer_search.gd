@@ -29,9 +29,18 @@ func _ready() -> void:
 	columns = 5
 	cell_size = 330
 	var grid := _build_page()
-	for cell: Array in CELLS:
+	for cell: Array in _cells():
 		_make_candidate(grid, cell[0], cell[1], cell[2])
 	_finish()
+
+
+func _cells() -> Array:
+	return CELLS
+
+
+## Стойка, в которую возвращаются разовые клипы: подкласс подменяет на выбранную.
+func _idle_clip() -> String:
+	return "idle"
 
 
 func _make_candidate(grid: GridContainer, title: String, clip: String, endless: bool) -> void:
@@ -39,7 +48,10 @@ func _make_candidate(grid: GridContainer, title: String, clip: String, endless: 
 	_configure_lighting(cell.view, UNIT)
 	var unit := Creature.new()
 	cell.view.add_child(unit)
-	unit.setup(load(UNIT.scene), [ANIMS + "idle.glb", ANIMS + clip + ".glb"], clip, UNIT.hurt, UNIT.size, 0.0, "idle")
+	var files := [ANIMS + "idle.glb", ANIMS + clip + ".glb"]
+	if _idle_clip() != "idle":
+		files.append(ANIMS + _idle_clip() + ".glb")
+	unit.setup(load(UNIT.scene), files, clip, UNIT.hurt, UNIT.size, 0.0, _idle_clip())
 	unit.face(unit.position + Vector3.BACK + Vector3.RIGHT)
 	for grip in unit.find_children("*", "Node3D", true, false):
 		if "right_at" in grip:
