@@ -1333,3 +1333,7 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-06 10:42
 
 - `rider_unit.gd`: свой `strike` без твина модели (двойной сдвиг: ездил взад-вперёд и рывком возвращался), `melee_point` — середина пары, `STEP_BACK` × 0,85. Проверка: scratchpad rider4.gd — сдвиг модели по кадрам.
+
+### 2026-11-06 10:48
+
+- `rider_unit.gd`: `STAND_TURN` 12° — стоя всадник повёрнут от копья (влево), `_stand_face`. Замер (scratchpad rider5.gd): лицом к лицу головы коней в 0,59 м (поперёк 0,35 м).

@@ -15,6 +15,8 @@ const BAKE_FPS := 30.0
 ## Всадник в бою меньше, чем в витрине пары: конь 2,46 м в длину, вплотную между носами около 0,5 м.
 ## Рост коня в записи (rider_config) уже умножен; здесь — рыцарь и копьё.
 const SCALE := 0.85
+## Стоя всадник чуть повёрнут от копья (влево): лицом к лицу головы коней расходятся, копьё ближе к центру.
+const STAND_TURN := deg_to_rad(12.0)
 
 var rider: Creature
 var lance: Node3D
@@ -201,14 +203,20 @@ func face(point: Vector3) -> void:
 	var to := point - center()
 	if absf(to.x) < 0.05:
 		return
-	super.face(position + Vector3(signf(to.x), 0.0, 0.0))
+	_stand_face(signf(to.x))
+
+
+## Вдоль ряда в сторону side (±1 по X) и чуть влево, от копья.
+func _stand_face(side: float) -> void:
+	super.face(position + Vector3(side, 0.0, 0.0))
+	_yaw += STAND_TURN
 
 
 ## Дошёл — встаёт вдоль ряда, в ту сторону, куда ближе смотрел.
 func _on_arrived() -> void:
 	var ahead := global_basis.orthonormalized().x
 	if absf(ahead.x) > 0.01:
-		super.face(position + Vector3(signf(ahead.x), 0.0, 0.0))
+		_stand_face(signf(ahead.x))
 
 
 ## Куда бьют всадника: середина двух гексов.
