@@ -1,0 +1,14 @@
+{
+  "service": "ChatGPT in Chrome",
+  "conversation_url": "https://chatgpt.com/c/6aedbcfe-9b18-83eb-bea0-601c830c7bba",
+  "conversation_archived": false,
+  "reference": "references/hammerer/character-sheet.jpg",
+  "prompts": [
+    "creatures/hammerer2/concept/front-prompt.md"
+  ],
+  "note": "Задача 168: новый молотобоец. Чат держать до конца задачи.",
+  "outputs": {
+    "front": "creatures/hammerer2/concept/front.png"
+  },
+  "generated_at": "2026-11-06 15:43"
+}
