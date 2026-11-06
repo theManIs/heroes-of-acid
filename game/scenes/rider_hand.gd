@@ -16,9 +16,10 @@ const VIEWS := [
 const STICK_RADIUS := 0.02  # палка в кулаке вместо копья: видно, как её держит кисть
 const STICK_LENGTH := 1.0
 ## Направления в осях всадника: +X вперёд, +Y вверх, +Z — его правый бок.
-const ARM_DIR := Vector3(0.1, -1.0, 0.8)  # плечо вниз, чуть наружу и вперёд
-const FOREARM_DIR := Vector3(1.0, -0.8, 0.5)  # предплечье вниз и вперёд: кулак у бедра
-const LANCE_DIR := Vector3(1.0, 0.0, 0.15)  # копьё вперёд и чуть наружу: мимо колена
+const ARM_DIR := Vector3(-0.1, -1.0, 0.75)  # плечо вниз вдоль бока, локоть чуть назад и наружу
+const FOREARM_DIR := Vector3(1.0, 0.1, 0.3)  # предплечье вперёд почти горизонтально: кулак над коленом
+const LANCE_DIR := Vector3(1.0, -0.15, 0.15)  # остриё вперёд и чуть вниз: колоть, а не как удочка
+const WRIST_LIMIT := 30.0  # запястье к мизинцу не больше, градусов
 var _sticks: Array = []
 
 
@@ -42,6 +43,7 @@ func _make_hand_cell(grid: GridContainer, title: String, from: Vector3, width: f
 	MOCK.aim_bone(rider, "ride_still", "RightArm", "RightForeArm", to_skeleton * ARM_DIR)
 	MOCK.aim_bone(rider, "ride_still", "RightForeArm", "RightHand", to_skeleton * FOREARM_DIR)
 	MOCK.roll_fist(rider, "ride_still", to_skeleton * LANCE_DIR)
+	MOCK.bend_wrist(rider, "ride_still", to_skeleton * LANCE_DIR, WRIST_LIMIT)
 	MOCK.curl_fingers(rider, "ride_still", PAIR.GRIP_CURL)  # кисть как в клипе, согнуты только пальцы
 	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
 	rider.anim.play("ride_still", 0.0)
