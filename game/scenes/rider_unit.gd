@@ -12,6 +12,9 @@ const STEP_BACK_TIME := 0.6
 const LUNGE_TIME := 0.35
 const SETTLE_TIME := 0.5
 const BAKE_FPS := 30.0
+## Всадник в бою меньше, чем в витрине пары: конь 2,46 м в длину, вплотную между носами около 0,5 м.
+## Рост коня в записи (rider_config) уже умножен; здесь — рыцарь и копьё.
+const SCALE := 0.85
 
 var rider: Creature
 var lance: Node3D
@@ -42,7 +45,7 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	for clip in ["run"]:
 		anim.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
 	_saddle = skeleton.find_bone(PAIR.SADDLE_BONE)
-	rider = MOCK.make_rider(self)
+	rider = MOCK.make_rider(self, MOCK.RIDER_SIZE * SCALE)
 	PAIR.prepare_lancer(rider)
 	rider.top_level = true
 	rider.anim.play("ride_still", 0.0)
@@ -53,11 +56,13 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	_hang.rider = rider
 	_hang.horse_sk = skeleton
 	add_child(_hang)
+	_hang.drop *= SCALE
 	_hang.set_rest()
 	_hang.set_process(false)
 	_seat()
 	reach = to_local(MOCK.tip(lance)).x
 	anim.current_animation_changed.connect(_on_horse_clip)
+	arrived.connect(_on_arrived)
 
 
 ## Рост по сетке коня, как в витрине пары: рамка сетки со скелетом в глобальных координатах у коня неверная.
@@ -76,7 +81,7 @@ func _seat() -> void:
 	var seat: Vector3 = to_global(model.position - _fit_base + Basis(Vector3.UP, PI / 2.0) * (PAIR.SEAT * height))
 	rider.global_transform = Transform3D(global_basis.orthonormalized(), rider.global_position)
 	var hips: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_Hips"))
-	rider.global_position += seat + Vector3(0, 0.08, 0) - hips
+	rider.global_position += seat + Vector3(0, 0.08 * SCALE, 0) - hips
 	_offset = _saddle_frame().affine_inverse() * rider.global_transform
 	_follow()
 
@@ -109,7 +114,7 @@ func _process(delta: float) -> void:
 func _follow() -> void:
 	rider.global_transform = _saddle_frame() * _offset
 	rider.set("_yaw", rider.rotation.y)
-	MOCK.place_fist_lance(lance, rider, 0.0, 0.0, keeper)
+	MOCK.place_fist_lance(lance, rider, 0.0, 0.0, keeper, SCALE)
 
 
 ## Клип коня сменился — рыцарь играет свой; разовые короче — хвост растянут до конца клипа коня.
@@ -187,13 +192,23 @@ func _center_on_hip() -> void:
 	pass
 
 
-## Только влево или вправо; цель строго над или под — не поворачиваться.
-## На ходу — по направлению движения, иначе — от середины двух гексов.
+## На ходу — по движению в любую сторону. Стоя — только влево или вправо (два гекса в ряд),
+## от середины пары; цель строго над или под — не поворачиваться.
 func face(point: Vector3) -> void:
-	var to := point - (position if walking or body_shift == Vector3.ZERO else center())
+	if walking or body_shift == Vector3.ZERO:
+		super.face(point)
+		return
+	var to := point - center()
 	if absf(to.x) < 0.05:
 		return
 	super.face(position + Vector3(signf(to.x), 0.0, 0.0))
+
+
+## Дошёл — встаёт вдоль ряда, в ту сторону, куда ближе смотрел.
+func _on_arrived() -> void:
+	var ahead := global_basis.orthonormalized().x
+	if absf(ahead.x) > 0.01:
+		super.face(position + Vector3(signf(ahead.x), 0.0, 0.0))
 
 
 func die() -> void:

@@ -1322,3 +1322,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `rider_unit.gd`: `body_shift`, `center()`, `face()` только ±X (на ходу — по движению), `_center_on_hip` отключён, сдвиг тела и рывка в `_process` с учётом `jolt`.
 - `creature_test.gd`: `_footprint` всадника — якорь и сосед справа; `body_shift` = полшага гекса.
 - Проверка: scratchpad rider2.gd (подход, удар, ответ), hlen.gd (длина коня 2,90 м).
+
+### 2026-11-06 10:40
+
+- `rider_unit.gd`: `SCALE 0.85` (рыцарь, копьё, свисание ног), `face()` на ходу — по движению, `_on_arrived` — вдоль ряда.
+- `rider_mock.gd`: `make_rider(size)`, `set_lance`/`place_fist_lance` с масштабом.
+- `rider_config.gd`: рост коня 1,615.
+- Проверка: scratchpad rider2.gd (зазор вплотную), rider3.gd (поворот на ходу и после).

@@ -19,13 +19,13 @@ const ALL_CLIPS := ["ride_still", "ride_idle", "ride_swing", "ride_swing_mirror"
 	"s_ducking", "s_sitting_dodges", "s_shoved", "s_knocked_unconscious"]
 
 
-static func make_rider(parent: Node) -> Creature:
+static func make_rider(parent: Node, size := RIDER_SIZE) -> Creature:
 	var files: Array = []
 	for clip in ALL_CLIPS:
 		files.append(ANIMS + clip + ".glb")
 	var rider := Creature.new()
 	parent.add_child(rider)
-	rider.setup(load(RIDER), files, "ride_swing", "ride_hurt", RIDER_SIZE, 0.0, "ride_still")
+	rider.setup(load(RIDER), files, "ride_swing", "ride_hurt", size, 0.0, "ride_still")
 	spread_legs(rider, LEG_SPREAD)
 	return rider
 
@@ -121,13 +121,14 @@ static func tip(lance: Node3D) -> Vector3:
 
 
 ## Поставить копьё: forward — куда смотрит остриё, hand — точка хвата, slide — сдвиг вдоль древка.
-static func set_lance(lance: Node3D, forward: Vector3, hand: Vector3, slide := 0.0) -> void:
+static func set_lance(lance: Node3D, forward: Vector3, hand: Vector3, slide := 0.0, scale := 1.0) -> void:
 	var side := forward.cross(Vector3.UP).normalized()
 	if side.length_squared() < 0.01:
 		side = Vector3.BACK
 	var along := -forward  # ось Y модели идёт от острия к торцу
-	var basis := Basis(side * LANCE_LENGTH * LANCE_THICK, along * LANCE_LENGTH, side.cross(along).normalized() * LANCE_LENGTH * LANCE_THICK)
-	lance.global_transform = Transform3D(basis, hand + forward * (LANCE_LENGTH * LANCE_GRIP + slide))
+	var length := LANCE_LENGTH * scale
+	var basis := Basis(side * length * LANCE_THICK, along * length, side.cross(along).normalized() * length * LANCE_THICK)
+	lance.global_transform = Transform3D(basis, hand + forward * (length * LANCE_GRIP + slide))
 
 
 ## pitch и yaw — раскачивание на весу, градусы: длинная палка качается при движении.
@@ -335,7 +336,7 @@ static func pour(rider: Creature, clip: String, degrees: float, side := "Right")
 
 
 ## Копьё в кулаке: направление задаёт кисть (канал кулака), а не наоборот. pitch — качание на весу, градусы.
-static func place_fist_lance(lance: Node3D, rider: Creature, pitch := 0.0, slide := 0.0, keeper: LanceKeeper = null) -> void:
+static func place_fist_lance(lance: Node3D, rider: Creature, pitch := 0.0, slide := 0.0, keeper: LanceKeeper = null, scale := 1.0) -> void:
 	var ahead := rider.global_basis.orthonormalized().x  # модель смотрит по +X
 	var forward := fist_axis(rider)
 	var center := fist(rider)
@@ -346,7 +347,7 @@ static func place_fist_lance(lance: Node3D, rider: Creature, pitch := 0.0, slide
 	if forward.dot(ahead) < 0.0:
 		forward = -forward
 	var side := ahead.cross(Vector3.UP).normalized()
-	set_lance(lance, forward.rotated(side, deg_to_rad(pitch)).normalized(), center, slide)
+	set_lance(lance, forward.rotated(side, deg_to_rad(pitch)).normalized(), center, slide, scale)
 
 
 ## Каждый кадр после анимации кулак держит остриё под углом pitch к горизонту мира: наклонился всадник
