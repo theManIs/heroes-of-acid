@@ -1,25 +1,25 @@
 {
   "_match_leg_rest": true,
   "great sword idle.fbx": {
-    "name": "idle",
+    "name": "old_idle",
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
   },
   "great sword walk.fbx": {
-    "name": "walk",
+    "name": "old_walk",
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
   },
   "great sword run.fbx": {
-    "name": "run",
+    "name": "old_run",
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
   },
   "great sword slash (3).fbx": {
-    "name": "attack",
+    "name": "old_attack",
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0,
@@ -29,25 +29,25 @@
     }
   },
   "great sword impact (2).fbx": {
-    "name": "hurt",
+    "name": "old_hurt",
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
   },
   "great sword blocking.fbx": {
-    "name": "defend",
+    "name": "old_defend",
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
   },
   "two handed sword death.fbx": {
-    "name": "fall",
+    "name": "old_fall",
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
   },
   "great sword idle (3).fbx": {
-    "name": "fidget",
+    "name": "old_fidget",
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
@@ -108,7 +108,11 @@
   "search/2hand Idle.fbx": {
     "name": "c_2hand_idle",
     "grip": 0,
-    "keep_left_fingers": false
+    "keep_left_fingers": false,
+    "aliases": [
+      "idle"
+    ],
+    "hip_scale": 0.0
   },
   "search/Walk With Rifle.fbx": {
     "name": "c_rifle_walk",
@@ -168,7 +172,10 @@
     "arms_from": "c_2hand_idle",
     "file": "great sword walk.fbx",
     "hip_scale": 0.0,
-    "name": "c2_walk_sword"
+    "name": "c2_walk_sword",
+    "aliases": [
+      "walk"
+    ]
   },
   "round2/c2_run_rifle": {
     "grip": 0,
@@ -183,7 +190,10 @@
     "arms_from": "c_2hand_idle",
     "file": "great sword run.fbx",
     "hip_scale": 0.0,
-    "name": "c2_run_sword"
+    "name": "c2_run_sword",
+    "aliases": [
+      "run"
+    ]
   },
   "round2/c2_hurt": {
     "grip": 0,
@@ -191,14 +201,21 @@
     "arms_from": "c_2hand_idle",
     "file": "great sword impact (2).fbx",
     "name": "c2_hurt",
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "hurt"
+    ]
   },
   "round2/c2_look": {
     "grip": 0,
     "keep_left_fingers": false,
     "arms_from": "c_2hand_idle",
     "file": "search/Rifle Idle Looking Around.fbx",
-    "name": "c2_look"
+    "name": "c2_look",
+    "aliases": [
+      "fidget"
+    ],
+    "hip_scale": 0.0
   },
   "round2/c2_defend": {
     "name": "c2_defend",
@@ -206,7 +223,10 @@
     "keep_left_fingers": false,
     "hip_scale": 0.0,
     "file": "great sword blocking.fbx",
-    "arms_from": "c_2hand_idle"
+    "arms_from": "c_2hand_idle",
+    "aliases": [
+      "defend"
+    ]
   },
   "round2/c2_fall": {
     "name": "c2_fall",
@@ -214,6 +234,17 @@
     "keep_left_fingers": false,
     "hip_scale": 0.0,
     "file": "two handed sword death.fbx",
-    "arms_from": "c_2hand_idle"
+    "arms_from": "c_2hand_idle",
+    "aliases": [
+      "fall"
+    ]
+  },
+  "round2/attack": {
+    "name": "attack",
+    "file": "search/Heavy Weapon Swing.fbx",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "trim_start": 1.0,
+    "hip_scale": 0.0
   }
 }

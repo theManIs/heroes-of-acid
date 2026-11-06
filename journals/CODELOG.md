@@ -1390,3 +1390,10 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `hammer_grip.gd`: `rigid_clips` — в этих клипах молот жёстко в правой кисти с хватом стойки (калибровка первым кадром), переход плавный.
 - `hammerer_search.gd`: прежний `attack_point` в жёстком режиме; `hammerer_overlay.gd`: ячейка точечного удара.
+
+### 2026-11-06 15:29
+
+- `clips.json`: прежние → `old_*`, `aliases` новых, `round2/attack` (взмах, `trim_start` 1,0), `hip_scale` 0 у стойки, взмаха, отклика.
+- `hammer_grip.gd`: `right_at` 0,62, `rigid_clips`, `HEAD_ROLL` 59°.
+- `hammerer_config.gd`: попадание и вынос площадного удара, точечный 0,333.
+- Проверка: scratchpad hamimpact.gd (попадание и боёк), hamct.gd (тест существа), battle.gd (автобой).
