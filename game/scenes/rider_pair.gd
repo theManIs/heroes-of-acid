@@ -11,13 +11,15 @@ const SADDLE_BONE := "Torso2"
 const SEAT := Vector3(0.0, 0.85, -0.10)
 const CELL_TARGET := 460
 const TURN := PI / 2.0  # конь смотрит по +X, как остальные существа
-## Копьё почти параллельно коню: отвод наружу поворотом уводил его заднюю часть сквозь корпус всадника.
-const LANCE_YAW := -8.0
-## Рука с копьём отведена от корпуса вправо и вверх (плечо −50° наружу, 25° вверх, копьё −8°): замер — не ближе 0,26 м к костям всадника и 0,41 м к шее коня во всех клипах.
+## Рука с копьём отведена от корпуса вправо и вверх (плечо −50° наружу, 25° вверх).
 const ARM_OUT := -50.0
 const ARM_UP := 25.0
-## Кисть держит древко как палку: костяшки вдоль копья, пальцы согнуты вокруг него (градусов на сустав).
+## Пальцы в кулак вокруг древка, градусов на сустав.
 const GRIP_CURL := 45.0
+## Кулак повёрнут предплечьем, как при выливании воды из стаканчика: остриё вперёд и чуть вниз (витрина rider_hand).
+const POUR := -70.0
+const LANCE_PITCH := -8.0  # остриё к горизонту мира, градусов: чуть вниз, чтобы колоть
+const LANCE_YAW := 3.0  # остриё чуть наружу от линии коня: мимо его головы
 const HOLD := 1.0
 const BACK_BLEND := 1.0  # возврат в стойку после разового действия, секунд (было 0,3 — руки дёргались)
 const FROZEN := ["ride_still", "ride_hurt", "ride_fidget_look", "ride_dodge"]
@@ -80,9 +82,8 @@ func _make_pair(view: SubViewport) -> Dictionary:
 	var rider := MOCK.make_rider(view)
 	MOCK.freeze_bones(rider, "ride_still", MOCK.RIGHT_ARM)
 	MOCK.arm_out(rider, "ride_still", ARM_OUT, ARM_UP)
-	var to_skeleton := (rider.global_basis.orthonormalized().inverse() * rider.skeleton.global_basis.orthonormalized()).inverse()
-	var forward := Vector3(1.0, -MOCK.LANCE_DOWN, 0.0).rotated(Vector3.UP, deg_to_rad(LANCE_YAW))
-	MOCK.grip_hand(rider, "ride_still", to_skeleton * forward, GRIP_CURL)
+	MOCK.pour(rider, "ride_still", POUR)
+	MOCK.curl_fingers(rider, "ride_still", GRIP_CURL)
 	for clip in FROZEN:
 		if clip != "ride_still":
 			# Рука с копьём и посадка — как в стойке: иначе копьё отъезжает при смене клипа.
@@ -93,7 +94,13 @@ func _make_pair(view: SubViewport) -> Dictionary:
 	rider.rotation.y = TURN - PI / 2.0  # модель смотрит по +X, конь — по своему +Z
 	rider.set("_yaw", rider.rotation.y)
 	var lance := MOCK.add_lance(view)
-	return {"horse": horse, "player": player, "rider": rider, "lance": lance, "sk": sk, "bone": sk.find_bone(SADDLE_BONE), "offset": Transform3D.IDENTITY}
+	# Наклонился всадник или конь — кулак доворачивается, остриё всегда чуть вниз.
+	var keeper := MOCK.LanceKeeper.new()
+	keeper.rider = rider
+	keeper.pitch = LANCE_PITCH
+	keeper.yaw = LANCE_YAW
+	rider.skeleton.add_child(keeper)
+	return {"horse": horse, "player": player, "rider": rider, "lance": lance, "sk": sk, "bone": sk.find_bone(SADDLE_BONE), "offset": Transform3D.IDENTITY, "keeper": keeper}
 
 
 func _bone_frame(pair: Dictionary) -> Transform3D:
@@ -116,7 +123,7 @@ func _follow(pair: Dictionary, slide := 0.0, pitch := 0.0) -> void:
 	var rider: Creature = pair.rider
 	rider.global_transform = _bone_frame(pair) * pair.offset
 	rider.set("_yaw", rider.rotation.y)
-	MOCK.place_lance(pair.lance, rider, rider, pitch, LANCE_YAW, slide)
+	MOCK.place_fist_lance(pair.lance, rider, pitch, slide, pair.keeper)
 
 
 func _settle(pair: Dictionary) -> void:
@@ -185,6 +192,7 @@ func _make_death_cell(grid: GridContainer) -> void:
 	var frame := _make_frame(grid, 3.4)
 	var pair := _make_pair(frame.view)
 	_make_label(frame.frame).text = "Смерть: падают вместе"
+	pair.keeper.active = false  # падают на бок: держать копьё ровно уже незачем
 	var player: AnimationPlayer = pair.player
 	var rider: Creature = pair.rider
 	var length := player.get_animation("death_fall_on_side").length

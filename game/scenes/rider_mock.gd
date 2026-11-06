@@ -249,14 +249,6 @@ static func arm_out(rider: Creature, clip: String, out: float, up: float, bone :
 		a.track_set_key_value(t, k, (a.track_get_key_value(t, k) * turn).normalized())
 
 
-## Середина ладони: туда кладётся древко, чтобы кисть его обхватывала, а не проваливалась.
-static func palm(rider: Creature, side := "Right") -> Vector3:
-	var wrist: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_%sHand" % side))
-	var middle: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_%sHandMiddle1" % side))
-	return wrist.lerp(middle, 0.8)
-
-
-
 ## Поза кости в клипе на первом кадре, в пространстве скелета (родители — тоже по клипу или по покою).
 static func _clip_global(rider: Creature, a: Animation, bone: int) -> Transform3D:
 	var sk := rider.skeleton
@@ -297,19 +289,6 @@ static func grip_bones(side := "Right") -> Array:
 	return bones
 
 
-## Хват палки: кисть поворачивается так, чтобы линия костяшек шла вдоль древка (forward — в пространстве скелета),
-## пальцы сгибаются вокруг него на curl градусов в каждом суставе.
-static func grip_hand(rider: Creature, clip: String, forward: Vector3, curl: float, side := "Right") -> void:
-	var sk := rider.skeleton
-	var a := rider.anim.get_animation(clip)
-	var bone := func(n: String) -> int: return sk.find_bone("mixamorig_%s%s" % [side, n])
-	var at := func(n: String) -> Vector3: return _clip_global(rider, a, bone.call(n)).origin
-	var hand: int = bone.call("Hand")
-	var knuckles: Vector3 = (at.call("HandIndex1") - at.call("HandPinky1")).normalized()
-	_turn_bone(rider, a, hand, Quaternion(knuckles, forward.normalized()))
-	curl_fingers(rider, clip, curl, side)
-
-
 ## Кулак без поворота кисти: только пальцы согнуты на curl градусов в каждом суставе вокруг линии костяшек.
 static func curl_fingers(rider: Creature, clip: String, curl: float, side := "Right") -> void:
 	var sk := rider.skeleton
@@ -346,43 +325,6 @@ static func fist_axis(rider: Creature, side := "Right") -> Vector3:
 	return _channel(func(n: String) -> Vector3: return rider.bone_world(rider.skeleton.find_bone("mixamorig_%s%s" % [side, n])))
 
 
-## Направить кость на direction (пространство скелета): кратчайший поворот, во всех ключах клипа.
-static func aim_bone(rider: Creature, clip: String, bone: String, child: String, direction: Vector3) -> void:
-	var sk := rider.skeleton
-	var a := rider.anim.get_animation(clip)
-	var index := sk.find_bone("mixamorig_" + bone)
-	var from := _clip_global(rider, a, sk.find_bone("mixamorig_" + child)).origin - _clip_global(rider, a, index).origin
-	_turn_bone(rider, a, index, Quaternion(from.normalized(), direction.normalized()))
-
-
-## Повернуть предплечье вокруг своей оси так, чтобы канал кулака (мизинец → указательный)
-## смотрел как можно ближе к direction. Кисть в запястье не гнётся.
-static func roll_fist(rider: Creature, clip: String, direction: Vector3, side := "Right") -> void:
-	var sk := rider.skeleton
-	var a := rider.anim.get_animation(clip)
-	var at := func(n: String) -> Vector3: return _clip_global(rider, a, sk.find_bone("mixamorig_%s%s" % [side, n])).origin
-	var forearm: int = sk.find_bone("mixamorig_%sForeArm" % side)
-	var axis: Vector3 = (at.call("Hand") - at.call("ForeArm")).normalized()
-	var channel := _channel(at)
-	var have := (channel - axis * channel.dot(axis)).normalized()
-	var want := (direction - axis * direction.dot(axis)).normalized()
-	_turn_bone(rider, a, forearm, Quaternion(axis, have.signed_angle_to(want, axis)))
-
-
-## Запястье доворачивает канал кулака к direction, но не больше limit градусов — естественный изгиб к мизинцу.
-static func bend_wrist(rider: Creature, clip: String, direction: Vector3, limit: float, side := "Right") -> void:
-	var sk := rider.skeleton
-	var a := rider.anim.get_animation(clip)
-	var at := func(n: String) -> Vector3: return _clip_global(rider, a, sk.find_bone("mixamorig_%s%s" % [side, n])).origin
-	var channel := _channel(at)
-	var want := direction.normalized()
-	var angle := minf(channel.angle_to(want), deg_to_rad(limit))
-	var axis := channel.cross(want)
-	if axis.length_squared() < 1e-8:
-		return
-	_turn_bone(rider, a, sk.find_bone("mixamorig_%sHand" % side), Quaternion(axis.normalized(), angle))
-
-
 ## Поворот предплечья вокруг своей оси на degrees, как при выливании воды из стаканчика: кулак наклоняется, запястье не гнётся.
 static func pour(rider: Creature, clip: String, degrees: float, side := "Right") -> void:
 	var sk := rider.skeleton
@@ -390,3 +332,89 @@ static func pour(rider: Creature, clip: String, degrees: float, side := "Right")
 	var forearm := sk.find_bone("mixamorig_%sForeArm" % side)
 	var axis := _clip_global(rider, a, sk.find_bone("mixamorig_%sHand" % side)).origin - _clip_global(rider, a, forearm).origin
 	_turn_bone(rider, a, forearm, Quaternion(axis.normalized(), deg_to_rad(degrees)))
+
+
+## Копьё в кулаке: направление задаёт кисть (канал кулака), а не наоборот. pitch — качание на весу, градусы.
+static func place_fist_lance(lance: Node3D, rider: Creature, pitch := 0.0, slide := 0.0, keeper: LanceKeeper = null) -> void:
+	var ahead := rider.global_basis.orthonormalized().x  # модель смотрит по +X
+	var forward := fist_axis(rider)
+	var center := fist(rider)
+	if keeper and keeper.active and keeper.ready_pose:
+		var sk := rider.skeleton
+		forward = (sk.global_basis.orthonormalized() * keeper.channel).normalized()
+		center = sk.global_transform * keeper.fist_point
+	if forward.dot(ahead) < 0.0:
+		forward = -forward
+	var side := ahead.cross(Vector3.UP).normalized()
+	set_lance(lance, forward.rotated(side, deg_to_rad(pitch)).normalized(), center, slide)
+
+
+## Каждый кадр после анимации кулак держит остриё под углом pitch к горизонту мира: наклонился всадник
+## или под ним конь — предплечье доворачивается вокруг своей оси, как при выливании воды. Не больше limit градусов.
+## Итог (центр кулака и канал в пространстве скелета) копьё берёт отсюда: кости после модификатора снаружи не видны.
+class LanceKeeper extends SkeletonModifier3D:
+	var rider: Creature
+	var pitch := -8.0
+	var yaw := 0.0  # наружу от направления всадника, градусов: плечо разворачивает руку вокруг вертикали
+	var limit := 70.0
+	var yaw_limit := 35.0
+	var side := "Right"
+	var ready_pose := false
+	var fist_point := Vector3.ZERO  # пространство скелета
+	var channel := Vector3.FORWARD
+
+	func _process_modification_with_delta(_delta: float) -> void:
+		var sk := get_skeleton()
+		var at := func(n: String) -> Vector3: return sk.get_bone_global_pose(sk.find_bone("mixamorig_%s%s" % [side, n])).origin
+		var forearm := sk.find_bone("mixamorig_%sForeArm" % side)
+		var to_sk := sk.global_basis.orthonormalized().inverse()
+		var up: Vector3 = (to_sk * Vector3.UP).normalized()
+		var ahead: Vector3 = (to_sk * rider.global_basis.orthonormalized().x).normalized()
+		var flat := (ahead - up * ahead.dot(up)).normalized()
+		var right := flat.cross(up).normalized()
+		var swung := 0.0
+		var rolled := 0.0
+		for step in 3:  # плечо и предплечье влияют друг на друга: несколько точных шагов
+			var c := _channel_of(at)
+			if c.dot(ahead) < 0.0:
+				c = -c
+			# Сначала плечо: поворот вокруг вертикали не меняет наклон, только разворот.
+			var arm := sk.find_bone("mixamorig_%sArm" % side)
+			var now := atan2(c.dot(right), c.dot(flat))
+			var swing := clampf(deg_to_rad(yaw) - now, -deg_to_rad(yaw_limit) - swung, deg_to_rad(yaw_limit) - swung)
+			swung += swing
+			var arm_parent := sk.get_bone_global_pose(sk.get_bone_parent(arm)).basis.get_rotation_quaternion()
+			var arm_turn := arm_parent.inverse() * Quaternion(up, -swing) * arm_parent
+			sk.set_bone_pose_rotation(arm, (arm_turn * sk.get_bone_pose_rotation(arm)).normalized())
+			c = _channel_of(at)
+			if c.dot(ahead) < 0.0:
+				c = -c
+			var a: Vector3 = (at.call("Hand") - at.call("ForeArm")).normalized()
+			# Канал после поворота на t вокруг оси предплечья: c∥ + cos t·c⊥ + sin t·(a×c). Нужная высота — sin(pitch).
+			var along := a * c.dot(a)
+			var A := (c - along).dot(up)
+			var B := a.cross(c).dot(up)
+			var R := sqrt(A * A + B * B)
+			var turn := 0.0
+			if R > 1e-5:
+				var k := clampf((sin(deg_to_rad(pitch)) - along.dot(up)) / R, -1.0, 1.0)
+				var phi := atan2(B, A)
+				var t1 := wrapf(phi + acos(k), -PI, PI)
+				var t2 := wrapf(phi - acos(k), -PI, PI)
+				turn = clampf(t1 if absf(t1) < absf(t2) else t2, -deg_to_rad(limit) - rolled, deg_to_rad(limit) - rolled)
+				rolled += turn
+			var parent := sk.get_bone_global_pose(sk.get_bone_parent(forearm)).basis.get_rotation_quaternion()
+			var local := parent.inverse() * Quaternion(a, turn) * parent
+			sk.set_bone_pose_rotation(forearm, (local * sk.get_bone_pose_rotation(forearm)).normalized())
+		channel = _channel_of(at)
+		if channel.dot(ahead) < 0.0:
+			channel = -channel
+		var sum := Vector3.ZERO
+		for i in [1, 2, 3, 4]:
+			sum += at.call("HandMiddle%d" % i)
+		fist_point = sum / 4.0
+		ready_pose = true
+
+	static func _channel_of(points: Callable) -> Vector3:
+		var heel: Vector3 = points.call("HandPinky1").lerp(points.call("Hand"), 0.6)
+		return (points.call("HandIndex1") - heel).normalized()

@@ -1299,3 +1299,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `rider_mock.gd`: + `pour` (поворот предплечья вокруг своей оси, как при выливании воды).
 - `rider_hand.gd`: переделан — рука как в витрине пары (`arm_out`), кулак, палка по кулаку; квадраты с поворотом −60°, −70°, −80°. Перебор −60…80° по кадрам, замер (scratchpad pouraxis.gd): остриё 6°/10°/13° вниз, внутрь 11°/8°/4°, зазор до костей ≥0,26 м.
+
+### 2026-11-06 09:57
+
+- `rider_mock.gd`: + `place_fist_lance` (копьё по каналу кулака), + `LanceKeeper` (модификатор: разворот плеча и предплечья, точное решение угла), канал кулака наискось; удалены `grip_hand`, `level_lance`, `fist_pitch`, `_clip_global_at`, `bend_wrist`, `roll_fist`, `aim_bone`, `palm`, параметр `turn_out`.
+- `rider_pair.gd`: `POUR −70`, `LANCE_PITCH −8`, `LANCE_YAW 3`, хранитель копья в каждой паре, выключен в смерти; убраны `LANCE_YAW −8` (старый), `ARM_TURN`, `LEVEL_SLACK`.
+- Проверка (scratchpad): keep.gd (наклон и разворот копья по кадрам), lancemesh.gd (зазор до шеи/головы покадрово + кадр худшего момента), lancebody.gd, closecell.gd (кисть вблизи).
