@@ -1,0 +1,5 @@
+# Front T-pose v3 — тот самый рыцарь с листа (задача 168)
+
+Same ChatGPT conversation; the character sheet attached again.
+
+Forget the previous two images. Draw EXACTLY the knight from the large front figure of the attached sheet — same great helm with its slots and vents, the same blue pauldron shapes and size, the same crossed blue bands, the same breastplate, belts, chainmail skirt, dark tattered cloth panels at the hips, the same blue knee plates, greaves and sabatons, the same steel and wear. Do not invent new armor pieces and do not restyle anything. Keep his build exactly as heavy and broad-shouldered as on the sheet: a big, powerful man in heavy plate, not fat, not squat, natural proportions. Only change the pose: strict front-view T-pose, arms straight and horizontal at shoulder height, palms down, empty gauntleted hands, no weapon, legs nearly vertical under the hips with a clear gap, feet flat; the hip cloth panels stay at the sides and do not hang between the legs. Full figure with wide margins, plain light-grey background, soft even light, no shadows, no ground, no text. Generate the image itself.
