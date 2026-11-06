@@ -7,17 +7,18 @@ const PAIR := preload("res://scenes/rider_pair.gd")
 const RIDER_CLIPS := {"idle": "ride_still", "walk": "ride_still", "run": "ride_still", "attack": "ride_still",
 	"hurt_left": "ride_hurt", "idle_head_low": "ride_dodge", "fidget_graze": "ride_fidget_look", "fall": "ride_still"}
 ## Удар с места, как в витрине пары: полшага назад шагом, рывок галопом, стойка.
-const STEP_BACK := 0.6 * 0.85  # × SCALE
+const STEP_BACK := 0.6  # × scale_k
 const STEP_BACK_TIME := 0.6
 const LUNGE_TIME := 0.35
 const SETTLE_TIME := 0.5
 const BAKE_FPS := 30.0
 ## Всадник в бою меньше, чем в витрине пары: конь 2,46 м в длину, вплотную между носами около 0,5 м.
 ## Рост коня в записи (rider_config) уже умножен; здесь — рыцарь и копьё.
-const SCALE := 0.85
+const HORSE_BASE := 1.9  # рост коня в витрине пары: при нём рыцарь RIDER_SIZE и копьё LANCE_LENGTH
 ## Стоя всадник чуть повёрнут от копья (влево): лицом к лицу головы коней расходятся, копьё ближе к центру.
 const STAND_TURN := deg_to_rad(12.0)
 
+var scale_k := 1.0  # рыцарь, копьё и шаг рывка — по росту коня
 var rider: Creature
 var lance: Node3D
 var keeper: MOCK.LanceKeeper
@@ -37,6 +38,7 @@ var _fit_base := Vector3.ZERO  # положение модели, при кот�
 
 func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt := "", size := 2.0, attack_start := 0.0, idle := "idle") -> void:
 	super.setup(scene, extra_anims, attack, hurt, size, attack_start, idle)
+	scale_k = size / HORSE_BASE
 	var library := anim.get_animation_library(&"")
 	library.add_animation("fall", anim.get_animation("death_fall_on_side").duplicate())
 	library.add_animation("attack", _bake_attack())
@@ -47,7 +49,7 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	for clip in ["run"]:
 		anim.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
 	_saddle = skeleton.find_bone(PAIR.SADDLE_BONE)
-	rider = MOCK.make_rider(self, MOCK.RIDER_SIZE * SCALE)
+	rider = MOCK.make_rider(self, MOCK.RIDER_SIZE * scale_k)
 	PAIR.prepare_lancer(rider)
 	rider.top_level = true
 	rider.anim.play("ride_still", 0.0)
@@ -58,7 +60,7 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	_hang.rider = rider
 	_hang.horse_sk = skeleton
 	add_child(_hang)
-	_hang.drop *= SCALE
+	_hang.drop *= scale_k
 	_hang.set_rest()
 	_hang.set_process(false)
 	_seat()
@@ -83,7 +85,7 @@ func _seat() -> void:
 	var seat: Vector3 = to_global(model.position - _fit_base + Basis(Vector3.UP, PI / 2.0) * (PAIR.SEAT * height))
 	rider.global_transform = Transform3D(global_basis.orthonormalized(), rider.global_position)
 	var hips: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_Hips"))
-	rider.global_position += seat + Vector3(0, 0.08 * SCALE, 0) - hips
+	rider.global_position += seat + Vector3(0, 0.08 * scale_k, 0) - hips
 	_offset = _saddle_frame().affine_inverse() * rider.global_transform
 	_follow()
 
@@ -116,7 +118,7 @@ func _process(delta: float) -> void:
 func _follow() -> void:
 	rider.global_transform = _saddle_frame() * _offset
 	rider.set("_yaw", rider.rotation.y)
-	MOCK.place_fist_lance(lance, rider, 0.0, 0.0, keeper, SCALE)
+	MOCK.place_fist_lance(lance, rider, 0.0, 0.0, keeper, scale_k)
 
 
 ## Клип коня сменился — рыцарь играет свой; разовые короче — хвост растянут до конца клипа коня.
@@ -144,10 +146,10 @@ func _on_horse_clip(clip: StringName) -> void:
 ## Сдвиг коня вперёд-назад в ударе: полшага назад, рывок в цель, стоит.
 func _lunge_shift(t: float) -> float:
 	if t < STEP_BACK_TIME:
-		return -STEP_BACK * smoothstep(0.0, 1.0, t / STEP_BACK_TIME)
+		return -STEP_BACK * scale_k * smoothstep(0.0, 1.0, t / STEP_BACK_TIME)
 	if t < STEP_BACK_TIME + LUNGE_TIME:
 		var u := (t - STEP_BACK_TIME) / LUNGE_TIME
-		return lerpf(-STEP_BACK, 0.0, u * u)
+		return lerpf(-STEP_BACK * scale_k, 0.0, u * u)
 	return 0.0
 
 

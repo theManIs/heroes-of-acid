@@ -8,6 +8,9 @@ extends Node3D
 const ARENA := preload("res://scenes/creature_test.gd")  # записи существ — там
 const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
 const PAIR_PATHS := preload("res://scenes/houndmaster_paths.gd")
+const RIDER_UNIT := preload("res://scenes/rider_unit.gd")
+const RIDER_SHAPE: Array[Vector2i] = [Vector2i.ZERO, Vector2i(1, 0)]  # всадник: два гекса в ряд, якорь — левый
+const RIDER_ROW := 4  # свободный ряд у края: одиночные стоят в START_ROWS, пара — в рядах 6–7
 const MELEE_AREA := preload("res://scenes/melee_area.gd")
 const SWORD := preload("res://scenes/sword_cursor.gd")
 const BOW := preload("res://scenes/bow_cursor.gd")
@@ -21,7 +24,7 @@ const OBSTACLES := [  # преграда занимает свои гексы: �
 ]
 const OBSTACLE_OVER := 1.15  # насколько модель шире занятых гексов: не выглядит вписанной в сетку
 const OBSTACLE_HEIGHT := 2.0  # выше не бывает, метров: не закрывает существ в ряду за ней
-const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3, "hammerer": 3, "houndmaster-pair": 3}  # обычное перемещение; вылазка собаки не ограничена
+const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3, "hammerer": 3, "houndmaster-pair": 3, "rider": 5}  # обычное перемещение; вылазка собаки не ограничена
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
 const TILE_HEIGHT := 0.01  # заливка гекса плоская, лежит на траве
@@ -76,7 +79,8 @@ const DIRS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1),
 enum Turn { PLAYER, ENEMY, BUSY, OVER }
 
 var sides: Array[Array] = [[], []]  # 0 — левая (твоя), 1 — правая
-var creatures := ARENA.CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair()})
+var creatures := ARENA.CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair(),
+	"rider": preload("res://scenes/rider_config.gd").UNIT})
 var _dog_reachable := {}
 var _raid_targets := {}
 var cells := {}  # Creature -> гекс
@@ -141,9 +145,11 @@ func _ready() -> void:
 
 
 func _make(id: String) -> Creature:
-	var c: Creature = HOUNDMASTER_UNIT.new() if id == "houndmaster-pair" else Creature.new()
+	var c: Creature = HOUNDMASTER_UNIT.new() if id == "houndmaster-pair" else RIDER_UNIT.new() if id == "rider" else Creature.new()
 	add_child(c)
 	var cfg: Dictionary = creatures[id]
+	if c is RIDER_UNIT:
+		c.body_shift = Vector3(RADIUS * sqrt(3.0) * 0.5, 0.0, 0.0)
 	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size * CREATURE_SCALE, cfg.attack_from, cfg.idle)
 	if cfg.has("variants"):  # финальная генерация — последняя
 		c.set_textures(cfg.variants[-1].get("textures", {}))
@@ -269,8 +275,12 @@ func _is_pair(c: Creature) -> bool:
 	return c is HOUNDMASTER_UNIT
 
 
+func _shape(c: Creature) -> Array[Vector2i]:
+	return PAIR_PATHS.PAIR if _is_pair(c) else RIDER_SHAPE if c is RIDER_UNIT else PAIR_PATHS.SINGLE
+
+
 func _footprint(c: Creature, anchor := NO_HEX) -> Array[Vector2i]:
-	return PAIR_PATHS.footprint(cells[c] if anchor == NO_HEX else anchor, PAIR_PATHS.PAIR if _is_pair(c) else PAIR_PATHS.SINGLE)
+	return PAIR_PATHS.footprint(cells[c] if anchor == NO_HEX else anchor, _shape(c))
 
 
 func _formation_distance(a: Creature, b: Creature, anchor := NO_HEX) -> int:
@@ -291,7 +301,7 @@ func _blocked(exclude: Creature) -> Dictionary:
 func _paths_from(from: Vector2i, who: Creature = null) -> Dictionary:
 	if who == null:
 		who = _unit_on(from)
-	return PAIR_PATHS.paths(from, PAIR_PATHS.PAIR if _is_pair(who) else PAIR_PATHS.SINGLE, tiles, _blocked(who))
+	return PAIR_PATHS.paths(from, _shape(who), tiles, _blocked(who))
 
 
 func _raid_options(target: Creature) -> Dictionary:
@@ -635,7 +645,12 @@ func _reset() -> void:
 			var c: Creature = sides[s][i]
 			c.revive()
 			c.defending = false
-			cells[c] = _cell(1 if s == 0 else COLS - 2, 6) if _is_pair(c) else _cell(0 if s == 0 else COLS - 1, START_ROWS[i])
+			if _is_pair(c):
+				cells[c] = _cell(1 if s == 0 else COLS - 2, 6)
+			elif c is RIDER_UNIT:
+				cells[c] = _cell(0 if s == 0 else COLS - 2, RIDER_ROW)
+			else:
+				cells[c] = _cell(0 if s == 0 else COLS - 1, START_ROWS[_single_index(sides[s], c)])
 			c.position = _hex_center(cells[c])
 			c.face(c.position + (Vector3.RIGHT if s == 0 else Vector3.LEFT))
 	round_no = 0
@@ -643,6 +658,17 @@ func _reset() -> void:
 	_waiting.clear()
 	_wait_phase = false
 	_next_turn()
+
+
+## Номер одиночного существа в стороне: пара и всадник ставятся отдельно и мест в START_ROWS не занимают.
+func _single_index(side: Array, c: Creature) -> int:
+	var n := 0
+	for other: Creature in side:
+		if other == c:
+			return n
+		if not _is_pair(other) and not other is RIDER_UNIT:
+			n += 1
+	return n
 
 
 func _living(side: int) -> Array[Creature]:

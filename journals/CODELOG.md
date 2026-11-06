@@ -1337,3 +1337,11 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-06 10:48
 
 - `rider_unit.gd`: `STAND_TURN` 12° — стоя всадник повёрнут от копья (влево), `_stand_face`. Замер (scratchpad rider5.gd): лицом к лицу головы коней в 0,59 м (поперёк 0,35 м).
+
+### 2026-11-06 10:54
+
+- `battle_test.gd`: «rider» в составе, `RIDER_UNIT`, `RIDER_SHAPE`, `_shape()`, `RIDER_ROW`, `_single_index` (строки одиночных без пары и всадника), ход 5, `body_shift` по `RADIUS`.
+- `rider_unit.gd`: `scale_k` = рост коня / 1,9 вместо постоянного `SCALE`.
+- `tools/icon_shot.gd`: всадник (вполоборота, рыцарь и голова коня); `rider_config.gd`: `icon`, `icon_dist`.
+- + `game/assets/creatures/rider/icon.png`.
+- Проверка: scratchpad battle.gd (`--auto`, бой до конца, всадники ходят, бьют, гибнут), rider5.gd (тест существа без изменений).

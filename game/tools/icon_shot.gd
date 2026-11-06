@@ -4,6 +4,7 @@ extends Node3D
 
 const ARENA := preload("res://scenes/creature_test.gd")
 const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
+const RIDER_UNIT := preload("res://scenes/rider_unit.gd")
 const SIZE := 256
 
 var camera := Camera3D.new()
@@ -26,7 +27,8 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--id="):
 			only = arg.trim_prefix("--id=")
-	var roster := ARENA.CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair()})
+	var roster := ARENA.CREATURES.merged({"houndmaster-pair": preload("res://scenes/houndmaster_config.gd").pair(),
+		"rider": preload("res://scenes/rider_config.gd").UNIT})
 	for id: String in roster:
 		if only == "" or only == id:
 			await _shoot(id, roster[id])
@@ -36,12 +38,14 @@ func _ready() -> void:
 func _shoot(id: String, cfg: Dictionary) -> void:
 	if cfg.get("showcase_metal_light", false):
 		preload("res://scenes/metal_lighting.gd").apply(self)
-	var c: Creature = HOUNDMASTER_UNIT.new() if id == "houndmaster-pair" else Creature.new()
+	var c: Creature = HOUNDMASTER_UNIT.new() if id == "houndmaster-pair" else RIDER_UNIT.new() if id == "rider" else Creature.new()
 	add_child(c)
 	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
 	if cfg.has("variants"):
 		c.set_textures(cfg.variants[-1].get("textures", {}))
 	c.face(Vector3(0, 0, 10))
+	if c is RIDER_UNIT:
+		c._yaw = deg_to_rad(-30.0)  # всадник стоя смотрит только вдоль ряда: к камере вполоборота вручную
 	c.rotation.y = c._yaw
 	await get_tree().create_timer(1.2).timeout
 	# Голова и плечи: фокус чуть ниже головы (у сутулых голова впереди и низко), камера чуть сверху и сбоку.
@@ -51,7 +55,14 @@ func _shoot(id: String, cfg: Dictionary) -> void:
 	var focus := head + Vector3(0, top * cfg.get("icon_up", -0.08), 0)
 	if id == "houndmaster-pair":
 		focus = Vector3(0, top * 0.55, 0.45)
+	if c is RIDER_UNIT:
+		# Рыцарь и голова коня: фокус между шлемом и мордой.
+		var rider: Creature = c.rider
+		var helm := rider.bone_tip("mixamorig_Head")
+		focus = helm.lerp(head, 0.6)
 	camera.position = focus + Vector3(0.35, 0.2, 1.0).normalized() * top * (2.2 if id == "houndmaster-pair" else cfg.get("icon_dist", 1.15))
+	if c is RIDER_UNIT:
+		camera.position = focus + Vector3(0.35, 0.15, 1.0).normalized() * top * cfg.get("icon_dist", 1.15)
 	camera.look_at(focus)
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
@@ -62,6 +73,8 @@ func _shoot(id: String, cfg: Dictionary) -> void:
 	img = img.get_region(rect)
 	img.resize(SIZE, SIZE, Image.INTERPOLATE_LANCZOS)
 	var path := ProjectSettings.globalize_path(cfg.get("icon", "res://assets/creatures/%s/icon.png" % id))
+	if c is RIDER_UNIT:
+		c.lance.queue_free()
 	img.save_png(path)
 	print("icon ", path)
 	c.queue_free()
