@@ -1263,3 +1263,9 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 ### 2026-11-06 — задача 164
 
 `game/scenes/showcase.gd`: `cell_zoom`, `_zoom_grid`, `_input` — щипок (`InputEventMagnifyGesture`) и Ctrl/Cmd+колесо. `rider_pair.gd`, `horse_lab.gd`, `rider_showcase.gd`, `rider_search.gd`: размер квадрата `CELL_TARGET * cell_zoom`.
+
+### 2026-11-06 08:56
+
+- `rider_mock.gd`: + `arm_out` (постоянный поворот плеча в клипе), + `palm` (центр ладони); `place_lance` хватает по ладони.
+- `rider_pair.gd`: `ARM_OUT −50`, `ARM_UP 25`, `LANCE_YAW −8`; плечо отводится в `ride_still` после заморозки руки.
+- Проверка: скрытые замеры зазоров (scratchpad lancebody.gd, lancemesh.gd), крупный рендер.

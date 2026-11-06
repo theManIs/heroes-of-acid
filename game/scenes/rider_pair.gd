@@ -11,8 +11,11 @@ const SADDLE_BONE := "Torso2"
 const SEAT := Vector3(0.0, 0.85, -0.10)
 const CELL_TARGET := 460
 const TURN := PI / 2.0  # конь смотрит по +X, как остальные существа
-## Копьё отведено наружу от головы коня: −14° задевало пластины брони на шее, −24° даёт не меньше 0,41 м до костей шеи.
-const LANCE_YAW := -24.0
+## Копьё почти параллельно коню: отвод наружу поворотом уводил его заднюю часть сквозь корпус всадника.
+const LANCE_YAW := -8.0
+## Рука с копьём отведена от корпуса вправо и вверх (плечо −50° наружу, 25° вверх, копьё −8°): замер — не ближе 0,26 м к костям всадника и 0,41 м к шее коня во всех клипах.
+const ARM_OUT := -50.0
+const ARM_UP := 25.0
 const HOLD := 1.0
 const BACK_BLEND := 1.0  # возврат в стойку после разового действия, секунд (было 0,3 — руки дёргались)
 const FROZEN := ["ride_still", "ride_hurt", "ride_fidget_look", "ride_dodge"]
@@ -74,6 +77,7 @@ func _make_pair(view: SubViewport) -> Dictionary:
 	var sk: Skeleton3D = horse.find_children("*", "Skeleton3D", true, false)[0]
 	var rider := MOCK.make_rider(view)
 	MOCK.freeze_bones(rider, "ride_still", MOCK.RIGHT_ARM)
+	MOCK.arm_out(rider, "ride_still", ARM_OUT, ARM_UP)
 	for clip in FROZEN:
 		if clip != "ride_still":
 			# Рука с копьём и посадка — как в стойке: иначе копьё отъезжает при смене клипа.

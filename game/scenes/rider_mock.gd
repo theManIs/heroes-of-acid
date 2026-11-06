@@ -133,7 +133,7 @@ static func set_lance(lance: Node3D, forward: Vector3, hand: Vector3, slide := 0
 ## pitch и yaw — раскачивание на весу, градусы: длинная палка качается при движении.
 ## slide — сдвиг копья вдоль древка (м): назад для замаха, вперёд для укола.
 static func place_lance(lance: Node3D, rider: Creature, mount: Node3D, pitch := 0.0, yaw := 0.0, slide := 0.0) -> void:
-	var hand: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_RightHand"))
+	var hand: Vector3 = palm(rider)
 	var local := Vector3(1.0, -LANCE_DOWN, 0.0).normalized()
 	local = local.rotated(Vector3.BACK, deg_to_rad(pitch)).rotated(Vector3.UP, deg_to_rad(yaw))
 	var forward: Vector3 = (mount.global_basis.orthonormalized() * local).normalized()
@@ -231,4 +231,27 @@ static func pin_to(rider: Creature, clip: String, bones: Array, ref := "ride_sti
 			var value: Variant = r.track_get_key_value(rt, 0)
 			for k in a.track_get_key_count(t):
 				a.track_set_key_value(t, k, value)
+
+
+## Постоянно отвести руку с копьём от корпуса: поворот плеча в пространстве скелета, одинаково во всех клипах.
+## out — вбок наружу (вокруг оси «вперёд»), up — вверх-вперёд (вокруг оси «вбок»).
+static func arm_out(rider: Creature, clip: String, out: float, up: float, bone := "mixamorig_RightArm") -> void:
+	var anim := rider.anim
+	var sk := rider.skeleton
+	var root_path := anim.get_node(anim.root_node).get_path_to(sk)
+	var index := sk.find_bone(bone)
+	var rest := sk.get_bone_global_rest(index).basis.get_rotation_quaternion()
+	var around := Quaternion(Vector3(1, 0, 0), deg_to_rad(out)) * Quaternion(Vector3(0, 0, 1), deg_to_rad(up))
+	var turn := rest.inverse() * around * rest
+	var a := anim.get_animation(clip)
+	var t := a.find_track(NodePath("%s:%s" % [root_path, bone]), Animation.TYPE_ROTATION_3D)
+	for k in (a.track_get_key_count(t) if t >= 0 else 0):
+		a.track_set_key_value(t, k, (a.track_get_key_value(t, k) * turn).normalized())
+
+
+## Середина ладони: туда кладётся древко, чтобы кисть его обхватывала, а не проваливалась.
+static func palm(rider: Creature, side := "Right") -> Vector3:
+	var wrist: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_%sHand" % side))
+	var middle: Vector3 = rider.bone_world(rider.skeleton.find_bone("mixamorig_%sHandMiddle1" % side))
+	return wrist.lerp(middle, 0.8)
 
