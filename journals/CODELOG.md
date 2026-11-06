@@ -1397,3 +1397,11 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `hammer_grip.gd`: `right_at` 0,62, `rigid_clips`, `HEAD_ROLL` 59°.
 - `hammerer_config.gd`: попадание и вынос площадного удара, точечный 0,333.
 - Проверка: scratchpad hamimpact.gd (попадание и боёк), hamct.gd (тест существа), battle.gd (автобой).
+
+## 2026-11-06 23:20 — задача 168: новая модель молотобойца
+
+- `creatures/hammerer2/concept/views/{left,back,right}.png` + промпты; `tripo/` (model.glb, rig.glb, state).
+- `creatures/hammerer2/mixamo/clips.json`: 9 записей набора 167 с `file: ../../hammerer/mixamo/...`.
+- `game/assets/creatures/hammerer2/`: body.glb, anims/*, hammerer.tscn (копия прежней с новым body), icon.png.
+- `game/scenes/hammerer_config.gd`: icon/scene/extra → hammerer2; `size 1.9→2.3`, `walk_speed 1.18→1.43`, `showcase_size 2.7→3.2`.
+- Команды: `stage2.py hammerer2`; `pack_model.py creatures/hammerer2/tripo/rig.glb game/assets/creatures/hammerer2/body.glb`; `build_clips.py hammerer2`; Godot `--import`; `icon_shot.tscn -- --id=hammerer`; снимок витрины `--shot`; headless battle_test/creature_test (ошибка idle у всадника — была и до изменений).

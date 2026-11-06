@@ -1,0 +1,96 @@
+{
+  "_match_leg_rest": true,
+  "search/2hand Idle.fbx": {
+    "name": "c_2hand_idle",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "aliases": [
+      "idle"
+    ],
+    "hip_scale": 0.0,
+    "file": "../../hammerer/mixamo/search/2hand Idle.fbx"
+  },
+  "round2/c2_walk_sword": {
+    "grip": 0,
+    "keep_left_fingers": false,
+    "arms_from": "c_2hand_idle",
+    "file": "../../hammerer/mixamo/great sword walk.fbx",
+    "hip_scale": 0.0,
+    "name": "c2_walk_sword",
+    "aliases": [
+      "walk"
+    ]
+  },
+  "round2/c2_run_sword": {
+    "grip": 0,
+    "keep_left_fingers": false,
+    "arms_from": "c_2hand_idle",
+    "file": "../../hammerer/mixamo/great sword run.fbx",
+    "hip_scale": 0.0,
+    "name": "c2_run_sword",
+    "aliases": [
+      "run"
+    ]
+  },
+  "round2/c2_hurt": {
+    "grip": 0,
+    "keep_left_fingers": false,
+    "arms_from": "c_2hand_idle",
+    "file": "../../hammerer/mixamo/great sword impact (2).fbx",
+    "name": "c2_hurt",
+    "hip_scale": 0.0,
+    "aliases": [
+      "hurt"
+    ]
+  },
+  "round2/c2_look": {
+    "grip": 0,
+    "keep_left_fingers": false,
+    "arms_from": "c_2hand_idle",
+    "file": "../../hammerer/mixamo/search/Rifle Idle Looking Around.fbx",
+    "name": "c2_look",
+    "aliases": [
+      "fidget"
+    ],
+    "hip_scale": 0.0
+  },
+  "round2/c2_defend": {
+    "name": "c2_defend",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0,
+    "file": "../../hammerer/mixamo/great sword blocking.fbx",
+    "arms_from": "c_2hand_idle",
+    "aliases": [
+      "defend"
+    ]
+  },
+  "round2/c2_fall": {
+    "name": "c2_fall",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0,
+    "file": "../../hammerer/mixamo/two handed sword death.fbx",
+    "arms_from": "c_2hand_idle",
+    "aliases": [
+      "fall"
+    ]
+  },
+  "round2/attack": {
+    "name": "attack",
+    "file": "../../hammerer/mixamo/search/Heavy Weapon Swing.fbx",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "trim_start": 1.0,
+    "hip_scale": 0.0
+  },
+  "Great Sword Downward Slash.fbx": {
+    "name": "attack_point",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0,
+    "trim_start": 0.5,
+    "time_scale": 1.5,
+    "file": "../../hammerer/mixamo/Great Sword Downward Slash.fbx"
+  }
+}
