@@ -212,11 +212,16 @@ const LEGS := ["LeftUpLeg", "LeftLeg", "LeftFoot", "LeftToeBase", "RightUpLeg", 
 
 ## Посадка одна на все клипы — из спокойной стойки: тогда и переходы между клипами не дёргают ноги.
 static func pin_seat(rider: Creature, clip: String, ref := "ride_still") -> void:
+	pin_to(rider, clip, LEGS + ["Hips"], ref)
+
+
+## Кости во всём клипе — в позе первого кадра клипа ref (по умолчанию спокойная стойка).
+static func pin_to(rider: Creature, clip: String, bones: Array, ref := "ride_still") -> void:
 	var anim := rider.anim
 	var root_path := anim.get_node(anim.root_node).get_path_to(rider.skeleton)
 	var a := anim.get_animation(clip)
 	var r := anim.get_animation(ref)
-	for bone: String in LEGS + ["Hips"]:
+	for bone: String in bones:
 		var path := NodePath("%s:mixamorig_%s" % [root_path, bone])
 		for kind in [Animation.TYPE_ROTATION_3D, Animation.TYPE_POSITION_3D]:
 			var t := a.find_track(path, kind)

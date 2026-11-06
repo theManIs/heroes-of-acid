@@ -11,8 +11,8 @@ const SADDLE_BONE := "Torso2"
 const SEAT := Vector3(0.0, 0.85, -0.10)
 const CELL_TARGET := 460
 const TURN := PI / 2.0  # конь смотрит по +X, как остальные существа
-## Копьё отведено наружу от головы коня: замер — не ближе 0,34 м к голове и шее в любом клипе (было 0,13).
-const LANCE_YAW := -14.0
+## Копьё отведено наружу от головы коня: −14° задевало пластины брони на шее, −24° даёт не меньше 0,41 м до костей шеи.
+const LANCE_YAW := -24.0
 const HOLD := 1.0
 const BACK_BLEND := 1.0  # возврат в стойку после разового действия, секунд (было 0,3 — руки дёргались)
 const FROZEN := ["ride_still", "ride_hurt", "ride_fidget_look", "ride_dodge"]
@@ -72,10 +72,11 @@ func _make_pair(view: SubViewport) -> Dictionary:
 	player.play("idle_breathe")
 	var sk: Skeleton3D = horse.find_children("*", "Skeleton3D", true, false)[0]
 	var rider := MOCK.make_rider(view)
-	for clip in FROZEN:
-		MOCK.freeze_bones(rider, clip, MOCK.RIGHT_ARM)
+	MOCK.freeze_bones(rider, "ride_still", MOCK.RIGHT_ARM)
 	for clip in FROZEN:
 		if clip != "ride_still":
+			# Рука с копьём и посадка — как в стойке: иначе копьё отъезжает при смене клипа.
+			MOCK.pin_to(rider, clip, MOCK.RIGHT_ARM)
 			MOCK.pin_seat(rider, clip)
 	MOCK.pin_seat(rider, "idle")  # копия стойки, которую Creature включает сам
 	rider.anim.get_animation("ride_still").loop_mode = Animation.LOOP_LINEAR
