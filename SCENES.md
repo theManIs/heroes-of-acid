@@ -15,6 +15,9 @@
 Только наложенные клипы (руки из стойки) со стойкой и ударом (167):
 `godot --path game res://scenes/hammerer_overlay.tscn`.
 
+Недостающие действия под выбранную стойку — защита, смерть, точечный удар (167):
+`godot --path game res://scenes/hammerer_rest.tscn`.
+
 Молотобоец в сцене существа:
 `godot --path game res://scenes/creature_test.tscn -- --creature=hammerer`.
 Переключатель «По площади / Точечный»; площадной удар поражает три соседних

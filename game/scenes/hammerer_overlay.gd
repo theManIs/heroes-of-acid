@@ -14,10 +14,11 @@ const OVERLAY := [
 
 
 func _ready() -> void:
-	columns = 4
+	if columns == 2:  # по умолчанию showcase; подкласс задаёт своё до super._ready()
+		columns = 4
 	cell_size = 300
 	var grid := _build_page()
-	for cell: Array in OVERLAY:
+	for cell: Array in _cells():
 		_make_candidate(grid, cell[0], cell[1], cell[2])
 	get_viewport().size_changed.connect(_fit.bind(grid))
 	_zoom_grid = grid
@@ -28,12 +29,16 @@ func _ready() -> void:
 ## Все квадраты в окне: сторона по ширине и высоте окна; щипок увеличивает (cell_zoom).
 func _fit(grid: GridContainer) -> void:
 	var view := get_viewport_rect().size
-	var rows := ceili(float(OVERLAY.size()) / columns)
+	var rows := ceili(float(_cells().size()) / columns)
 	var side := mini(floori((view.x - GAP * (columns + 1)) / columns), floori((view.y - GAP * (rows + 1)) / rows)) - 6
 	side = maxi(90, floori(side * cell_zoom))
 	grid.columns = columns if cell_zoom <= 1.0 else clampi(floori(view.x / (side + GAP)), 1, columns)
 	for pair: Array in _views:
 		pair[0].custom_minimum_size = Vector2.ONE * side
+
+
+func _cells() -> Array:
+	return OVERLAY
 
 
 func _idle_clip() -> String:
