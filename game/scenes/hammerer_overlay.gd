@@ -14,8 +14,7 @@ const OVERLAY := [
 
 
 func _ready() -> void:
-	if columns == 2:  # по умолчанию showcase; подкласс задаёт своё до super._ready()
-		columns = 4
+	columns = _columns()
 	cell_size = 300
 	var grid := _build_page()
 	for cell: Array in _cells():
@@ -39,6 +38,10 @@ func _fit(grid: GridContainer) -> void:
 
 func _cells() -> Array:
 	return OVERLAY
+
+
+func _columns() -> int:
+	return 4
 
 
 func _idle_clip() -> String:

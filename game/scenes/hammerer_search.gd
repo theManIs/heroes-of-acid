@@ -38,6 +38,11 @@ func _cells() -> Array:
 	return CELLS
 
 
+## Хват по клипам: прежние клипы меча — руки рядом у навершия (0,2), новые — врозь (RIGHT_AT).
+func _grips() -> Dictionary:
+	return {}
+
+
 ## Стойка, в которую возвращаются разовые клипы: подкласс подменяет на выбранную.
 func _idle_clip() -> String:
 	return "idle"
@@ -56,6 +61,7 @@ func _make_candidate(grid: GridContainer, title: String, clip: String, endless: 
 	for grip in unit.find_children("*", "Node3D", true, false):
 		if "right_at" in grip:
 			grip.right_at = RIGHT_AT
+			grip.grip_by_clip = _grips()
 	_make_label(cell.frame).text = title
 	if endless:
 		unit.anim.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
@@ -65,7 +71,7 @@ func _make_candidate(grid: GridContainer, title: String, clip: String, endless: 
 
 
 func _repeat(unit: Creature, clip: String) -> void:
-	var death := clip.begins_with("c_death")
+	var death := clip.begins_with("c_death") or clip == "fall"
 	while is_instance_valid(unit):
 		unit.dead = death  # смерть: Creature не возвращает в стойку, лежит до повтора
 		unit.anim.play(clip, 0.2)

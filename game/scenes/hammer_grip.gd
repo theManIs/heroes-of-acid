@@ -14,6 +14,9 @@ const HEAD_ROLL := deg_to_rad(-80.0)
 ## Где на рукояти правая кисть, доля длины от навершия. 0,2 — хват меча, руки рядом у навершия.
 ## Хват по листу (задача 167): правая у бойка, левая дальше по рукояти — около 0,8.
 var right_at := 0.20
+## Свой хват у клипа: имя клипа → right_at. Смена клипа — руки скользят по рукояти к новому месту.
+var grip_by_clip := {}
+const GRIP_SLIDE := 6.0  # скорость перехвата, 1/с
 
 
 func _ready() -> void:
@@ -42,9 +45,12 @@ func _palm(side: String) -> Vector3:
 	return _point(side + "Hand").lerp(_point(side + "HandMiddle1"), 0.75)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not is_instance_valid(_weapon):
 		return
+	if not grip_by_clip.is_empty():
+		var want: float = grip_by_clip.get(String(_unit.anim.current_animation), right_at)
+		right_at = lerpf(right_at, want, 1.0 - exp(-GRIP_SLIDE * delta))
 	var right := _palm("Right")
 	var left := _palm("Left")
 	var axis := (right - left).normalized()
