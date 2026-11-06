@@ -1449,3 +1449,8 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 - `game/scenes/battle_test.gd`: `_anchor_of(c, hex, moves)` (пара / всадник / одиночный) для клика и наведения; подсветка всадника — `cover` с `RIDER_SHAPE`.
 - `game/scenes/creature_test.gd`: `RIDER_SHAPE`, `_move_anchor` и подсветка для всадника так же; `_footprint` через форму.
 - Проверка: скрипт — при ходе 5 голова вправо до x=6, влево до −5; клик (6,0)→якорь (5,0), (−5,0)→(−5,0); обе арены headless без ошибок.
+
+## 2026-11-07 01:40 — 173, правка: всадник влетает в цель
+
+- `game/scenes/rider_unit.gd`: `attack_charge` = run 0,4 с + walk задом 0,6 с + idle 0,4 с; `_charge_shift` — вперёд на `CHARGE_PUSH 0.8 × scale_k` с торможением, попадание в упоре (impact = 0,4 с), назад smoothstep; убраны `CHARGE_RUN`, `CHARGE_IMPACT`.
+- Проверка: headless скрипт — после пути `attack_charge`, hit_delay 0,4; стоя прежний `attack`.

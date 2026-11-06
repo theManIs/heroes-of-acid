@@ -12,10 +12,13 @@ const STEP_BACK_TIME := 0.6
 const LUNGE_TIME := 0.35
 const SETTLE_TIME := 0.5
 const BAKE_FPS := 30.0
-## 173: удар с разбега — сразу после пути, без шага назад: галоп в цель, попадание на ходу, стойка.
-const CHARGE_RUN := 0.3
-const CHARGE_IMPACT := 0.12  # секунд от начала: копьё входит, пока конь ещё скачет
-const CHARGE_PUSH := 0.35  # × scale_k: конь по инерции проходит чуть вперёд и встаёт на место
+## 173: удар с разбега — сразу после пути, без шага назад. Конь не тормозит, а галопом влетает
+## в цель (CHARGE_PUSH вперёд за CHARGE_IN), попадание в самой глубокой точке; потом задом
+## шагом на свой гекс и стойка.
+const CHARGE_IN := 0.4
+const CHARGE_BACK := 0.6
+const CHARGE_SETTLE := 0.4
+const CHARGE_PUSH := 0.8  # × scale_k, метров: около трети корпуса коня
 ## Всадник в бою меньше, чем в витрине пары: конь 2,46 м в длину, вплотную между носами около 0,5 м.
 ## Рост коня в записи (rider_config) уже умножен; здесь — рыцарь и копьё.
 const HORSE_BASE := 1.9  # рост коня в витрине пары: при нём рыцарь RIDER_SIZE и копьё LANCE_LENGTH
@@ -48,7 +51,7 @@ func setup(scene: PackedScene, extra_anims: Array = [], attack := "slash", hurt 
 	var library := anim.get_animation_library(&"")
 	library.add_animation("fall", anim.get_animation("death_fall_on_side").duplicate())
 	library.add_animation("attack", _bake_attack([["walk", STEP_BACK_TIME, -1.0], ["run", LUNGE_TIME, 1.0], ["idle", SETTLE_TIME, 1.0]]))
-	library.add_animation("attack_charge", _bake_attack([["run", CHARGE_RUN, 1.0], ["idle", SETTLE_TIME, 1.0]]))
+	library.add_animation("attack_charge", _bake_attack([["run", CHARGE_IN, 1.0], ["walk", CHARGE_BACK, -1.0], ["idle", CHARGE_SETTLE, 1.0]]))
 	arrived.connect(func(): _arrived_frame = Engine.get_process_frames())
 	attack_anim = "attack"
 	attack_from = 0.0
@@ -162,9 +165,15 @@ func _lunge_shift(t: float) -> float:
 	return 0.0
 
 
-## Удар с разбега: конь по инерции чуть проходит вперёд и возвращается на свой гекс.
+## Удар с разбега: влетает в цель с торможением до упора, потом задом на свой гекс.
 func _charge_shift(t: float) -> float:
-	return CHARGE_PUSH * scale_k * sin(PI * clampf(t / (CHARGE_RUN + SETTLE_TIME), 0.0, 1.0))
+	var push := CHARGE_PUSH * scale_k
+	if t < CHARGE_IN:
+		var u := t / CHARGE_IN
+		return push * (1.0 - (1.0 - u) * (1.0 - u))
+	if t < CHARGE_IN + CHARGE_BACK:
+		return push * (1.0 - smoothstep(0.0, 1.0, (t - CHARGE_IN) / CHARGE_BACK))
+	return 0.0
 
 
 ## Клип удара из клипов коня: части [клип, секунд, направление]. С места: шаг назад (шаг задом
@@ -250,7 +259,7 @@ func strike(target: Creature, _distance: float, _overlap: float, collateral: Arr
 	# 173: только что пришёл — бьёт с разбега; стоял — полшага назад и рывок.
 	var charging := Engine.get_process_frames() - _arrived_frame <= 2
 	attack_anim = "attack_charge" if charging else "attack"
-	impact = CHARGE_IMPACT / anim.get_animation(attack_anim).length if charging else (STEP_BACK_TIME + LUNGE_TIME) / anim.get_animation(attack_anim).length
+	impact = CHARGE_IN / anim.get_animation(attack_anim).length if charging else (STEP_BACK_TIME + LUNGE_TIME) / anim.get_animation(attack_anim).length
 	play_once(attack_anim)
 	target.take_hit(hit_delay())
 	for victim: Creature in collateral:
