@@ -2024,3 +2024,7 @@ mannequin_search.gd — столбцы по ширине окна (_fit_cells), 
 
 creature.gd — set_stance меняет attack_anim/attack_from/impact, reach из записи; militiaman2_config.gd — stance.attack; clips.json — s_attack4 → shield_attack; creature_gallery_page.gd — клетки «Стойка: атака/защита».
 Проверка: обычная — attack 0,72 с; со щитом — shield_attack 0,42 с, стойка сохраняется; снова обычная — attack.
+
+## 2026-11-07 — 192: рука со щитом в реакции и смерти
+
+militiaman2_config.gd — SHIELD_ARM, hurt_calm/fall_calm 0,25; creature_test.gd, battle_test.gd, creature_gallery_page.gd — scale_bones("fall", fall_calm).

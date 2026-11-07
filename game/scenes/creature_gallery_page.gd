@@ -73,6 +73,7 @@ func _make_action(cfg: Dictionary, action: Array) -> void:
 	unit.turn_bones(cfg.get("bone_turn", {}))
 	unit.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	unit.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
+	unit.scale_bones("fall", cfg.get("fall_calm", []), cfg.get("fall_calm_by", 1.0))
 	var variant: Dictionary = cfg.get("variants", [{}])[-1]
 	unit.set_textures(variant.get("textures", {}))
 	if variant.has("glow"):

@@ -206,6 +206,7 @@ func _make() -> Creature:
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
+	c.scale_bones("fall", cfg.get("fall_calm", []), cfg.get("fall_calm_by", 1.0))  # 192: рука со щитом в смерти
 	if cfg.get("smoke", false):
 		c.add_smoke()
 	return c
