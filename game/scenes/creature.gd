@@ -385,6 +385,8 @@ func walk_path(points: Array[Vector3]) -> void:
 ## 186: стойка настраивается после setup: клипы стойки уже подмешаны из extra.
 func configure_stance(cfg: Dictionary) -> void:
 	stance = cfg if cfg.has("idle") and anim.has_animation(cfg.idle) else {}
+	if stance.has("attack") and stance.has("attack_calm"):  # 193: в ударе из стойки щит держится у позы стойки
+		scale_bones(stance.attack, stance.attack_calm, stance.get("attack_calm_by", 1.0), stance.idle)
 	if stance.has("walk") and anim.has_animation(stance.walk) and anim.has_animation("walk"):
 		var base := _measure_step_speed("walk")
 		_stance_walk_speed = walk_speed * _measure_step_speed(stance.walk) / base if base > 0.0 else walk_speed
@@ -625,11 +627,12 @@ func take_hit(delay: float) -> void:
 
 ## Ослабить движение костей: только доля amount пути от позы стойки, тело играет полностью.
 ## Обрезать по времени нельзя: пресеты делают основной размах в первой четверти длины.
-func scale_bones(anim_name: String, bones: Array, amount: float) -> void:
-	if bones.is_empty() or not anim.has_animation(anim_name):
+## reference — от позы какой стойки (первый кадр) считать долю: у стойки со щитом своя (193).
+func scale_bones(anim_name: String, bones: Array, amount: float, reference := "idle") -> void:
+	if bones.is_empty() or not anim.has_animation(anim_name) or not anim.has_animation(reference):
 		return
 	var a := anim.get_animation(anim_name)
-	var idle := anim.get_animation("idle")
+	var idle := anim.get_animation(reference)
 	var root_path := anim.get_node(anim.root_node).get_path_to(skeleton)
 	for bone: String in bones:
 		var path := NodePath("%s:%s" % [root_path, bone])

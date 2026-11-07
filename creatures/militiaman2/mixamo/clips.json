@@ -238,7 +238,10 @@
     "name": "s_impact3",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "hurt_head"
+    ]
   },
   "packs/Sword And Shield Pack/sword and shield block.fbx": {
     "name": "s_block1",

@@ -127,6 +127,7 @@ func _item_points() -> Array[Vector3]:
 ## Две постоянные оси плеча: вертикаль (щит уходит вбок-назад), затем поперечная (вниз-назад). Угол не больше
 ## TURN_MAX, по кадрам сглажен — без рывков; выход за границу меньше TOLERANCE не трогаем.
 const TURN_MAX := deg_to_rad(50.0)
+const TURN_MAX_ATTACK := deg_to_rad(90.0)  # 193: в ударе корпус уходит вперёд — плечу нужен больший разворот
 const TOLERANCE := 0.015
 const SMOOTH := 2  # кадров в каждую сторону
 
@@ -145,27 +146,46 @@ func _bake_limit() -> void:
 	var to_sk := _skeleton.global_basis.inverse()
 	var track_path := NodePath("%s:%s" % [anim.get_node(anim.root_node).get_path_to(_skeleton), _skeleton.get_bone_name(arm)])
 	var was := anim.current_animation
+	# Сначала кадры всех клипов, потом одни стороны поворота на всё существо: поправки разных клипов
+	# согласованы, и переход между клипами не проводит щит через вынос вперёд (было 0,85 м в переходе).
+	var jobs := []  # [клип, трек, кадры, предел поворота]
 	for clip in anim.get_animation_list():
 		if clip == "fall" or clip == "RESET" or clip.contains("walk") or clip.contains("run"):
 			continue  # на ходу сосед не впереди; в шаге поворот плеча уводил щит в сторону, как флаг
 		var a := anim.get_animation(clip)
 		var t := a.find_track(track_path, Animation.TYPE_ROTATION_3D)
 		if t < 0 or a.has_meta("forward_limited"):
-			continue  # клип общий у нескольких существ: правим один раз
+			continue
 		a.set_meta("forward_limited", true)
-		var keys := a.track_get_key_count(t)
 		var frames := []  # [сустав, точки, базис родителя, базис плеча]
-		var turns: Array = []  # [угол вокруг вертикали, угол вокруг поперечной]
-		for k in keys:
+		for k in a.track_get_key_count(t):
 			anim.play(clip)
 			anim.seek(a.track_get_key_time(t, k), true)
 			_skeleton.force_update_all_bone_transforms()
 			_process(0.0)
-			var joint := (_skeleton.global_transform * _skeleton.get_bone_global_pose(arm)).origin
-			var points := _item_points()
-			frames.append([joint, points, _skeleton.get_bone_global_pose(parent).basis.orthonormalized(),
-				_skeleton.get_bone_global_pose(arm).basis.orthonormalized()])
-			turns.append(_solve(joint, points, centre, forward, up, across, limit))
+			frames.append([(_skeleton.global_transform * _skeleton.get_bone_global_pose(arm)).origin, _item_points(),
+				_skeleton.get_bone_global_pose(parent).basis.orthonormalized(), _skeleton.get_bone_global_pose(arm).basis.orthonormalized()])
+		var attack: bool = clip == _unit.attack_anim or clip == _unit.stance.get("attack", "-")
+		jobs.append([a, t, frames, TURN_MAX_ATTACK if attack else TURN_MAX])
+	var best_signs := Vector2.ONE
+	var best_over := INF
+	for signs in [Vector2(1, 1), Vector2(1, -1), Vector2(-1, 1), Vector2(-1, -1)]:
+		var over := 0.0
+		for job: Array in jobs:
+			for f: Array in job[2]:
+				var turn := _solve(f[0], f[1], centre, forward, up, across, limit, job[3], signs)
+				over += maxf(0.0, _front(f[0], f[1], centre, forward, up, across, turn) - limit) + absf(turn.x) * 0.001 + absf(turn.y) * 0.001
+		if over < best_over:
+			best_over = over
+			best_signs = signs
+	for job: Array in jobs:
+		var a: Animation = job[0]
+		var t: int = job[1]
+		var frames: Array = job[2]
+		var keys := frames.size()
+		var turns: Array = []
+		for f: Array in frames:
+			turns.append(_solve(f[0], f[1], centre, forward, up, across, limit, job[3], best_signs))
 		if turns.all(func(x): return x == Vector2.ZERO):
 			continue
 		for k in keys:
@@ -180,34 +200,39 @@ func _bake_limit() -> void:
 				continue
 			var world := Basis(across, turn.y) * Basis(up, turn.x)
 			var turn_sk := Basis((to_sk * world * to_sk.inverse()).get_rotation_quaternion())
-			a.track_set_key_value(t, k, (frames[k][2].inverse() * turn_sk * frames[k][3]).get_rotation_quaternion())
+			var q: Quaternion = (frames[k][2].inverse() * turn_sk * frames[k][3]).get_rotation_quaternion()
+			var old: Quaternion = a.track_get_key_value(t, k)
+			if q.dot(old) < 0.0:
+				q = -q  # тот же поворот в одном полушарии с исходным ключом: иначе смешивание клипов ломает позу
+			a.track_set_key_value(t, k, q)
 	if was != "":
 		anim.play(was)
 
 
-## Углы плеча (вертикаль, поперечная), при которых предмет не дальше границы; не больше TURN_MAX каждый.
-func _solve(joint: Vector3, points: Array[Vector3], centre: Vector3, forward: Vector3, up: Vector3, across: Vector3, limit: float) -> Vector2:
-	var front := func(turn: Vector2) -> float:
-		var rot := Basis(across, turn.y) * Basis(up, turn.x)
-		var most := -INF
-		for p: Vector3 in points:
-			most = maxf(most, (joint + rot * (p - joint) - centre).dot(forward))
-		return most
-	if front.call(Vector2.ZERO) <= limit + TOLERANCE:
+## Вынос предмета вперёд при повороте плеча turn (вертикаль, поперечная).
+func _front(joint: Vector3, points: Array, centre: Vector3, forward: Vector3, up: Vector3, across: Vector3, turn: Vector2) -> float:
+	var rot := Basis(across, turn.y) * Basis(up, turn.x)
+	var most := -INF
+	for p: Vector3 in points:
+		most = maxf(most, (joint + rot * (p - joint) - centre).dot(forward))
+	return most
+
+
+## Углы плеча (вертикаль, поперечная) со сторонами signs, при которых предмет не дальше границы;
+## каждый не больше cap. Сначала вертикаль, затем поперечная; наименьший нужный поворот.
+func _solve(joint: Vector3, points: Array, centre: Vector3, forward: Vector3, up: Vector3, across: Vector3, limit: float, cap: float, signs: Vector2) -> Vector2:
+	if _front(joint, points, centre, forward, up, across, Vector2.ZERO) <= limit + TOLERANCE:
 		return Vector2.ZERO
 	var best := Vector2.ZERO
-	var best_front: float = front.call(best)
+	var best_front := _front(joint, points, centre, forward, up, across, best)
 	for axis in [0, 1]:
-		for side in [1.0, -1.0]:
-			for step in 20:
-				var turn := best
-				turn[axis] = side * TURN_MAX * (step + 1) / 20.0
-				var f: float = front.call(turn)
-				if f < best_front - 0.001:
-					best_front = f
-					best = turn
-				if f <= limit:
-					break
-			if best_front <= limit:
+		for step in 30:
+			var turn := best
+			turn[axis] = signs[axis] * cap * (step + 1) / 30.0
+			var f := _front(joint, points, centre, forward, up, across, turn)
+			if f < best_front - 0.001:
+				best_front = f
+				best = turn
+			if f <= limit:
 				return best
 	return best

@@ -2028,3 +2028,8 @@ creature.gd — set_stance меняет attack_anim/attack_from/impact, reach и
 ## 2026-11-07 — 192: рука со щитом в реакции и смерти
 
 militiaman2_config.gd — SHIELD_ARM, hurt_calm/fall_calm 0,25; creature_test.gd, battle_test.gd, creature_gallery_page.gd — scale_bones("fall", fall_calm).
+
+## 2026-11-07 — 193: щит в атаке
+
+weapon_grip.gd — общий для существа выбор сторон поворота, TURN_MAX_ATTACK 90°, _front/_solve, полушарие кватерниона; creature.gd — scale_bones(reference), configure_stance калмит удар стойки; arenas/gallery — attack_calm; militiaman2_config.gd — forward_limit 0,29, attack_calm.
+Замер (overlap.gd): стойка −0,49/−0,31; атака −0,24/−0,20; стойка со щитом −0,28/−0,11; атака со щитом −0,02/−0,01.

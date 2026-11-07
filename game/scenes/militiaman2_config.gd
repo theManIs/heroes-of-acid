@@ -20,13 +20,15 @@ const UNIT := {
 	# 192: в реакции и смерти рука со щитом — четверть размаха от стойки (как у прежнего ополченца, M08):
 	# иначе щит машет и заходит в соседа.
 	"hurt_calm": SHIELD_ARM, "hurt_calm_by": 0.25, "fall_calm": SHIELD_ARM, "fall_calm_by": 0.25,
+	"attack_calm": SHIELD_ARM, "attack_calm_by": 0.25,  # 193: в ударе тоже
 	"in_battle": false,  # манекен: в бой — с моделью
 	# Отдельные топор и щит (weapon_grip.gd); пока заглушки, потом модели Tripo.
 	"props": [{"hand": "Right", "mode": "fist", "shape": "axe", "length": 0.42, "grip_at": 0.12},
 		{"hand": "Left", "mode": "forearm", "shape": "shield", "length": 0.34, "width": 0.26,
-			"forward_limit": 0.35}],  # 189: щит не дальше 0,35 роста (≈0,63 м, край гекса 0,52) — ни в ударе, ни в защите; правка клипов заранее
+			"forward_limit": 0.29}],  # 189/193: щит не дальше края своего гекса (0,29 роста ≈ 0,52 м): два щита лицом к лицу не сходятся
 	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; после атаки снова в стойке.
 	"stance": {"title": "Щит перед собой", "enter": "shield_up", "idle": "shield_idle", "walk": "shield_walk",
 		"hurt": "shield_hurt", "exit": "shield_down", "move": 0.5,
-		"defend": "shield_brace", "attack": "shield_attack"},  # 191: в стойке — короткий удар (1,0 с)  # «Защита» в стойке: приседает за щит и принимает удар (Crouch Blocked Impact), не тот же клип, что получение удара
+		"defend": "shield_brace", "attack": "shield_attack",
+		"attack_calm": SHIELD_ARM, "attack_calm_by": 0.0},  # 193: в ударе из стойки рука со щитом стоит в позе стойки  # 191: в стойке — короткий удар (1,0 с)  # «Защита» в стойке: приседает за щит и принимает удар (Crouch Blocked Impact), не тот же клип, что получение удара
 }
