@@ -2009,3 +2009,9 @@ index 57dce83..846121e 100644
 ## 2026-11-07 — 188: защита в стойке — присед за щит
 
 clips.json: s_cblock2 → shield_brace (и ещё 6 приседаний набора как кандидаты); militiaman2_config.gd: stance.defend = shield_brace, extra + shield_brace.glb.
+
+## 2026-11-07 — 189: щит не залезает в соседа
+
+weapon_grip.gd — forward_limit, _bake_limit, _solve, _item_points; militiaman2_config.gd — forward_limit 0,35; clips.json — шаг со щитом без arms_from; check_clips.gd — E15 (боком), E16 (за свой гекс); ERRORS.md — E15, E16, M13–M15.
+
+Замеры вынос щита (м): стойка 0,64, подъём 0,64, удар в щит 0,64, присед 0,73 (было 0,84), реакция 0,72 (0,77), атака 0,66 (0,81).

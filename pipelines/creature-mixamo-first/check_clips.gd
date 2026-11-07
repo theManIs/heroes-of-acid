@@ -15,7 +15,7 @@ const REQUIRED := ["idle", "walk", "attack", "hurt", "defend", "fall", "fidget"]
 const LOCOMOTION := ["walk", "run"]
 ## Пороги для роста 1,8 м, откалиброваны на принятых существах (молотобоец, фонарщик, псарь):
 ## берётся их наибольшее значение с запасом. Числа — в README пайплайна.
-const LIMITS := {"hip": 0.2, "slide": 0.3, "below": 0.05, "wrist": 90.0, "palms": 0.15, "gap": 0.03, "seam": 0.06}
+const LIMITS := {"hip": 0.2, "slide": 0.3, "below": 0.05, "wrist": 90.0, "palms": 0.15, "gap": 0.03, "seam": 0.06, "facing": 30.0, "reach_out": 0.75}
 
 var _fails := 0
 var _warns := 0
@@ -246,6 +246,8 @@ func _check_clip(clip: String, cfg: Dictionary) -> void:
 	var gap := INF  # ближе всего оружие к костям корпуса и бёдер
 	var gap_t := 0.0
 	var spans: Array[float] = []
+	var facing := 0.0  # средний разворот груди от «вперёд» (+X модели), градусы
+	var reach_out := -INF  # дальше всего вперёд оружие и щит от центра гекса
 	var contact := {}
 	var weapons := _weapons()
 	var first := {}
@@ -266,6 +268,8 @@ func _check_clip(clip: String, cfg: Dictionary) -> void:
 				slide = maxf(slide, Vector2(p.x - contact[foot].x, p.z - contact[foot].z).length())
 			else:
 				contact.erase(foot)
+		var chest := Vector3.UP.cross(_p("RightShoulder") - _p("LeftShoulder"))
+		facing += absf(rad_to_deg(atan2(chest.z, chest.x))) / (SAMPLES + 1)
 		for side in ["Left", "Right"]:
 			var fore := (_p(side + "Hand") - _p(side + "ForeArm")).normalized()
 			var hand := (_p(side + "HandMiddle1") - _p(side + "Hand")).normalized()
@@ -274,6 +278,9 @@ func _check_clip(clip: String, cfg: Dictionary) -> void:
 				wrist = bend
 				wrist_t = t
 		for mi: MeshInstance3D in weapons:
+			var box := mi.get_aabb()
+			for c in 8:
+				reach_out = maxf(reach_out, (mi.global_transform * (box.position + box.size * Vector3(c & 1, (c >> 1) & 1, (c >> 2) & 1))).x)
 			var seg := _segment(mi)
 			if mi == weapons[0] and _dist_to_segment(_palm("Left"), seg[0], seg[1]) < 0.1 * k \
 					and _dist_to_segment(_palm("Right"), seg[0], seg[1]) < 0.1 * k:
@@ -315,6 +322,13 @@ func _check_clip(clip: String, cfg: Dictionary) -> void:
 		_report("ПРОВАЛ", "E09", "%s: обе руки на древке, расстояние между ладонями гуляет на %.2f м — оружие катается" % [tag, span_range])
 	if gap < LIMITS.gap * k and standing:
 		_report("ВНИМАНИЕ", "E10", "%s: оружие в %.2f м от оси корпуса или бедра в %.2f с — проходит сквозь тело" % [tag, gap, gap_t])
+	# E15: стоит или ходит боком — грудь в стойке и на ходу развёрнута от направления (модель смотрит по +X).
+	if (clip == cfg.get("idle", "idle") or _moving(clip)) and facing > LIMITS.facing:
+		_report("ВНИМАНИЕ", "E15", "%s: грудь развёрнута на %d° от «вперёд» — стоит или ходит боком" % [tag, int(facing)])
+	# E16: оружие или щит выходит вперёд за свой гекс дальше допуска в стоячих клипах — залезает в соседа.
+	var attacks: Array = [cfg.attack] + cfg.get("melee_modes", {}).values().map(func(m): return m.anim)
+	if standing and not clip in attacks and reach_out > LIMITS.reach_out * k:  # удар должен доставать цель
+		_report("ВНИМАНИЕ", "E16", "%s: оружие или щит на %.2f м вперёд от центра гекса — залезает в соседа (forward_limit)" % [tag, reach_out])
 	if (clip == cfg.get("idle", "idle") or _moving(clip)) and jump > LIMITS.seam * k:
 		_report("ПРОВАЛ", "E11", "%s: шов цикла, скачок %.2f м" % [tag, jump])
 	if _fails + _warns == before:

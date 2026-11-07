@@ -303,7 +303,6 @@
     "name": "s_walk_ip",
     "grip": 0,
     "keep_left_fingers": false,
-    "arms_from": "s_block_idle",
     "aliases": [
       "shield_walk"
     ]
