@@ -6,6 +6,7 @@ extends Node3D
 ## Снимок идущей игры: создать файл screens/.shot — игра запишет кадр в screens/current/arena.png и удалит файл.
 
 # Проверяемое существо: оба бойца — оно. Новое существо — добавить запись в CREATURES; выбор — пиктограммы слева.
+const HUB_BACK := preload("res://scenes/hub_back.gd")  # 180: кнопка «Назад» на главный экран
 const TESTED := "lantern-archer"  # с кого начинать
 const CREATURES := {
 	"lantern-archer": {
@@ -161,6 +162,7 @@ func _ready() -> void:
 	_build_board()
 	_build_hud()
 	_reset()
+	HUB_BACK.add(self)  # 180
 	get_window().mouse_exited.connect(_clear_hover)
 	get_window().mouse_entered.connect(func(): _pointer_inside = true)
 	for arg in OS.get_cmdline_user_args():

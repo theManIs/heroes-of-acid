@@ -1589,3 +1589,85 @@ index d362aff..6f04ca1 100644
 ## 2026-11-07 — 179 отменена
 
 Удалены `game/scenes/bow_string.gd`, `lantern-archer.tscn`; в `creature_test.gd` сцена фонарщика снова `lantern-archer.glb`.
+
+## 2026-11-07 — 180: главный экран
+
+Новые: `game/scenes/hub.gd`, `hub.tscn`, `hub_back.gd`, `game/assets/ui/hub/{creature_test,battle_test,showcase}.jpg`.
+
+```diff
+diff --git a/game/project.godot b/game/project.godot
+index 7bee79d..9a38579 100644
+--- a/game/project.godot
++++ b/game/project.godot
+@@ -5,7 +5,7 @@ config_version=5
+ [application]
+ 
+ config/name="Heroes of Acid"
+-run/main_scene="res://scenes/creature_test.tscn"
++run/main_scene="res://scenes/hub.tscn"
+ config/features=PackedStringArray("4.7")
+ 
+ [display]
+diff --git a/game/scenes/battle_test.gd b/game/scenes/battle_test.gd
+index b91e25a..b328106 100644
+--- a/game/scenes/battle_test.gd
++++ b/game/scenes/battle_test.gd
+@@ -5,6 +5,7 @@ extends Node3D
+ ## Запуск: godot --path game res://scenes/battle_test.tscn
+ ## Отладка: -- --auto — обе стороны играют сами, ускоренно; -- --shot=<префикс> — кадры <префикс>-start.png, -end.png.
+ 
++const HUB_BACK := preload("res://scenes/hub_back.gd")  # 180: кнопка «Назад» на главный экран
+ const ARENA := preload("res://scenes/creature_test.gd")  # записи существ — там
+ const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
+ const PAIR_PATHS := preload("res://scenes/houndmaster_paths.gd")
+@@ -133,6 +134,7 @@ func _ready() -> void:
+ 	_build_world()
+ 	_build_board()
+ 	_build_hud()
++	HUB_BACK.add(self)  # 180
+ 	_place_camera()
+ 	get_viewport().size_changed.connect(_place_camera)
+ 	_reset()
+diff --git a/game/scenes/creature_gallery.gd b/game/scenes/creature_gallery.gd
+index 8ffb8bd..f6f22fe 100644
+--- a/game/scenes/creature_gallery.gd
++++ b/game/scenes/creature_gallery.gd
+@@ -3,6 +3,7 @@ extends Control
+ 
+ const PAGE := preload("res://scenes/creature_gallery_page.gd")
+ const ARENA := preload("res://scenes/creature_test.gd")
++const HUB_BACK := preload("res://scenes/hub_back.gd")  # 180: кнопка «Назад» на главный экран
+ var _ids: Array = []
+ var _selector := OptionButton.new()
+ var _page: Control
+@@ -45,6 +46,7 @@ func _ready() -> void:
+ 			selected = _ids.find(arg.trim_prefix("--creature="))
+ 	_selector.select(selected)
+ 	_select(selected)
++	HUB_BACK.add(self)  # 180
+ 
+ 
+ func _select(index: int) -> void:
+diff --git a/game/scenes/creature_test.gd b/game/scenes/creature_test.gd
+index d362aff..299d131 100644
+--- a/game/scenes/creature_test.gd
++++ b/game/scenes/creature_test.gd
+@@ -6,6 +6,7 @@ extends Node3D
+ ## Снимок идущей игры: создать файл screens/.shot — игра запишет кадр в screens/current/arena.png и удалит файл.
+ 
+ # Проверяемое существо: оба бойца — оно. Новое существо — добавить запись в CREATURES; выбор — пиктограммы слева.
++const HUB_BACK := preload("res://scenes/hub_back.gd")  # 180: кнопка «Назад» на главный экран
+ const TESTED := "lantern-archer"  # с кого начинать
+ const CREATURES := {
+ 	"lantern-archer": {
+@@ -161,6 +162,7 @@ func _ready() -> void:
+ 	_build_board()
+ 	_build_hud()
+ 	_reset()
++	HUB_BACK.add(self)  # 180
+ 	get_window().mouse_exited.connect(_clear_hover)
+ 	get_window().mouse_entered.connect(func(): _pointer_inside = true)
+ 	for arg in OS.get_cmdline_user_args():
+```
+
+Проверка: скрытый прогон hub → каждая сцена → «Назад» → hub, темп 1,0 после боя.

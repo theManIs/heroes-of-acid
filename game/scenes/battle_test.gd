@@ -5,6 +5,7 @@ extends Node3D
 ## Запуск: godot --path game res://scenes/battle_test.tscn
 ## Отладка: -- --auto — обе стороны играют сами, ускоренно; -- --shot=<префикс> — кадры <префикс>-start.png, -end.png.
 
+const HUB_BACK := preload("res://scenes/hub_back.gd")  # 180: кнопка «Назад» на главный экран
 const ARENA := preload("res://scenes/creature_test.gd")  # записи существ — там
 const HOUNDMASTER_UNIT := preload("res://scenes/houndmaster_unit.gd")
 const PAIR_PATHS := preload("res://scenes/houndmaster_paths.gd")
@@ -133,6 +134,7 @@ func _ready() -> void:
 	_build_world()
 	_build_board()
 	_build_hud()
+	HUB_BACK.add(self)  # 180
 	_place_camera()
 	get_viewport().size_changed.connect(_place_camera)
 	_reset()

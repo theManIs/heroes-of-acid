@@ -3,6 +3,7 @@ extends Control
 
 const PAGE := preload("res://scenes/creature_gallery_page.gd")
 const ARENA := preload("res://scenes/creature_test.gd")
+const HUB_BACK := preload("res://scenes/hub_back.gd")  # 180: кнопка «Назад» на главный экран
 var _ids: Array = []
 var _selector := OptionButton.new()
 var _page: Control
@@ -45,6 +46,7 @@ func _ready() -> void:
 			selected = _ids.find(arg.trim_prefix("--creature="))
 	_selector.select(selected)
 	_select(selected)
+	HUB_BACK.add(self)  # 180
 
 
 func _select(index: int) -> void:
