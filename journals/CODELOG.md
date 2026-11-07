@@ -1454,3 +1454,11 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 
 - `game/scenes/rider_unit.gd`: `attack_charge` = run 0,4 с + walk задом 0,6 с + idle 0,4 с; `_charge_shift` — вперёд на `CHARGE_PUSH 0.8 × scale_k` с торможением, попадание в упоре (impact = 0,4 с), назад smoothstep; убраны `CHARGE_RUN`, `CHARGE_IMPACT`.
 - Проверка: headless скрипт — после пути `attack_charge`, hit_delay 0,4; стоя прежний `attack`.
+
+## 2026-11-07 — 175: молотобоец 85 %
+
+`game/scenes/hammerer_config.gd`
+```diff
+-	"size": 2.3, "walk_speed": 1.43,  # 168: …
++	"size": 1.955, "walk_speed": 1.2155,  # 175: 85 % от 2,3 — вмещается в свой гекс; шаг в той же доле
+```
