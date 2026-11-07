@@ -43,6 +43,11 @@ func _shoot(id: String, cfg: Dictionary) -> void:
 	c.setup(load(cfg.scene), cfg.extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
 	if cfg.has("variants"):
 		c.set_textures(cfg.variants[-1].get("textures", {}))
+	for prop: Dictionary in cfg.get("props", []):  # 184: отдельные оружие и щит
+		var grip: Node3D = preload("res://scenes/weapon_grip.gd").new()
+		for key in prop:
+			grip.set(key, prop[key])
+		c.model.add_child(grip)
 	c.face(Vector3(0, 0, 10))
 	if c is RIDER_UNIT:
 		c._yaw = deg_to_rad(-30.0)  # всадник стоя смотрит только вдоль ряда: к камере вполоборота вручную

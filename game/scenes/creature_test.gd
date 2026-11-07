@@ -60,7 +60,7 @@ const CREATURES := {
 		"size": 1.95,
 	},
 	"militiaman": {
-		"name": "Ополченец", "icon": "res://assets/creatures/militiaman/icon.png",
+		"name": "Ополченец (старый)", "icon": "res://assets/creatures/militiaman/icon.png", "in_battle": false,  # 184: в бою — новый
 		"variants": [{"title": "первая, коричневая стёганка"}, {"title": "финальный концепт", "textures": {"albedo": "res://assets/creatures/militiaman/generations/concept-v2/albedo.jpg", "normal": "res://assets/creatures/militiaman/generations/concept-v2/normal.jpg", "orm": "res://assets/creatures/militiaman/generations/concept-v2/orm.png"}}],
 		"scene": "res://assets/creatures/militiaman/militiaman.glb",  # риг без анимаций: все анимации из общей библиотеки
 		"extra": ["res://assets/animations/idle.glb", "res://assets/animations/walk.glb", "res://assets/animations/fall.glb",

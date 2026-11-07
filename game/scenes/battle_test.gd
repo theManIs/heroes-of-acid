@@ -25,7 +25,7 @@ const OBSTACLES := [  # преграда занимает свои гексы: �
 ]
 const OBSTACLE_OVER := 1.15  # насколько модель шире занятых гексов: не выглядит вписанной в сетку
 const OBSTACLE_HEIGHT := 2.0  # выше не бывает, метров: не закрывает существ в ряду за ней
-const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3, "hammerer": 3, "houndmaster-pair": 3, "rider": 5}  # обычное перемещение; вылазка собаки не ограничена
+const MOVES := {"ghoul": 6, "vampire": 5, "militiaman": 4, "militiaman2": 4, "lantern-archer": 4, "boilerman": 4, "flesh-golem": 3, "hammerer": 3, "houndmaster-pair": 3, "rider": 5}  # обычное перемещение; вылазка собаки не ограничена
 const WALK_RATE := 2.0  # ходьба вдвое быстрее, чем в арене
 const OVERLAP := 0.1  # кулак входит в тело врага, метров
 const TILE_HEIGHT := 0.01  # заливка гекса плоская, лежит на траве

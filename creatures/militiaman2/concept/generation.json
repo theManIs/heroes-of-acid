@@ -2,7 +2,7 @@
   "generated_at": "2026-11-07T20:20:00+04:00",
   "service": "ChatGPT in Chrome",
   "conversation_url": "https://chatgpt.com/c/6aeef932-1578-83ed-810c-ad97c422e927",
-  "conversation_archived": false,
+  "conversation_archived": true,
   "reference": "creatures/militiaman2/references/militiaman-final.jpg",
   "outputs": {
     "front": "creatures/militiaman2/concept/front.png",
@@ -16,5 +16,5 @@
     "creatures/militiaman2/weapon/axe-prompt.md",
     "creatures/militiaman2/weapon/shield-prompt.md"
   ],
-  "note": "Чат не архивирован до конца задачи 184: возможны правки видов и предметов."
+  "note": "Архивирован 2026-11-08 после завершения задачи 184; проверено перезагрузкой списка."
 }

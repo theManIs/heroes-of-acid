@@ -6,7 +6,7 @@ const ANIMS := "res://assets/creatures/militiaman2/anims/"
 const SHIELD_ARM := ["mixamorig_LeftShoulder", "mixamorig_LeftArm", "mixamorig_LeftForeArm", "mixamorig_LeftHand"]
 const SHIELD_LEG := ["mixamorig_LeftUpLeg", "mixamorig_LeftLeg"]  # 195: в реакции левая нога шагала в щит
 const UNIT := {
-	"name": "Ополченец (новый)", "icon": "res://assets/creatures/militiaman/icon.png",
+	"name": "Ополченец", "icon": "res://assets/creatures/militiaman2/icon.png",
 	"scene": "res://assets/creatures/militiaman2/body.glb",  # модель Tripo, риг Mixamo (манекен — res://assets/mannequin/xbot.glb)
 	"extra": [ANIMS + "idle.glb", ANIMS + "walk.glb", ANIMS + "run.glb", ANIMS + "attack.glb", ANIMS + "hurt.glb",
 		ANIMS + "fall.glb", ANIMS + "fidget.glb", ANIMS + "shield_up.glb", ANIMS + "shield_idle.glb",
@@ -23,7 +23,7 @@ const UNIT := {
 	"hurt_calm": SHIELD_ARM, "hurt_calm_by": 0.0, "fall_calm": SHIELD_ARM, "fall_calm_by": 0.25,
 	"attack_calm": SHIELD_ARM, "attack_calm_by": 0.0,  # 193, 198: в обычном ударе рука со щитом неподвижна
 	"stand_turn": 12.0,  # 196: стоя чуть развёрнут, лицом к лицу щиты расходятся
-	"in_battle": false,  # манекен: в бой — с моделью
+	"in_battle": true,  # 184: в бою вместо прежнего ополченца
 	# Отдельные топор и щит (weapon_grip.gd); пока заглушки, потом модели Tripo.
 	"props": [{"hand": "Right", "mode": "fist", "model": "res://assets/creatures/militiaman2/axe.glb", "length": 0.42, "grip_at": 0.12,
 			"roll": 180.0, "fingers_from": "a_idle", "calibrate": "a_idle"},  # лезвие модели в −Z; в опущенной руке топор висит вниз-вперёд
