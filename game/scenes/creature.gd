@@ -70,6 +70,9 @@ var _fidget_hovered := false
 ## 186: альтернативная стойка (ополченец — щит перед собой). Свои стойка, шаг и реакция на удар,
 ## ход короче; после атаки возвращается в стойку (стойку снимает только кнопка). {"title", "enter", "idle", "walk", "hurt", "exit", "move"}
 var stance := {}
+## Стоя существо чуть развёрнуто от противника на постоянный угол (как всадник, 12°): лицом к лицу щиты
+## и оружие расходятся. На ходу — прямо по пути. Плюс — против часовой сверху (влево).
+var stand_turn := 0.0
 var in_stance := false
 var _base := {}  # обычные стойка, шаг, реакция и бег на время стойки
 var _stance_walk_speed := 0.0
@@ -503,7 +506,7 @@ func walk_to(point: Vector3) -> void:
 func face(point: Vector3) -> void:
 	var to := point - position
 	if to.length() > 0.01:
-		_yaw = atan2(to.x, to.z) + FRONT_YAW
+		_yaw = atan2(to.x, to.z) + FRONT_YAW + (0.0 if walking else stand_turn)
 
 
 ## Повернуться к противнику и так остаться. У составного существа — каждой моделью.

@@ -22,6 +22,7 @@ const UNIT := {
 	# иначе щит машет и заходит в соседа.
 	"hurt_calm": SHIELD_ARM, "hurt_calm_by": 0.0, "fall_calm": SHIELD_ARM, "fall_calm_by": 0.25,
 	"attack_calm": SHIELD_ARM, "attack_calm_by": 0.25,  # 193: в ударе тоже
+	"stand_turn": 12.0,  # 196: стоя чуть развёрнут, лицом к лицу щиты расходятся
 	"in_battle": false,  # манекен: в бой — с моделью
 	# Отдельные топор и щит (weapon_grip.gd); пока заглушки, потом модели Tripo.
 	"props": [{"hand": "Right", "mode": "fist", "model": "res://assets/creatures/militiaman2/axe.glb", "length": 0.42, "grip_at": 0.12,

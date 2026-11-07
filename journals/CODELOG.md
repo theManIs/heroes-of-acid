@@ -2043,3 +2043,8 @@ weapon_grip.gd — общий для существа выбор сторон п
 
 weapon_grip.gd — body_clear, clear_clips, _bake_clear, _clearance, _turned; militiaman2_config.gd — hurt_calm_by 0, SHIELD_LEG, body_clear 0,01.
 Замер (self_hit.gd): стойка +0,09; удар −0,09 → +0,02 (левое бедро).
+
+## 2026-11-07 — 196: разворот стоя
+
+creature.gd — stand_turn в face() (не на ходу) и по прибытии; creature_test.gd, battle_test.gd — из записи; militiaman2_config.gd — stand_turn 12.
+Замер overlap3d.gd для 0/±12/20°.
