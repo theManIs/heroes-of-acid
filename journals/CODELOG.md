@@ -2056,3 +2056,7 @@ weapon_grip.gd — limit_clips; militiaman2_config.gd — forward_limit 0,333 + 
 ## 2026-11-08 — 198: щит в обычном ударе
 
 weapon_grip.gd — steady_clips/steady_from, _bake_steady; militiaman2_config.gd — attack_calm_by 0, steady_clips [attack].
+
+## 2026-11-08 — 198: вынос щита вперёд в ударе
+
+militiaman2_config.gd — limit_clips + attack. Замер: attack щит 0,84 → 0,72 м.

@@ -31,7 +31,7 @@ const UNIT := {
 		{"hand": "Left", "mode": "forearm", "model": "res://assets/creatures/militiaman2/shield.glb", "length": 0.5, "calibrate": "shield_idle", "slide": -0.12,
 			"body_clear": 0.01,
 			# 197: в позах защиты щит не дальше 0,6 м вперёд (0,333 роста): плечо заранее подтягивает руку
-			"forward_limit": 0.333, "limit_clips": ["shield_up", "shield_idle", "shield_hurt", "shield_brace", "shield_attack", "shield_down"],
+			"forward_limit": 0.333, "limit_clips": ["shield_up", "shield_idle", "shield_hurt", "shield_brace", "shield_attack", "shield_down", "attack"],
 			"steady_clips": ["attack"]}],  # 198: в обычном ударе щит держится у бедра, не мотается за корпусом  # 195: в реакции рука заранее отводит щит от бедра
 	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; после атаки снова в стойке.
 	"stance": {"title": "Щит перед собой", "enter": "shield_up", "idle": "shield_idle", "walk": "shield_walk",
