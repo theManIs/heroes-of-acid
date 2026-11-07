@@ -1508,3 +1508,40 @@ index d2912df..f001113 100644
  			if h == _hovered:
  				color = color.lerp(PLAYER_TURN, 0.35)
 ```
+
+## 2026-11-07 — 177: псарь −10 %, собака +10 %
+
+```diff
+diff --git a/game/scenes/houndmaster_config.gd b/game/scenes/houndmaster_config.gd
+index 068474c..58dbcf3 100644
+--- a/game/scenes/houndmaster_config.gd
++++ b/game/scenes/houndmaster_config.gd
+@@ -2,12 +2,12 @@ extends RefCounted
+ ## Общая запись псаря: витрина и тест отряда используют одни файлы.
+ const ANIMS := "res://assets/creatures/houndmaster/anims/"
+ const MASTER := {
+-	"name": "Псарь", "scene": "res://assets/creatures/houndmaster/houndmaster.glb", "size": 2.0,
++	"name": "Псарь", "scene": "res://assets/creatures/houndmaster/houndmaster.glb", "size": 1.8,  # 177: −10 % от 2,0
+ 	"extra": [ANIMS + "idle.glb", ANIMS + "walk.glb", ANIMS + "run.glb", ANIMS + "command_attack.glb",
+ 		ANIMS + "hurt.glb", ANIMS + "defend_block.glb", ANIMS + "fall.glb", ANIMS + "fidget_neck.glb"],
+ 	"attack": "command_attack", "attack_label": "команда «фас»", "attack_from": 0.0,
+ 	"hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "defend": "defend_block", "defend_from": 0.0,
+-	"defend_len": 0.0, "defend_lead": 0.3, "run": "run", "fidget": "fidget_neck", "walk_speed": 1.2,
++	"defend_len": 0.0, "defend_lead": 0.3, "run": "run", "fidget": "fidget_neck", "walk_speed": 1.08,  # 177: шаг в той же доле
+ }
+ 
+ 
+diff --git a/game/scenes/houndmaster_unit.gd b/game/scenes/houndmaster_unit.gd
+index 9251cff..470a0cf 100644
+--- a/game/scenes/houndmaster_unit.gd
++++ b/game/scenes/houndmaster_unit.gd
+@@ -5,7 +5,7 @@ const DOG_SCENE := preload("res://assets/creatures/hound/hound.glb")
+ const DOG_IDLE := "idle_breathe"
+ const DOG_DEFEND_FROM := 0.8  # с; в клипе голова уходит вниз с 0,6 до 1,2 с из 4
+ const DOG_FIDGET := "fidget_sniff_ground"  # свой отклик собаки, без касания псаря
+-const DOG_HEIGHT := 1.05
++const DOG_HEIGHT := 1.2833  # 177: при псаре 1,8 собака 1,155 — +10 % к прежним 1,05
+ const BITE_IMPACT := 0.45
+ const BITE_STEP := 0.08  # короткий шаг корпуса, основной выпад уже есть в клипе
+ const BITE_GAP := 0.04
+```
