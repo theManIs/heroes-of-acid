@@ -1911,3 +1911,42 @@ index 361adc9..55032f2 100644
 mannequin.py — поворот на +X; clips.json — u_idle/u_walk/u_run/u_look1 вместо боевых; militiaman2_config.gd — reach 1,0, walk_speed 0,97; arenas — cfg.reach; creature.gd — defend_anim в стойке = удар в щит.
 
 Замеры (тест существа): стойка 10° к цели, шаг 1° к ходу, удар без захода (0,03 м); стойка держится после удара и «Защиты».
+
+## 2026-11-07 — 186: атака не снимает стойку
+
+```diff
+diff --git a/game/scenes/creature.gd b/game/scenes/creature.gd
+index 2337482..9c211d0 100644
+--- a/game/scenes/creature.gd
++++ b/game/scenes/creature.gd
+@@ -68,7 +68,7 @@ var melee_mode := ""
+ var fidget_anim := ""  # декоративный отклик при наведении на бездействующее существо
+ var _fidget_hovered := false
+ ## 186: альтернативная стойка (ополченец — щит перед собой). Свои стойка, шаг и реакция на удар,
+-## ход короче; атака выводит из стойки. {"title", "enter", "idle", "walk", "hurt", "exit", "move"}
++## ход короче; после атаки возвращается в стойку (стойку снимает только кнопка). {"title", "enter", "idle", "walk", "hurt", "exit", "move"}
+ var stance := {}
+ var in_stance := false
+ var _base := {}  # обычные стойка, шаг, реакция и бег на время стойки
+@@ -748,7 +748,6 @@ func melee_point(_from: Vector3) -> Vector3:
+ 
+ ## Кулак не достаёт до выбранной части цели — выпад вперёд, затем возврат.
+ func strike(target: Creature, _distance: float, overlap: float, collateral: Array[Creature] = []) -> void:
+-	set_stance(false, false)  # 186: атака опускает щит, удар идёт из стойки со щитом
+ 	var contact := target.melee_point(position)
+ 	face(contact)
+ 	target.face_foe(position)
+diff --git a/game/scenes/militiaman2_config.gd b/game/scenes/militiaman2_config.gd
+index 11095a5..5b2d51c 100644
+--- a/game/scenes/militiaman2_config.gd
++++ b/game/scenes/militiaman2_config.gd
+@@ -18,7 +18,7 @@ const UNIT := {
+ 	# Отдельные топор и щит (weapon_grip.gd); пока заглушки, потом модели Tripo.
+ 	"props": [{"hand": "Right", "mode": "fist", "shape": "axe", "length": 0.42, "grip_at": 0.12},
+ 		{"hand": "Left", "mode": "forearm", "shape": "shield", "length": 0.34, "width": 0.26}],
+-	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; атака выводит из стойки.
++	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; после атаки снова в стойке.
+ 	"stance": {"title": "Щит перед собой", "enter": "shield_up", "idle": "shield_idle", "walk": "shield_walk",
+ 		"hurt": "shield_hurt", "exit": "shield_down", "move": 0.5},
+ }
+```

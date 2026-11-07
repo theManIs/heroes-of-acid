@@ -62,6 +62,6 @@
 Кандидаты Mixamo на манекене (пайплайн `creature-mixamo-first`, задача 181): квадраты из `creatures/<id>/mixamo/candidates.json`, заглушки оружия и щита:
 `godot --path game res://scenes/mannequin_search.tscn -- --id=<существо>`.
 
-Ополченец новый, пока на манекене X Bot с заглушками топора и щита (задачи 184, 186). Кнопка альтернативы — стойка со щитом: щит перед собой, ход вдвое меньше, удар в щит, атака опускает щит:
+Ополченец новый, пока на манекене X Bot с заглушками топора и щита (задачи 184, 186). Кнопка альтернативы — стойка со щитом: щит перед собой, ход вдвое меньше, удар в щит, после атаки снова в стойке:
 `godot --path game res://scenes/creature_test.tscn -- --creature=militiaman2`;
 витрина: `godot --path game res://scenes/showcase.tscn -- --creature=militiaman2`.

@@ -68,7 +68,7 @@ var melee_mode := ""
 var fidget_anim := ""  # декоративный отклик при наведении на бездействующее существо
 var _fidget_hovered := false
 ## 186: альтернативная стойка (ополченец — щит перед собой). Свои стойка, шаг и реакция на удар,
-## ход короче; атака выводит из стойки. {"title", "enter", "idle", "walk", "hurt", "exit", "move"}
+## ход короче; после атаки возвращается в стойку (стойку снимает только кнопка). {"title", "enter", "idle", "walk", "hurt", "exit", "move"}
 var stance := {}
 var in_stance := false
 var _base := {}  # обычные стойка, шаг, реакция и бег на время стойки
@@ -748,7 +748,6 @@ func melee_point(_from: Vector3) -> Vector3:
 
 ## Кулак не достаёт до выбранной части цели — выпад вперёд, затем возврат.
 func strike(target: Creature, _distance: float, overlap: float, collateral: Array[Creature] = []) -> void:
-	set_stance(false, false)  # 186: атака опускает щит, удар идёт из стойки со щитом
 	var contact := target.melee_point(position)
 	face(contact)
 	target.face_foe(position)
