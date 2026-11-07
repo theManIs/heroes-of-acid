@@ -21,6 +21,9 @@ extends Node3D
 @export var roll := 0.0
 ## 184: в спокойных клипах (опущенная кисть) рукоять не вдоль костяшек, а наклонена вниз на carry_tilt градусов —
 ## иначе топор в опущенной руке торчит вперёд горизонтально (0,8 м). В бою и в стойке со щитом — хват кулаком.
+## 184: из какого клипа взять пальцы этой кисти для всех клипов — кулак на рукояти (в спокойных клипах рука раскрыта,
+## рукоять шла по ладони, топор «висел рядом с кистью»). Пусто — пальцы клипов как есть.
+@export var fingers_from := ""
 @export var carry_tilt := 0.0
 @export var carry_clips: Array = ["idle", "walk", "run", "fidget"]
 var _carry := 0.0
@@ -46,6 +49,8 @@ func _attach() -> void:
 	_item = load(model).instantiate() if model != "" else _placeholder()
 	add_child(_item)
 	_item.top_level = true
+	if fingers_from != "" and _unit and _unit.anim.has_animation(fingers_from):
+		_hold_fingers()
 	_process(0.0)
 	if forward_limit > 0.0 and _unit:
 		_bake_limit()
@@ -103,13 +108,25 @@ func _process(_delta: float) -> void:
 	var fingers := (_point(hand + "HandMiddle1") - _point(hand + "Hand")).normalized()
 	if mode == "forearm":
 		var fore := (_point(hand + "Hand") - _point(hand + "ForeArm")).normalized()
-		var out := fore.cross(knuckles).normalized()  # тыльная сторона кисти
+		# Щит держат предплечьем поперёк: длинная ось — по линии костяшек (остриё вниз), лицо — поперёк
+		# предплечья наружу (в защитной стойке — вперёд, к противнику). 189/«плашмя»: прежде длинная ось шла вдоль руки.
+		var top := knuckles if hand == "Left" else -knuckles
+		var face := top.cross(fore).normalized()
+		if face.dot(palm - _point("Spine2")) < 0.0 and face.dot(_unit.model.global_basis.x if _unit else Vector3.RIGHT) < 0.0:
+			face = -face
+		top = (top - face * top.dot(face)).normalized()
+		var guard := Basis(top.cross(face), top, face)
+		# Рука висит (предплечье вниз): щит висит вдоль руки остриём вниз, лицом наружу от тела.
+		var out := fore.cross(knuckles).normalized()
 		if out.dot(palm - _point("Spine2")) < 0.0:
 			out = -out
-		var up := fore.cross(out).normalized()
-		var basis := Basis(up, fore, out).rotated(out, deg_to_rad(roll))
+		var up := -fore
+		var hang := Basis(up.cross(out), up, out)
+		var hanging := smoothstep(0.4, 0.85, -fore.y)
+		var basis := Basis(guard.get_rotation_quaternion().slerp(hang.get_rotation_quaternion(), hanging)).rotated(fore, 0.0)
+		basis = basis.rotated(basis.z, deg_to_rad(roll))
 		var size := Vector3(width, length, 1.0) * height
-		var centre := _point(hand + "ForeArm").lerp(_point(hand + "Hand"), 0.6) + out * 0.06 * height
+		var centre := _point(hand + "ForeArm").lerp(_point(hand + "Hand"), 0.7) + basis.z * 0.05 * height
 		# Модель (prepare_shield.py: высота 1, центр в нуле) — равномерно по высоте; заглушка — по ширине и высоте.
 		var scale := Vector3.ONE * size.y if model != "" else Vector3(size.x, size.y, size.x)
 		_item.global_transform = Transform3D(basis.scaled_local(scale), centre)
@@ -126,6 +143,31 @@ func _process(_delta: float) -> void:
 	var basis := Basis(axis.cross(edge), axis, edge).rotated(axis, deg_to_rad(roll))
 	var span := length * height
 	_item.global_transform = Transform3D(basis.scaled_local(Vector3.ONE * span), palm - axis * span * grip_at)
+
+
+## Пальцы кисти во всех клипах — поза первого кадра клипа fingers_from (тот же набор: хват оружия).
+func _hold_fingers() -> void:
+	var anim := _unit.anim
+	var root_path := anim.get_node(anim.root_node).get_path_to(_skeleton)
+	var source := anim.get_animation(fingers_from)
+	var poses := {}
+	for finger in ["Thumb", "Index", "Middle", "Ring", "Pinky"]:
+		for joint in [1, 2, 3]:
+			var path := NodePath("%s:mixamorig_%sHand%s%d" % [root_path, hand, finger, joint])
+			var t := source.find_track(path, Animation.TYPE_ROTATION_3D)
+			if t >= 0:
+				poses[path] = source.track_get_key_value(t, 0)
+	for clip in anim.get_animation_list():
+		var a := anim.get_animation(clip)
+		for path: NodePath in poses:
+			var t := a.find_track(path, Animation.TYPE_ROTATION_3D)
+			if t < 0:
+				continue
+			for k in a.track_get_key_count(t):
+				var q: Quaternion = poses[path]
+				if q.dot(a.track_get_key_value(t, k)) < 0.0:
+					q = -q
+				a.track_set_key_value(t, k, q)
 
 
 var _samples := {}  # сетка -> до 400 её вершин (своих координат)

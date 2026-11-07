@@ -9,7 +9,7 @@ const UNIT := {
 	"scene": "res://assets/creatures/militiaman2/body.glb",  # модель Tripo, риг Mixamo (манекен — res://assets/mannequin/xbot.glb)
 	"extra": [ANIMS + "idle.glb", ANIMS + "walk.glb", ANIMS + "run.glb", ANIMS + "attack.glb", ANIMS + "hurt.glb",
 		ANIMS + "fall.glb", ANIMS + "fidget.glb", ANIMS + "shield_up.glb", ANIMS + "shield_idle.glb",
-		ANIMS + "shield_walk.glb", ANIMS + "shield_hurt.glb", ANIMS + "shield_down.glb", ANIMS + "shield_brace.glb", ANIMS + "shield_attack.glb"],
+		ANIMS + "shield_walk.glb", ANIMS + "shield_hurt.glb", ANIMS + "shield_down.glb", ANIMS + "shield_brace.glb", ANIMS + "shield_attack.glb", ANIMS + "a_idle.glb"],  # a_idle — пальцы кулака на топоре
 	"attack": "attack", "attack_from": 0.0, "hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "run": "run",
 	# 187: защита — удар в поднятый щит (тот же клип, что в стойке), а не «закрывается руками»;
 	# старт на 0,35 с раньше удара: щит поднимается к попаданию.
@@ -24,7 +24,7 @@ const UNIT := {
 	"in_battle": false,  # манекен: в бой — с моделью
 	# Отдельные топор и щит (weapon_grip.gd); пока заглушки, потом модели Tripo.
 	"props": [{"hand": "Right", "mode": "fist", "model": "res://assets/creatures/militiaman2/axe.glb", "length": 0.42, "grip_at": 0.12,
-			"roll": 180.0, "carry_tilt": 55.0},  # лезвие модели в −Z; в опущенной руке топор висит вниз-вперёд
+			"roll": 180.0, "carry_tilt": 55.0, "fingers_from": "a_idle"},  # лезвие модели в −Z; в опущенной руке топор висит вниз-вперёд
 		{"hand": "Left", "mode": "forearm", "model": "res://assets/creatures/militiaman2/shield.glb", "length": 0.34,
 			"forward_limit": 0.29}],  # 189/193: щит не дальше края своего гекса (0,29 роста ≈ 0,52 м): два щита лицом к лицу не сходятся
 	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; после атаки снова в стойке.
