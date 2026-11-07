@@ -2048,3 +2048,7 @@ weapon_grip.gd — body_clear, clear_clips, _bake_clear, _clearance, _turned; mi
 
 creature.gd — stand_turn в face() (не на ходу) и по прибытии; creature_test.gd, battle_test.gd — из записи; militiaman2_config.gd — stand_turn 12.
 Замер overlap3d.gd для 0/±12/20°.
+
+## 2026-11-07 — 197: щит в позах защиты
+
+weapon_grip.gd — limit_clips; militiaman2_config.gd — forward_limit 0,333 + limit_clips.

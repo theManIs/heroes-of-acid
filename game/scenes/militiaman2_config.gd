@@ -29,7 +29,9 @@ const UNIT := {
 			"roll": 180.0, "fingers_from": "a_idle", "calibrate": "a_idle"},  # лезвие модели в −Z; в опущенной руке топор висит вниз-вперёд
 		# Щит по листу (от плеча до колена, 0,5 роста); без forward_limit — соседа пользователь смотрит сам.
 		{"hand": "Left", "mode": "forearm", "model": "res://assets/creatures/militiaman2/shield.glb", "length": 0.5, "calibrate": "shield_idle", "slide": -0.12,
-			"body_clear": 0.01}],  # 195: в реакции рука заранее отводит щит от бедра
+			"body_clear": 0.01,
+			# 197: в позах защиты щит не дальше 0,6 м вперёд (0,333 роста): плечо заранее подтягивает руку
+			"forward_limit": 0.333, "limit_clips": ["shield_up", "shield_idle", "shield_hurt", "shield_brace", "shield_attack", "shield_down"]}],  # 195: в реакции рука заранее отводит щит от бедра
 	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; после атаки снова в стойке.
 	"stance": {"title": "Щит перед собой", "enter": "shield_up", "idle": "shield_idle", "walk": "shield_walk",
 		"hurt": "shield_hurt", "exit": "shield_down", "move": 0.5,

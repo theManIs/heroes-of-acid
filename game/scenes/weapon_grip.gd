@@ -45,6 +45,8 @@ const CARRY_BLEND := 6.0
 ## Траектория правится заранее, при загрузке: в кадрах, где предмет дальше, плечо разворачивается
 ## (ось — та, где предмет быстрее всего уходит назад) ровно настолько, чтобы предмет встал на границу. Поправка вписана в клип, тело не двигается. 0 — выкл.
 @export var forward_limit := 0.0
+## Только эти клипы (пусто — все стоячие): 197 — граница лишь для поз защиты.
+@export var limit_clips: Array = []
 
 var _skeleton: Skeleton3D
 var _unit: Creature
@@ -267,6 +269,8 @@ func _bake_limit() -> void:
 	for clip in anim.get_animation_list():
 		if clip == "fall" or clip == "RESET" or clip.contains("walk") or clip.contains("run"):
 			continue  # на ходу сосед не впереди; в шаге поворот плеча уводил щит в сторону, как флаг
+		if not limit_clips.is_empty() and not clip in limit_clips:
+			continue
 		var a := anim.get_animation(clip)
 		var t := a.find_track(track_path, Animation.TYPE_ROTATION_3D)
 		if t < 0 or a.has_meta("forward_limited"):
