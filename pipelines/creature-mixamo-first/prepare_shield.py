@@ -32,20 +32,17 @@ def apply(m):
         o.data.transform(m)
 
 
-lo, hi = box(points())
-size = hi - lo
-order = sorted(range(3), key=lambda i: size[i])  # толщина, ширина, высота
-thin, wide, tall = order
-# Оси Blender: высоту в Z (станет +Y glTF), ширину в X, толщину в Y (−Y Blender = +Z glTF).
-basis = Matrix.Identity(3)
-cols = [Vector((0, 0, 0)) for _ in range(3)]
-target = {wide: Vector((1, 0, 0)), thin: Vector((0, -1, 0)), tall: Vector((0, 0, 1))}
-m = Matrix(((0, 0, 0), (0, 0, 0), (0, 0, 0)))
-for i in range(3):
-    for r in range(3):
-        m[r][i] = target[i][r]
+# Оси щита — по разбросу точек (главные компоненты), не по рамке: Tripo строит щит по виду в три четверти,
+# и в файле он повёрнут (края на разной глубине, ~24°) — по рамке он не ложится на руку.
+import numpy as np
+ps = np.array([tuple(p) for p in points()])
+ps -= ps.mean(axis=0)
+values, vectors = np.linalg.eigh(np.cov(ps.T))  # по возрастанию: толщина, ширина, высота
+thin, wide, tall = (Vector(tuple(vectors[:, i])) for i in range(3))
+# Строки — куда переходит каждая ось: высота → Z Blender (+Y glTF), ширина → X, толщина → −Y Blender (+Z glTF).
+m = Matrix((wide, -thin, tall))
 if m.determinant() < 0:
-    m[0][0], m[1][0], m[2][0] = -m[0][0], -m[1][0], -m[2][0]  # правая тройка: отражаем ширину
+    m[0] = -m[0]
 apply(m.to_4x4())
 lo, hi = box(points())
 apply(Matrix.Translation(-(lo + hi) / 2))

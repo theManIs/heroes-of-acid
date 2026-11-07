@@ -163,7 +163,7 @@ func _place() -> void:
 		var basis := Basis(guard.get_rotation_quaternion().slerp(hang.get_rotation_quaternion(), hanging)).rotated(fore, 0.0)
 		basis = basis.rotated(basis.z, deg_to_rad(roll))
 		var size := Vector3(width, length, 1.0) * height
-		var centre := _point(hand + "ForeArm").lerp(_point(hand + "Hand"), 0.7) + basis.z * 0.05 * height
+		var centre := _point(hand + "ForeArm").lerp(_point(hand + "Hand"), 0.7) + basis.z * 0.035 * height  # изнанкой на предплечье
 		# Модель (prepare_shield.py: высота 1, центр в нуле) — равномерно по высоте; заглушка — по ширине и высоте.
 		var scale := Vector3.ONE * size.y if model != "" else Vector3(size.x, size.y, size.x)
 		_item.global_transform = Transform3D(basis.scaled_local(scale), centre)
