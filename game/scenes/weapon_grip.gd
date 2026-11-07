@@ -25,6 +25,8 @@ extends Node3D
 ## по эталонной позе (первый кадр клипа calibrate) и дальше только следует за кистью. Крутить предмет по ходу
 ## клипа нельзя (153) — пользователь: «зачем ты его крутишь». Пусто — прежний расчёт каждый кадр.
 @export var calibrate := ""
+## Сдвиг щита вдоль его длинной оси, доля высоты щита (минус — к острию): кулак за умбоном (184).
+@export var slide := 0.0
 var _offset := Transform3D()
 var _rigid := false
 ## 184: из какого клипа взять пальцы этой кисти для всех клипов — кулак на рукояти (в спокойных клипах рука раскрыта,
@@ -163,7 +165,7 @@ func _place() -> void:
 		var basis := Basis(guard.get_rotation_quaternion().slerp(hang.get_rotation_quaternion(), hanging)).rotated(fore, 0.0)
 		basis = basis.rotated(basis.z, deg_to_rad(roll))
 		var size := Vector3(width, length, 1.0) * height
-		var centre := palm + basis.z * 0.035 * height  # кулак за умбоном, в центре щита; изнанкой на руке
+		var centre := palm + basis.z * 0.035 * height + basis.y * slide * size.y  # кулак за умбоном; изнанкой на руке
 		# Модель (prepare_shield.py: высота 1, центр в нуле) — равномерно по высоте; заглушка — по ширине и высоте.
 		var scale := Vector3.ONE * size.y if model != "" else Vector3(size.x, size.y, size.x)
 		_item.global_transform = Transform3D(basis.scaled_local(scale), centre)
