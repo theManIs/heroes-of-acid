@@ -1736,3 +1736,24 @@ index c8130fe..6b5ffe8 100644
  **Не сработало:** Text to Motion в Studio генерирует движение человека и к собаке не применяется. Общие пресеты API на риге `quadruped` отклоняются. Бесплатная выгрузка из Studio анимаций не содержит. Риг Tripo в этом пути не нужен.
  
 ```
+
+## 2026-11-07 — 182: каталог ошибок и автопроверка
+
+Новые: `pipelines/creature-mixamo-first/{ERRORS.md,check_clips.gd,check.sh}`.
+
+```diff
+diff --git a/game/scenes/hammerer_config.gd b/game/scenes/hammerer_config.gd
+index 90de881..2272bcf 100644
+--- a/game/scenes/hammerer_config.gd
++++ b/game/scenes/hammerer_config.gd
+@@ -10,6 +10,7 @@ const UNIT := {
+ 	"attack": "attack", "attack_from": 0.0, "hurt": "hurt", "hurt_len": 0.0,
+ 	"idle": "idle", "run": "run", "fidget": "fidget", "defend": "defend",
+ 	"fidget_on_hover": true,
++	"weapon_face": {"axis": Vector3(0, 0, -1), "idle": "out"},  # 182: плоский боёк молота (−Z модели) от владельца — проверка пайплайна
+ 	"defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.3,
+ 	"size": 1.76, "walk_speed": 1.094,  # 175: 85 % от 2,3, ещё −10 % — вмещается в свой гекс; шаг в той же доле
+ 	"variants": [{"title": "бронза"}, {"title": "светлая сталь", "textures": {"albedo": "res://assets/creatures/hammerer2/generations/silver/albedo.jpg", "normal": "res://assets/creatures/hammerer2/generations/silver/normal.jpg", "orm": "res://assets/creatures/hammerer2/generations/silver/orm.png"}}],  # 170
+```
+
+Прогоны: check.sh hammerer — 0 провалов; lantern-archer — нет отклика (верно); houndmaster — бёдра 19° (верно); c_club_combo/shoulder_equip/old_attack — пойманы E05/E06/E09/E10.

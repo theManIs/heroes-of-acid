@@ -10,6 +10,7 @@ const UNIT := {
 	"attack": "attack", "attack_from": 0.0, "hurt": "hurt", "hurt_len": 0.0,
 	"idle": "idle", "run": "run", "fidget": "fidget", "defend": "defend",
 	"fidget_on_hover": true,
+	"weapon_face": {"axis": Vector3(0, 0, -1), "idle": "out"},  # 182: плоский боёк молота (−Z модели) от владельца — проверка пайплайна
 	"defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.3,
 	"size": 1.76, "walk_speed": 1.094,  # 175: 85 % от 2,3, ещё −10 % — вмещается в свой гекс; шаг в той же доле
 	"variants": [{"title": "бронза"}, {"title": "светлая сталь", "textures": {"albedo": "res://assets/creatures/hammerer2/generations/silver/albedo.jpg", "normal": "res://assets/creatures/hammerer2/generations/silver/normal.jpg", "orm": "res://assets/creatures/hammerer2/generations/silver/orm.png"}}],  # 170
