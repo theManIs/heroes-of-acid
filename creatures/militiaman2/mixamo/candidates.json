@@ -1,0 +1,206 @@
+{
+ "idle": "a_idle",
+ "size": 1.8,
+ "props": [
+  {
+   "hand": "Right",
+   "mode": "fist",
+   "shape": "axe",
+   "length": 0.42,
+   "grip_at": 0.12
+  },
+  {
+   "hand": "Left",
+   "mode": "forearm",
+   "shape": "shield",
+   "length": 0.4,
+   "width": 0.3
+  }
+ ],
+ "cells": [
+  [
+   "Топор · стойка",
+   "a_idle",
+   true
+  ],
+  [
+   "Топор · стойка, озирается 1",
+   "a_idle_look1",
+   false
+  ],
+  [
+   "Топор · стойка, озирается 2",
+   "a_idle_look2",
+   false
+  ],
+  [
+   "Топор · шаг (стопа в землю)",
+   "a_walk",
+   true
+  ],
+  [
+   "Топор · бег (стопа в землю)",
+   "a_run",
+   true
+  ],
+  [
+   "Топор · удар сверху",
+   "a_attack_down",
+   false
+  ],
+  [
+   "Топор · удар справа налево (стопа чуть едет)",
+   "a_attack_horiz",
+   false
+  ],
+  [
+   "Топор · реакция в живот",
+   "a_hurt_gut",
+   false
+  ],
+  [
+   "Топор · реакция слева",
+   "a_hurt_left",
+   false
+  ],
+  [
+   "Топор · реакция справа",
+   "a_hurt_right",
+   false
+  ],
+  [
+   "Топор · блок, стойка",
+   "a_block_idle",
+   false
+  ],
+  [
+   "Топор · блок, удар",
+   "a_block_react",
+   false
+  ],
+  [
+   "Топор · боевой клич",
+   "a_taunt_cry",
+   false
+  ],
+  [
+   "Топор · бьёт топором в грудь",
+   "a_taunt_thump",
+   false
+  ],
+  [
+   "Щит · стойка 1",
+   "s_idle",
+   true,
+   "s_idle"
+  ],
+  [
+   "Щит · стойка 2",
+   "s_idle2",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · стойка 3",
+   "s_idle3",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · стойка 4",
+   "s_idle4",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · шаг 1 (стопа в землю)",
+   "s_walk",
+   true,
+   "s_idle"
+  ],
+  [
+   "Щит · шаг 2 (стопа в землю)",
+   "s_walk2",
+   true,
+   "s_idle"
+  ],
+  [
+   "Щит · бег 1 (стопа в землю)",
+   "s_run",
+   true,
+   "s_idle"
+  ],
+  [
+   "Щит · бег 2 (стопа в землю)",
+   "s_run2",
+   true,
+   "s_idle"
+  ],
+  [
+   "Щит · удар 1 (стопа чуть едет)",
+   "s_slash1",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · атака 4",
+   "s_attack4",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · реакция 1",
+   "s_impact1",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · реакция 2",
+   "s_impact2",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · реакция 3",
+   "s_impact3",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · блок 1",
+   "s_block1",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · блок 2",
+   "s_block2",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · блок, стойка",
+   "s_block_idle",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · смерть 1",
+   "s_death1",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · смерть 2",
+   "s_death2",
+   false,
+   "s_idle"
+  ],
+  [
+   "Щит · накал",
+   "s_power_up",
+   false,
+   "s_idle"
+  ]
+ ]
+}

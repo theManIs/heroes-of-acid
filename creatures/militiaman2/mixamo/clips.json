@@ -1,0 +1,271 @@
+{
+  "_match_leg_rest": true,
+  "packs/Pro Melee Axe Pack/standing idle.fbx": {
+    "name": "a_idle",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing idle looking ver. 1.fbx": {
+    "name": "a_idle_look1",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing idle looking ver. 2.fbx": {
+    "name": "a_idle_look2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing walk forward.fbx": {
+    "name": "a_walk",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing run forward.fbx": {
+    "name": "a_run",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing melee attack downward.fbx": {
+    "name": "a_attack_down",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing melee attack horizontal.fbx": {
+    "name": "a_attack_horiz",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing melee attack backhand.fbx": {
+    "name": "a_attack_back",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing melee combo attack ver. 1.fbx": {
+    "name": "a_attack_combo1",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing melee combo attack ver. 2.fbx": {
+    "name": "a_attack_combo2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing melee combo attack ver. 3.fbx": {
+    "name": "a_attack_combo3",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing react large gut.fbx": {
+    "name": "a_hurt_gut",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing react large from left.fbx": {
+    "name": "a_hurt_left",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing react large from right.fbx": {
+    "name": "a_hurt_right",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing block idle.fbx": {
+    "name": "a_block_idle",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing block react large.fbx": {
+    "name": "a_block_react",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing taunt battlecry.fbx": {
+    "name": "a_taunt_cry",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Pro Melee Axe Pack/standing taunt chest thump.fbx": {
+    "name": "a_taunt_thump",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield idle.fbx": {
+    "name": "s_idle",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield idle (2).fbx": {
+    "name": "s_idle2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield idle (3).fbx": {
+    "name": "s_idle3",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield idle (4).fbx": {
+    "name": "s_idle4",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield walk.fbx": {
+    "name": "s_walk",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield walk (2).fbx": {
+    "name": "s_walk2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield run.fbx": {
+    "name": "s_run",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield run (2).fbx": {
+    "name": "s_run2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield slash.fbx": {
+    "name": "s_slash1",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield slash (2).fbx": {
+    "name": "s_slash2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield slash (3).fbx": {
+    "name": "s_slash3",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield slash (4).fbx": {
+    "name": "s_slash4",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield slash (5).fbx": {
+    "name": "s_slash5",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield attack.fbx": {
+    "name": "s_attack1",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield attack (2).fbx": {
+    "name": "s_attack2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield attack (3).fbx": {
+    "name": "s_attack3",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield attack (4).fbx": {
+    "name": "s_attack4",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield impact.fbx": {
+    "name": "s_impact1",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield impact (2).fbx": {
+    "name": "s_impact2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield impact (3).fbx": {
+    "name": "s_impact3",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield block.fbx": {
+    "name": "s_block1",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield block (2).fbx": {
+    "name": "s_block2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield block idle.fbx": {
+    "name": "s_block_idle",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield death.fbx": {
+    "name": "s_death1",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "packs/Sword And Shield Pack/sword and shield death (2).fbx": {
+    "name": "s_death2",
+    "grip": 0,
+    "keep_left_fingers": false
+  },
+  "packs/Sword And Shield Pack/sword and shield power up.fbx": {
+    "name": "s_power_up",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield kick.fbx": {
+    "name": "s_kick",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  }
+}

@@ -4,7 +4,7 @@ extends "res://scenes/showcase.gd"
 ## Список квадратов — creatures/<id>/mixamo/candidates.json:
 ##   {"body": модель манекена, "idle": стойка между повторами, "size": рост,
 ##    "props": [параметры weapon_grip.gd: hand, mode, shape, length, width, grip_at, roll],
-##    "cells": [[подпись, клип, по кругу], …]}
+##    "cells": [[подпись, клип, по кругу, своя стойка между повторами — необязательно], …]}
 ## Клипы — game/assets/creatures/<id>/anims/<клип>.glb (build_clips.py <id> на риге манекена).
 
 const GRIP := preload("res://scenes/weapon_grip.gd")
@@ -22,10 +22,10 @@ func _ready() -> void:
 	var path := ProjectSettings.globalize_path("res://").path_join("../creatures/%s/mixamo/candidates.json" % _id)
 	_set = JSON.parse_string(FileAccess.get_file_as_string(path)) if FileAccess.file_exists(path) else {}
 	columns = 4
-	cell_size = 380
+	cell_size = 360
 	var grid := _build_page()
 	for cell: Array in _set.get("cells", []):
-		_make_candidate(grid, cell[0], cell[1], cell[2])
+		_make_candidate(grid, cell[0], cell[1], cell[2], cell[3] if cell.size() > 3 else _set.get("idle", "idle"))
 	_finish()
 
 
@@ -33,12 +33,11 @@ func _anims() -> String:
 	return "res://assets/creatures/%s/anims/" % _id
 
 
-func _make_candidate(grid: GridContainer, title: String, clip: String, endless: bool) -> void:
+func _make_candidate(grid: GridContainer, title: String, clip: String, endless: bool, idle: String) -> void:
 	var size: float = _set.get("size", 1.8)
 	var cell := _make_frame(grid, size * 1.4)
 	var unit := Creature.new()
 	cell.view.add_child(unit)
-	var idle: String = _set.get("idle", "idle")
 	var files := [_anims() + idle + ".glb"]
 	if clip != idle:
 		files.append(_anims() + clip + ".glb")

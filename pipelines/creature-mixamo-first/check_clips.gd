@@ -61,6 +61,8 @@ func _mannequin(id: String) -> Dictionary:
 	for cell: Array in data.get("cells", []):
 		extra.append("res://assets/creatures/%s/anims/%s.glb" % [id, cell[1]])
 		cells.append(cell[1])
+		if cell.size() > 3 and not extra.has("res://assets/creatures/%s/anims/%s.glb" % [id, cell[3]]):
+			extra.append("res://assets/creatures/%s/anims/%s.glb" % [id, cell[3]])
 	var idle: String = data.get("idle", "idle")
 	if not cells.has(idle):
 		extra.append("res://assets/creatures/%s/anims/%s.glb" % [id, idle])

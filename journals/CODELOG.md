@@ -1763,3 +1763,9 @@ index 90de881..2272bcf 100644
 Новые: `pipelines/creature-mixamo-first/README.md`, `game/scenes/weapon_grip.gd`, `game/scenes/mannequin_search.{gd,tscn}`; `check_clips.gd` — режим `--set`, `_moving`. Таблица пайплайнов: новая строка основной, `creature` и `creature-tripo-mixamo` — старые.
 
 Проверка: витрина манекена с заглушками топора и щита отрисована скрытым окном; check.sh hammerer — 0 провалов.
+
+## 2026-11-07 — 184: кандидаты на манекене
+
+Новое: `creatures/militiaman2/` (риг манекена, наборы Mixamo, `clips.json` 45, `candidates.json` 33), `game/assets/creatures/militiaman2/anims/`. `mannequin_search.gd` — своя стойка у квадрата, `check_clips.gd` — то же.
+
+Команды: build_clips.py militiaman2; check_clips.gd --set=militiaman2.
