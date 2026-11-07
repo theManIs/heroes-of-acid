@@ -30,6 +30,10 @@ extends Node3D
 @export var body_clear := 0.0
 @export var clear_clips: Array = ["hurt"]
 const CLEAR_MAX := deg_to_rad(40.0)
+## 198: в этих клипах рука с предметом держится относительно таза так же, как в первом кадре клипа steady_from:
+## корпус сгибается и крутится в ударе, а щит остаётся у бедра и не мотается за грудью.
+@export var steady_clips: Array = []
+@export var steady_from := "idle"
 ## Сдвиг щита вдоль его длинной оси, доля высоты щита (минус — к острию): кулак за умбоном (184).
 @export var slide := 0.0
 var _offset := Transform3D()
@@ -66,6 +70,8 @@ func _attach() -> void:
 	_item.top_level = true
 	if fingers_from != "" and _unit and _unit.anim.has_animation(fingers_from):
 		_hold_fingers()
+	if not steady_clips.is_empty() and _unit and _unit.anim.has_animation(steady_from):
+		_bake_steady()
 	if calibrate != "" and _unit and _unit.anim.has_animation(calibrate):
 		_calibrate()
 	_process(0.0)
@@ -216,6 +222,38 @@ func _hold_fingers() -> void:
 				if q.dot(a.track_get_key_value(t, k)) < 0.0:
 					q = -q
 				a.track_set_key_value(t, k, q)
+
+
+## Плечо (кость Arm) в клипах steady_clips: поворот относительно таза — как в первом кадре steady_from.
+func _bake_steady() -> void:
+	var anim := _unit.anim
+	var arm := _skeleton.find_bone("mixamorig_" + hand + "Arm")
+	var parent := _skeleton.get_bone_parent(arm)
+	var hips := _skeleton.find_bone("mixamorig_Hips")
+	var track_path := NodePath("%s:%s" % [anim.get_node(anim.root_node).get_path_to(_skeleton), _skeleton.get_bone_name(arm)])
+	var was := anim.current_animation
+	anim.play(steady_from)
+	anim.seek(0.0, true)
+	_skeleton.force_update_all_bone_transforms()
+	var in_hips := _skeleton.get_bone_global_pose(hips).basis.orthonormalized().inverse() * _skeleton.get_bone_global_pose(arm).basis.orthonormalized()
+	for clip in steady_clips:
+		if not anim.has_animation(clip):
+			continue
+		var a := anim.get_animation(clip)
+		var t := a.find_track(track_path, Animation.TYPE_ROTATION_3D)
+		if t < 0:
+			continue
+		for key in a.track_get_key_count(t):
+			anim.play(clip)
+			anim.seek(a.track_get_key_time(t, key), true)
+			_skeleton.force_update_all_bone_transforms()
+			var want := _skeleton.get_bone_global_pose(hips).basis.orthonormalized() * in_hips
+			var q: Quaternion = (_skeleton.get_bone_global_pose(parent).basis.orthonormalized().inverse() * want).get_rotation_quaternion()
+			if q.dot(a.track_get_key_value(t, key)) < 0.0:
+				q = -q
+			a.track_set_key_value(t, key, q)
+	if was != "":
+		anim.play(was)
 
 
 var _samples := {}  # сетка -> до 400 её вершин (своих координат)

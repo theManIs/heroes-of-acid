@@ -2052,3 +2052,7 @@ creature.gd — stand_turn в face() (не на ходу) и по прибыти
 ## 2026-11-07 — 197: щит в позах защиты
 
 weapon_grip.gd — limit_clips; militiaman2_config.gd — forward_limit 0,333 + limit_clips.
+
+## 2026-11-08 — 198: щит в обычном ударе
+
+weapon_grip.gd — steady_clips/steady_from, _bake_steady; militiaman2_config.gd — attack_calm_by 0, steady_clips [attack].

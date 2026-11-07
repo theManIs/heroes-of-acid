@@ -21,7 +21,7 @@ const UNIT := {
 	# 192: в реакции и смерти рука со щитом — четверть размаха от стойки (как у прежнего ополченца, M08):
 	# иначе щит машет и заходит в соседа.
 	"hurt_calm": SHIELD_ARM, "hurt_calm_by": 0.0, "fall_calm": SHIELD_ARM, "fall_calm_by": 0.25,
-	"attack_calm": SHIELD_ARM, "attack_calm_by": 0.25,  # 193: в ударе тоже
+	"attack_calm": SHIELD_ARM, "attack_calm_by": 0.0,  # 193, 198: в обычном ударе рука со щитом неподвижна
 	"stand_turn": 12.0,  # 196: стоя чуть развёрнут, лицом к лицу щиты расходятся
 	"in_battle": false,  # манекен: в бой — с моделью
 	# Отдельные топор и щит (weapon_grip.gd); пока заглушки, потом модели Tripo.
@@ -31,7 +31,8 @@ const UNIT := {
 		{"hand": "Left", "mode": "forearm", "model": "res://assets/creatures/militiaman2/shield.glb", "length": 0.5, "calibrate": "shield_idle", "slide": -0.12,
 			"body_clear": 0.01,
 			# 197: в позах защиты щит не дальше 0,6 м вперёд (0,333 роста): плечо заранее подтягивает руку
-			"forward_limit": 0.333, "limit_clips": ["shield_up", "shield_idle", "shield_hurt", "shield_brace", "shield_attack", "shield_down"]}],  # 195: в реакции рука заранее отводит щит от бедра
+			"forward_limit": 0.333, "limit_clips": ["shield_up", "shield_idle", "shield_hurt", "shield_brace", "shield_attack", "shield_down"],
+			"steady_clips": ["attack"]}],  # 198: в обычном ударе щит держится у бедра, не мотается за корпусом  # 195: в реакции рука заранее отводит щит от бедра
 	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; после атаки снова в стойке.
 	"stance": {"title": "Щит перед собой", "enter": "shield_up", "idle": "shield_idle", "walk": "shield_walk",
 		"hurt": "shield_hurt", "exit": "shield_down", "move": 0.5,
