@@ -1470,3 +1470,41 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 -	"size": 1.955, "walk_speed": 1.2155,  # 175: 85 % от 2,3 …
 +	"size": 1.76, "walk_speed": 1.094,  # 175: 85 % от 2,3, ещё −10 % …
 ```
+
+## 2026-11-07 — 176: клетки под фигурой не подсвечиваются
+
+```diff
+diff --git a/game/scenes/battle_test.gd b/game/scenes/battle_test.gd
+index d719adb..b91e25a 100644
+--- a/game/scenes/battle_test.gd
++++ b/game/scenes/battle_test.gd
+@@ -1109,9 +1109,10 @@ func _paint() -> void:
+ 	var hover_anchor := NO_HEX
+ 	if preview:
+ 		hover_anchor = _anchor_of(preview, _hovered, shown)
++	var own: Array[Vector2i] = _footprint(preview) if preview else []  # 176: все клетки под фигурой — не ход
+ 	for h: Vector2i in tiles:
+ 		var color := Color(tint, 0.0)
+-		if area.has(h) and h != center:
++		if area.has(h) and not own.has(h):
+ 			color.a = RANGE_ALPHA
+ 			if h == _hovered:
+ 				color.a = lerpf(RANGE_ALPHA, 1.0, 0.5)
+diff --git a/game/scenes/creature_test.gd b/game/scenes/creature_test.gd
+index d2912df..f001113 100644
+--- a/game/scenes/creature_test.gd
++++ b/game/scenes/creature_test.gd
+@@ -917,10 +917,11 @@ func _paint() -> void:
+ 		zone = _impact_cells(player, enemy, _attack_from)
+ 	var area: Dictionary = PAIR_PATHS.cover(reachable, _hex_of(player)) if tested == "houndmaster-pair" else PAIR_PATHS.cover(reachable, _hex_of(player), RIDER_SHAPE) if tested == "rider" else reachable
+ 	var anchor := _move_anchor(_hovered)
++	var own := _footprint(_hex_of(player))  # 176: все клетки под фигурой — не ход
+ 	for h: Vector2i in tiles:
+ 		var mat: StandardMaterial3D = tiles[h].material_override
+ 		var color: Color = tiles[h].get_meta("base")
+-		if area.has(h) and h != _hex_of(player):
++		if area.has(h) and not own.has(h):
+ 			color = color.lerp(PLAYER_TURN, 0.25)
+ 			if h == _hovered:
+ 				color = color.lerp(PLAYER_TURN, 0.35)
+```

@@ -917,10 +917,11 @@ func _paint() -> void:
 		zone = _impact_cells(player, enemy, _attack_from)
 	var area: Dictionary = PAIR_PATHS.cover(reachable, _hex_of(player)) if tested == "houndmaster-pair" else PAIR_PATHS.cover(reachable, _hex_of(player), RIDER_SHAPE) if tested == "rider" else reachable
 	var anchor := _move_anchor(_hovered)
+	var own := _footprint(_hex_of(player))  # 176: все клетки под фигурой — не ход
 	for h: Vector2i in tiles:
 		var mat: StandardMaterial3D = tiles[h].material_override
 		var color: Color = tiles[h].get_meta("base")
-		if area.has(h) and h != _hex_of(player):
+		if area.has(h) and not own.has(h):
 			color = color.lerp(PLAYER_TURN, 0.25)
 			if h == _hovered:
 				color = color.lerp(PLAYER_TURN, 0.35)

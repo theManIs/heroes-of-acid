@@ -1109,9 +1109,10 @@ func _paint() -> void:
 	var hover_anchor := NO_HEX
 	if preview:
 		hover_anchor = _anchor_of(preview, _hovered, shown)
+	var own: Array[Vector2i] = _footprint(preview) if preview else []  # 176: все клетки под фигурой — не ход
 	for h: Vector2i in tiles:
 		var color := Color(tint, 0.0)
-		if area.has(h) and h != center:
+		if area.has(h) and not own.has(h):
 			color.a = RANGE_ALPHA
 			if h == _hovered:
 				color.a = lerpf(RANGE_ALPHA, 1.0, 0.5)
