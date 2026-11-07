@@ -26,7 +26,7 @@ const CREATURES := {
 		# Дальний бой: стреляет с места. kind — снаряд, hand — откуда летит, release — доля клипа в момент выпуска,
 		# title — подпись режима огня, no_adjacent — нельзя с врагом вплотную, rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, доля расстояния до цели.
 		"shots": {
-			"arrow": {"title": "лук", "no_adjacent": true, "anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 11.0, "arc": 0.12},
+			"arrow": {"title": "лук", "no_adjacent": true, "anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 22.0, "arc": 0.12},  # 178: вдвое быстрее
 			"lantern": {"title": "фонарь", "anim": "throw", "hand": "RightHand", "release": 0.37, "rate": 1.0, "speed": 5.0, "arc": 0.14},
 		},
 	},

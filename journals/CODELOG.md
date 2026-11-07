@@ -1545,3 +1545,21 @@ index 9251cff..470a0cf 100644
  const BITE_STEP := 0.08  # короткий шаг корпуса, основной выпад уже есть в клипе
  const BITE_GAP := 0.04
 ```
+
+## 2026-11-07 — 178: стрела фонарщика вдвое быстрее
+
+```diff
+diff --git a/game/scenes/creature_test.gd b/game/scenes/creature_test.gd
+index f001113..d362aff 100644
+--- a/game/scenes/creature_test.gd
++++ b/game/scenes/creature_test.gd
+@@ -26,7 +26,7 @@ const CREATURES := {
+ 		# Дальний бой: стреляет с места. kind — снаряд, hand — откуда летит, release — доля клипа в момент выпуска,
+ 		# title — подпись режима огня, no_adjacent — нельзя с врагом вплотную, rate — скорость клипа, speed — скорость снаряда, м/с, arc — высота дуги, доля расстояния до цели.
+ 		"shots": {
+-			"arrow": {"title": "лук", "no_adjacent": true, "anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 11.0, "arc": 0.12},
++			"arrow": {"title": "лук", "no_adjacent": true, "anim": "shoot", "hand": "LeftHand", "release": 0.42, "rate": 0.55, "speed": 22.0, "arc": 0.12},  # 178: вдвое быстрее
+ 			"lantern": {"title": "фонарь", "anim": "throw", "hand": "RightHand", "release": 0.37, "rate": 1.0, "speed": 5.0, "arc": 0.14},
+ 		},
+ 	},
+```
