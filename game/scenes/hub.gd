@@ -25,7 +25,7 @@ func _ready() -> void:
 	column.add_theme_constant_override("separation", GAP)
 	center.add_child(column)
 	var title := Label.new()
-	title.text = "Heroes of Acid — проверки"
+	title.text = "Heroes of Acid — прогоны механик"
 	title.add_theme_font_size_override("font_size", 34)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)

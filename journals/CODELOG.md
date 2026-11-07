@@ -1671,3 +1671,21 @@ index d362aff..299d131 100644
 ```
 
 Проверка: скрытый прогон hub → каждая сцена → «Назад» → hub, темп 1,0 после боя.
+
+## 2026-11-07 — 180: заголовок главного экрана
+
+```diff
+diff --git a/game/scenes/hub.gd b/game/scenes/hub.gd
+index c775505..ff51b3a 100644
+--- a/game/scenes/hub.gd
++++ b/game/scenes/hub.gd
+@@ -25,7 +25,7 @@ func _ready() -> void:
+ 	column.add_theme_constant_override("separation", GAP)
+ 	center.add_child(column)
+ 	var title := Label.new()
+-	title.text = "Heroes of Acid — проверки"
++	title.text = "Heroes of Acid — прогоны механик"
+ 	title.add_theme_font_size_override("font_size", 34)
+ 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+ 	column.add_child(title)
+```
