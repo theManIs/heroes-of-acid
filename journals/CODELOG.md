@@ -1689,3 +1689,50 @@ index c775505..ff51b3a 100644
  	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
  	column.add_child(title)
 ```
+
+## 2026-11-07 — 183: четвероногие — основной
+
+```diff
+diff --git a/pipelines/README.md b/pipelines/README.md
+index 426a8ed..8b1be96 100644
+--- a/pipelines/README.md
++++ b/pipelines/README.md
+@@ -34,7 +34,7 @@
+ | [`creature-recolor`](creature-recolor/README.md) | новая раскраска готового существа, модель и риг прежние | не меняется | не меняется | не меняются | кредиты Tripo, 20 за текстуру | основной |
+ | [`ground-fal`](ground-fal/README.md) | текстура земли | gpt-image через fal | не нужен | не нужны | счёт fal | проба, задача 100 |
+ | [`obstacle-fal`](obstacle-fal/README.md) | преграда на поле боя, статичная модель | Meshy через fal | не нужен | не нужны | счёт fal | проба, задача 101 |
+-| [`creature-quadruped`](creature-quadruped/README.md) | существо на четырёх лапах | Tripo API | скелет донора Quaternius, привязка в Blender | донора | кредиты Tripo, только модель | проба, задача 108 |
++| [`creature-quadruped`](creature-quadruped/README.md) | существо на четырёх лапах | Tripo API | скелет донора Quaternius, привязка в Blender | донора | кредиты Tripo, только модель | основной, задачи 108, 159; зафиксирован 183 |
+ | [`3d-model`](3d-model/README.md) | то же, что `creature`, для других проектов | Tripo | Tripo | пресеты Tripo | кредиты Tripo | копия |
+ | [`mixamo-catalog`](mixamo-catalog/README.md) | локальный каталог названий и описаний | — | — | метаданные Mixamo через Chrome/CUA; сборка таблицы Python | — | проба, задача 119 |
+ | [`creature-pair-showcase`](creature-pair-showcase/README.md) | витрина псаря, собаки и пары | готовые игровые модели | готовые риги | готовые клипы, синхронизация, контакт руки и бегство собаки в Godot | — | проба, задачи 124–126, 128 |
+diff --git a/pipelines/creature-quadruped/README.md b/pipelines/creature-quadruped/README.md
+index c8130fe..6b5ffe8 100644
+--- a/pipelines/creature-quadruped/README.md
++++ b/pipelines/creature-quadruped/README.md
+@@ -1,6 +1,10 @@
+-# Пайплайн: существо на четырёх лапах (проба, задача 108)
++# Пайплайн: существо на четырёх лапах (основной, задача 183)
+ 
+-Не завершён. Подробности, цены и находки по первой собаке: [creatures/hound/README.md](../../creatures/hound/README.md).
++Зафиксирован пользователем 2026-11-07: «всё получилось». Пройден дважды — собака псаря (108)
++и конь всадника (159). Шаги ниже менять только по решению пользователя.
++
++Журналы: собака — [creatures/hound/README.md](../../creatures/hound/README.md),
++конь — [creatures/horse/README.md](../../creatures/horse/README.md).
+ 
+ **Проверено:**
+ 
+@@ -11,7 +15,10 @@
+ 
+ 5. Привязка к скелету донора с анимациями: `blender -b --python pipelines/creature-quadruped/bind_donor.py -- <донор.glb> <наша.glb> <выход.glb>`. Метод проверен на лисице.
+ 
+-**Источник анимаций:** донор Quaternius (хаски, CC0) через `bind_donor.py`. Даёт стойку, укус, ходьбу, бег, реакцию, смерть.
++**Источник анимаций:** донор Quaternius (CC0, poly.pizza) через `bind_donor.py`: хаски для собаки,
++Horse для коня. Даёт стойку, удар, ходьбу, бег, реакцию, смерть, отклик.
++
++6. Игровой файл с понятными именами клипов: `name_clips.py`, затем отдельная витрина существа.
+ 
+ **Не сработало:** Text to Motion в Studio генерирует движение человека и к собаке не применяется. Общие пресеты API на риге `quadruped` отклоняются. Бесплатная выгрузка из Studio анимаций не содержит. Риг Tripo в этом пути не нужен.
+ 
+```
