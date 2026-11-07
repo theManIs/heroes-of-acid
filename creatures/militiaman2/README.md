@@ -68,3 +68,14 @@ attack ← `a_attack_down`, hurt ← `a_hurt_gut`, defend ← `a_block_react`, f
 - Виды: `concept/views/{front,left,back,right}.png` (тот же чат, к каждому запросу приложен `front.png`), лист `concept/sheet.png`.
 - Топор и щит отдельно (тот же чат, по исходному листу): `weapon/axe-reference.png` (вертикально, лезвие вправо),
   `weapon/shield-reference.png` (три четверти, видна толщина досок), лист `weapon/sheet.png`; промпты рядом.
+
+## Шаг 4–6 — модели и клипы (2026-11-07)
+
+- Tripo: тело + риг `spec: mixamo` (`stage2.py`, задачи fa38fd64…, c4bfd523…), топор 20eb0108…, щит a666ecda…; 145 кредитов
+  (425 → 280). `weapon.py` — своё состояние на предмет (`weapon/<имя>_state.json`).
+- Игра: `game/assets/creatures/militiaman2/body.glb` (`pack_model.py`, 19 754 треугольника), `axe.glb` (`prepare_weapon.py`,
+  лезвие в −Z — `roll` 180°), `shield.glb` (новый `pipelines/creature-mixamo-first/prepare_shield.py`: центр, высота 1, лицо к +Z).
+  Все клипы пересобраны на риге модели (`build_clips.py`), бёдра в покое 2°. walk_speed 0,9.
+- Топор в опущенной руке торчал вперёд на 0,8 м: `carry_tilt` 55° в спокойных клипах (стойка, шаг, бег, отклик) — висит вниз.
+- Граница щита и замеры — по вершинам сетки, не по рамке. Щит 0,34 роста. Замер с таким же соседом: стойка −0,44/−0,33,
+  атака −0,18/−0,09, стойка со щитом −0,24/−0,12, атака из стойки +0,11 (корпус соседа в реакции наклоняется навстречу) / +0,06.

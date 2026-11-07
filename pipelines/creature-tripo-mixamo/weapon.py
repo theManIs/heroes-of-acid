@@ -3,9 +3,11 @@
 Usage: .venv/bin/python pipelines/creature-tripo-mixamo/weapon.py hammerer [image] [out.glb]
 По умолчанию — молот: references/<id>/hammer-reference.png → creatures/<id>/weapon/hammer.glb.
 Для другого оружия передать свою картинку и имя файла (копьё всадника, задача 162).
+Состояние оплаченной задачи — weapon/<имя>_state.json, у каждого предмета своё (184).
 """
 import asyncio
 import json
+from pathlib import Path
 import sys
 from tripo3d import TripoClient
 from tripo3d.models import TaskStatus
@@ -15,7 +17,8 @@ from stage2 import ROOT, MODEL_VERSION, load_key, fetch
 async def main(creature, image=None, name="hammer.glb"):
     out = ROOT / 'creatures' / creature / 'weapon'
     out.mkdir(parents=True, exist_ok=True)  # иначе номер оплаченной задачи не записать
-    path = out / 'tripo_state.json'
+    # Своё состояние на каждый предмет (184: топор и щит у одного существа), у молота — прежнее имя.
+    path = out / ('tripo_state.json' if name == 'hammer.glb' else f'{Path(name).stem}_state.json')
     state = json.loads(path.read_text()) if path.exists() else {}
     async with TripoClient(api_key=load_key()) as client:
         if 'model' not in state:

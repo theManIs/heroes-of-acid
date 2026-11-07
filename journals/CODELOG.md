@@ -2033,3 +2033,8 @@ militiaman2_config.gd — SHIELD_ARM, hurt_calm/fall_calm 0,25; creature_test.gd
 
 weapon_grip.gd — общий для существа выбор сторон поворота, TURN_MAX_ATTACK 90°, _front/_solve, полушарие кватерниона; creature.gd — scale_bones(reference), configure_stance калмит удар стойки; arenas/gallery — attack_calm; militiaman2_config.gd — forward_limit 0,29, attack_calm.
 Замер (overlap.gd): стойка −0,49/−0,31; атака −0,24/−0,20; стойка со щитом −0,28/−0,11; атака со щитом −0,02/−0,01.
+
+## 2026-11-07 — 184: модель ополченца в игре
+
+Новое: pipelines/creature-mixamo-first/prepare_shield.py; game/assets/creatures/militiaman2/{body,axe,shield}.glb; weapon.py — состояние на предмет; weapon_grip.gd — модель щита равномерно, carry_tilt, точки по вершинам; militiaman2_config.gd — модель, топор/щит, walk_speed 0,9.
+Команды: stage2.py militiaman2; weapon.py militiaman2 …axe-reference.png axe.glb / …shield-reference.png shield.glb; prepare_weapon.py; prepare_shield.py; pack_model.py ×3; build_clips.py militiaman2; check.sh militiaman2.

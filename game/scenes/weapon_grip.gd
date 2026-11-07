@@ -19,6 +19,12 @@ extends Node3D
 @export var grip_at := 0.12
 ## Постоянный поворот вокруг рукояти (или вокруг нормали щита), градусы.
 @export var roll := 0.0
+## 184: в спокойных клипах (опущенная кисть) рукоять не вдоль костяшек, а наклонена вниз на carry_tilt градусов —
+## иначе топор в опущенной руке торчит вперёд горизонтально (0,8 м). В бою и в стойке со щитом — хват кулаком.
+@export var carry_tilt := 0.0
+@export var carry_clips: Array = ["idle", "walk", "run", "fidget"]
+var _carry := 0.0
+const CARRY_BLEND := 6.0
 ## 189: дальше этого вперёд (доля роста от центра гекса) предмет не выходит ни в одном клипе — не залезает в соседа.
 ## Траектория правится заранее, при загрузке: в кадрах, где предмет дальше, плечо разворачивается
 ## (ось — та, где предмет быстрее всего уходит назад) ровно настолько, чтобы предмет встал на границу. Поправка вписана в клип, тело не двигается. 0 — выкл.
@@ -104,22 +110,43 @@ func _process(_delta: float) -> void:
 		var basis := Basis(up, fore, out).rotated(out, deg_to_rad(roll))
 		var size := Vector3(width, length, 1.0) * height
 		var centre := _point(hand + "ForeArm").lerp(_point(hand + "Hand"), 0.6) + out * 0.06 * height
-		_item.global_transform = Transform3D(basis.scaled_local(Vector3(size.x, size.y, size.x)), centre)
+		# Модель (prepare_shield.py: высота 1, центр в нуле) — равномерно по высоте; заглушка — по ширине и высоте.
+		var scale := Vector3.ONE * size.y if model != "" else Vector3(size.x, size.y, size.x)
+		_item.global_transform = Transform3D(basis.scaled_local(scale), centre)
 		return
 	var axis := knuckles
 	var edge := (fingers - axis * fingers.dot(axis)).normalized()  # костяшки — туда же лезвие
+	var calm := carry_tilt != 0.0 and _unit != null and not _unit.in_stance and String(_unit.anim.current_animation) in carry_clips
+	var want := 1.0 if calm else 0.0
+	_carry = want if _delta <= 0.0 else lerpf(_carry, want, 1.0 - exp(-CARRY_BLEND * _delta))
+	if _carry > 0.0:  # наклон рукояти к пальцам (вниз в опущенной руке) вокруг оси, поперечной ладони
+		var side := axis.cross(edge).normalized()
+		axis = axis.rotated(side, deg_to_rad(carry_tilt) * _carry)
+		edge = edge.rotated(side, deg_to_rad(carry_tilt) * _carry)
 	var basis := Basis(axis.cross(edge), axis, edge).rotated(axis, deg_to_rad(roll))
 	var span := length * height
 	_item.global_transform = Transform3D(basis.scaled_local(Vector3.ONE * span), palm - axis * span * grip_at)
 
 
-## Точки предмета в мире: углы рамок его сеток.
+var _samples := {}  # сетка -> до 400 её вершин (своих координат)
+
+
+## Точки предмета в мире: вершины его сеток (до 400 на сетку), не углы рамки — у повёрнутого
+## выпуклого щита в углах рамки пусто, граница по рамке врёт на 0,1–0,2 м.
 func _item_points() -> Array[Vector3]:
 	var out: Array[Vector3] = []
 	for m: MeshInstance3D in _item.find_children("*", "MeshInstance3D", true, false):
-		var box := m.get_aabb()
-		for c in 8:
-			out.append(m.global_transform * (box.position + box.size * Vector3(c & 1, (c >> 1) & 1, (c >> 2) & 1)))
+		if not _samples.has(m):
+			var verts := PackedVector3Array()
+			for surface in m.mesh.get_surface_count():
+				verts.append_array(m.mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX])
+			var step := maxi(1, verts.size() / 400)
+			var picked: Array[Vector3] = []
+			for i in range(0, verts.size(), step):
+				picked.append(verts[i])
+			_samples[m] = picked
+		for v: Vector3 in _samples[m]:
+			out.append(m.global_transform * v)
 	return out
 
 
