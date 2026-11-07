@@ -13,6 +13,7 @@ const HOLD := 1.0
 
 var _id := ""
 var _set: Dictionary = {}
+var _grid: GridContainer
 
 
 func _ready() -> void:
@@ -24,9 +25,23 @@ func _ready() -> void:
 	columns = 4
 	cell_size = 360
 	var grid := _build_page()
+	_grid = grid
 	for cell: Array in _set.get("cells", []):
 		_make_candidate(grid, cell[0], cell[1], cell[2], cell[3] if cell.size() > 3 else _set.get("idle", "idle"))
+	resized.connect(_fit_cells)
 	_finish()
+	_fit_cells()
+
+
+## Сколько квадратов влезает в ширину окна — столько столбцов; квадраты растягиваются на всю ширину.
+func _fit_cells() -> void:
+	if not is_instance_valid(_grid):
+		return
+	var count := _grid.get_child_count()
+	_grid.columns = clampi(floori((size.x - GAP) / (360 + GAP)), 1, maxi(1, count))
+	cell_size = maxi(120, floori((size.x - GAP * (_grid.columns + 1)) / _grid.columns) - 6)
+	for pair: Array in _views:
+		pair[0].custom_minimum_size = Vector2.ONE * cell_size
 
 
 func _anims() -> String:
@@ -48,7 +63,9 @@ func _make_candidate(grid: GridContainer, title: String, clip: String, endless: 
 		for key in prop:
 			grip.set(key, prop[key])
 		unit.model.add_child(grip)
-	_make_label(cell.frame).text = title
+	var label := _make_label(cell.frame)
+	label.text = title
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART  # длинная подпись не раздвигает квадрат
 	if endless:
 		unit.anim.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
 		unit.anim.play(clip)
