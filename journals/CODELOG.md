@@ -1950,3 +1950,28 @@ index 11095a5..5b2d51c 100644
  		"hurt": "shield_hurt", "exit": "shield_down", "move": 0.5},
  }
 ```
+
+## 2026-11-07 — 187: защита щитом
+
+```diff
+diff --git a/game/scenes/militiaman2_config.gd b/game/scenes/militiaman2_config.gd
+index 5b2d51c..57dce83 100644
+--- a/game/scenes/militiaman2_config.gd
++++ b/game/scenes/militiaman2_config.gd
+@@ -7,10 +7,12 @@ const UNIT := {
+ 	"name": "Ополченец (манекен)", "icon": "res://assets/creatures/militiaman/icon.png",
+ 	"scene": "res://assets/mannequin/xbot.glb",
+ 	"extra": [ANIMS + "idle.glb", ANIMS + "walk.glb", ANIMS + "run.glb", ANIMS + "attack.glb", ANIMS + "hurt.glb",
+-		ANIMS + "defend.glb", ANIMS + "fall.glb", ANIMS + "fidget.glb", ANIMS + "shield_up.glb", ANIMS + "shield_idle.glb",
++		ANIMS + "fall.glb", ANIMS + "fidget.glb", ANIMS + "shield_up.glb", ANIMS + "shield_idle.glb",
+ 		ANIMS + "shield_walk.glb", ANIMS + "shield_hurt.glb", ANIMS + "shield_down.glb"],
+ 	"attack": "attack", "attack_from": 0.0, "hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "run": "run",
+-	"defend": "defend", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.3,
++	# 187: защита — удар в поднятый щит (тот же клип, что в стойке), а не «закрывается руками»;
++	# старт на 0,35 с раньше удара: щит поднимается к попаданию.
++	"defend": "shield_hurt", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.35,
+ 	"fidget": "fidget", "fidget_on_hover": true,
+ 	"size": 1.8, "walk_speed": 0.97,  # замер стопы в клипе шага (unarmed walk forward)
+ 	"reach": 1.0,  # кисть 0,28 + топор ≈ 0,67 при росте 1,8 (×рост/1,9); без него удар заходит в цель на 0,7 м
+```
+Удалён anims/defend.glb; в clips.json у a_block_react снят alias.

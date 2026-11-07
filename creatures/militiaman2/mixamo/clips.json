@@ -100,10 +100,7 @@
     "name": "a_block_react",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0,
-    "aliases": [
-      "defend"
-    ]
+    "hip_scale": 0.0
   },
   "packs/Pro Melee Axe Pack/standing taunt battlecry.fbx": {
     "name": "a_taunt_cry",
