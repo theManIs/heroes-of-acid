@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-11-07T20:20:00+04:00",
+  "service": "ChatGPT in Chrome",
+  "conversation_url": "https://chatgpt.com/c/6aeef932-1578-83ed-810c-ad97c422e927",
+  "conversation_archived": false,
+  "reference": "creatures/militiaman2/references/militiaman-final.jpg",
+  "outputs": {"front": "creatures/militiaman2/concept/front.png"},
+  "prompts": ["creatures/militiaman2/concept/front-prompt.md"],
+  "note": "Чат не архивирован: задача 184 идёт, нужны виды и референсы топора и щита."
+}
