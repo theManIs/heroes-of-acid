@@ -1462,3 +1462,11 @@ git remote set-url origin https://github.com/theManIs/heroes-of-acid.git && gh a
 -	"size": 2.3, "walk_speed": 1.43,  # 168: …
 +	"size": 1.955, "walk_speed": 1.2155,  # 175: 85 % от 2,3 — вмещается в свой гекс; шаг в той же доле
 ```
+
+## 2026-11-07 — 175: ещё −10 %
+
+`game/scenes/hammerer_config.gd`
+```diff
+-	"size": 1.955, "walk_speed": 1.2155,  # 175: 85 % от 2,3 …
++	"size": 1.76, "walk_speed": 1.094,  # 175: 85 % от 2,3, ещё −10 % …
+```
