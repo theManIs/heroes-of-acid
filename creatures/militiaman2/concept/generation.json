@@ -4,7 +4,13 @@
   "conversation_url": "https://chatgpt.com/c/6aeef932-1578-83ed-810c-ad97c422e927",
   "conversation_archived": false,
   "reference": "creatures/militiaman2/references/militiaman-final.jpg",
-  "outputs": {"front": "creatures/militiaman2/concept/front.png"},
-  "prompts": ["creatures/militiaman2/concept/front-prompt.md"],
-  "note": "Чат не архивирован: задача 184 идёт, нужны виды и референсы топора и щита."
+  "outputs": {
+    "front": "creatures/militiaman2/concept/front.png",
+    "views": "creatures/militiaman2/concept/views/{front,left,back,right}.png"
+  },
+  "prompts": [
+    "creatures/militiaman2/concept/front-prompt.md",
+    "creatures/militiaman2/concept/views/{left,back,right}-prompt.md"
+  ],
+  "note": "Чат не архивирован: дальше референсы топора и щита в том же чате."
 }
