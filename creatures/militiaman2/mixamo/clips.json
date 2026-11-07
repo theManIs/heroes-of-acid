@@ -349,5 +349,50 @@
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield crouch block.fbx": {
+    "name": "s_cblock1",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield crouch block (2).fbx": {
+    "name": "s_cblock2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0,
+    "aliases": [
+      "shield_brace"
+    ]
+  },
+  "packs/Sword And Shield Pack/sword and shield crouch block idle.fbx": {
+    "name": "s_cblock_idle",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield crouch.fbx": {
+    "name": "s_crouch",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield crouching.fbx": {
+    "name": "s_crouching1",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield crouching (2).fbx": {
+    "name": "s_crouching2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
+  },
+  "packs/Sword And Shield Pack/sword and shield crouching (3).fbx": {
+    "name": "s_crouching3",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
   }
 }

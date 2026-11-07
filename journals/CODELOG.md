@@ -2005,3 +2005,7 @@ index 57dce83..846121e 100644
 +		"defend": ""},  # «Защита» в стойке: щит неподвижен, от удара только толчок назад — не тот же клип, что получение удара
  }
 ```
+
+## 2026-11-07 — 188: защита в стойке — присед за щит
+
+clips.json: s_cblock2 → shield_brace (и ещё 6 приседаний набора как кандидаты); militiaman2_config.gd: stance.defend = shield_brace, extra + shield_brace.glb.
