@@ -6,11 +6,15 @@
   "reference": "creatures/militiaman2/references/militiaman-final.jpg",
   "outputs": {
     "front": "creatures/militiaman2/concept/front.png",
-    "views": "creatures/militiaman2/concept/views/{front,left,back,right}.png"
+    "views": "creatures/militiaman2/concept/views/{front,left,back,right}.png",
+    "axe": "creatures/militiaman2/weapon/axe-reference.png",
+    "shield": "creatures/militiaman2/weapon/shield-reference.png"
   },
   "prompts": [
     "creatures/militiaman2/concept/front-prompt.md",
-    "creatures/militiaman2/concept/views/{left,back,right}-prompt.md"
+    "creatures/militiaman2/concept/views/{left,back,right}-prompt.md",
+    "creatures/militiaman2/weapon/axe-prompt.md",
+    "creatures/militiaman2/weapon/shield-prompt.md"
   ],
-  "note": "Чат не архивирован: дальше референсы топора и щита в том же чате."
+  "note": "Чат не архивирован до конца задачи 184: возможны правки видов и предметов."
 }

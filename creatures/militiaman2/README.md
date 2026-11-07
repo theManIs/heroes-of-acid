@@ -66,3 +66,5 @@ attack ← `a_attack_down`, hurt ← `a_hurt_gut`, defend ← `a_block_react`, f
 - Вид спереди: `concept/front.png` (ChatGPT в Chrome, промпт `concept/front-prompt.md`, референс
   `references/militiaman-final.jpg`), T-поза, без топора и щита. Чат — `concept/generation.json`, не архивирован.
 - Виды: `concept/views/{front,left,back,right}.png` (тот же чат, к каждому запросу приложен `front.png`), лист `concept/sheet.png`.
+- Топор и щит отдельно (тот же чат, по исходному листу): `weapon/axe-reference.png` (вертикально, лезвие вправо),
+  `weapon/shield-reference.png` (три четверти, видна толщина досок), лист `weapon/sheet.png`; промпты рядом.
