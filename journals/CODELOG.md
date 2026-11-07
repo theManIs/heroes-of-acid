@@ -1585,3 +1585,7 @@ index d362aff..6f04ca1 100644
 ```
 
 Проверка: кадры idle/shoot отрисованы скрытым Godot (screens/lantern-archer-bowstring.png).
+
+## 2026-11-07 — 179 отменена
+
+Удалены `game/scenes/bow_string.gd`, `lantern-archer.tscn`; в `creature_test.gd` сцена фонарщика снова `lantern-archer.glb`.
