@@ -8,7 +8,7 @@ const UNIT := {
 	"scene": "res://assets/mannequin/xbot.glb",
 	"extra": [ANIMS + "idle.glb", ANIMS + "walk.glb", ANIMS + "run.glb", ANIMS + "attack.glb", ANIMS + "hurt.glb",
 		ANIMS + "fall.glb", ANIMS + "fidget.glb", ANIMS + "shield_up.glb", ANIMS + "shield_idle.glb",
-		ANIMS + "shield_walk.glb", ANIMS + "shield_hurt.glb", ANIMS + "shield_down.glb", ANIMS + "shield_brace.glb"],
+		ANIMS + "shield_walk.glb", ANIMS + "shield_hurt.glb", ANIMS + "shield_down.glb", ANIMS + "shield_brace.glb", ANIMS + "shield_attack.glb"],
 	"attack": "attack", "attack_from": 0.0, "hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "run": "run",
 	# 187: защита — удар в поднятый щит (тот же клип, что в стойке), а не «закрывается руками»;
 	# старт на 0,35 с раньше удара: щит поднимается к попаданию.
@@ -24,5 +24,5 @@ const UNIT := {
 	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; после атаки снова в стойке.
 	"stance": {"title": "Щит перед собой", "enter": "shield_up", "idle": "shield_idle", "walk": "shield_walk",
 		"hurt": "shield_hurt", "exit": "shield_down", "move": 0.5,
-		"defend": "shield_brace"},  # «Защита» в стойке: приседает за щит и принимает удар (Crouch Blocked Impact), не тот же клип, что получение удара
+		"defend": "shield_brace", "attack": "shield_attack"},  # 191: в стойке — короткий удар (1,0 с)  # «Защита» в стойке: приседает за щит и принимает удар (Crouch Blocked Impact), не тот же клип, что получение удара
 }

@@ -40,9 +40,11 @@ func _ready() -> void:
 			actions.append_array([["Стойка: поднять щит", stance.enter, 0.0, 0.0, false],
 				["Стойка: " + stance.title.to_lower(), stance.idle, 0.0, 0.0, true],
 				["Стойка: шаг", stance.walk, 0.0, 0.0, true], ["Стойка: удар в щит", stance.hurt, 0.0, 0.0, true],
+				["Стойка: атака", stance.get("attack", ""), 0.0, 0.0, true], ["Стойка: защита", stance.get("defend", ""), 0.0, 0.0, true],
 				["Стойка: опустить щит", stance.exit, 0.0, 0.0, true]])
 		for action in actions:
-			_make_action(cfg, action)
+			if action[1] != "":
+				_make_action(cfg, action)
 	resized.connect(fit_cells)
 	_finish()
 

@@ -214,7 +214,10 @@
     "name": "s_attack4",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "shield_attack"
+    ]
   },
   "packs/Sword And Shield Pack/sword and shield impact.fbx": {
     "name": "s_impact1",

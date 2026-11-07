@@ -2019,3 +2019,8 @@ weapon_grip.gd — forward_limit, _bake_limit, _solve, _item_points; militiaman2
 ## 2026-11-07 — 190: витрина ударов; квадраты по ширине окна
 
 mannequin_search.gd — столбцы по ширине окна (_fit_cells), перенос длинных подписей; candidates.json — 4 удара (all_cells хранит прежний список).
+
+## 2026-11-07 — 191: свой удар в стойке
+
+creature.gd — set_stance меняет attack_anim/attack_from/impact, reach из записи; militiaman2_config.gd — stance.attack; clips.json — s_attack4 → shield_attack; creature_gallery_page.gd — клетки «Стойка: атака/защита».
+Проверка: обычная — attack 0,72 с; со щитом — shield_attack 0,42 с, стойка сохраняется; снова обычная — attack.

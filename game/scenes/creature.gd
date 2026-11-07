@@ -405,13 +405,18 @@ func set_stance(on: bool, animate := true) -> void:
 	var library := anim.get_animation_library(&"")
 	if on:
 		_base = {"idle": library.get_animation("idle"), "walk": library.get_animation("walk") if library.has_animation("walk") else null,
-			"hurt": hurt_anim, "defend": defend_anim, "run_ratio": run_ratio}
+			"hurt": hurt_anim, "defend": defend_anim, "run_ratio": run_ratio,
+			"attack": attack_anim, "attack_from": attack_from, "impact": impact, "reach": reach}
 		_swap(library, "idle", anim.get_animation(stance.idle))
 		if stance.has("walk") and anim.has_animation(stance.walk):
 			_swap(library, "walk", anim.get_animation(stance.walk))
 		hurt_anim = stance.get("hurt", hurt_anim)
 		defend_anim = stance.get("defend", stance.get("hurt", defend_anim))  # «Защита» в стойке; "" — без клипа, только толчок
 		run_ratio = 0.0  # со щитом перед собой не бегает
+		if stance.has("attack") and anim.has_animation(stance.attack):  # 191: свой удар в стойке
+			attack_from = 0.0
+			set_attack(stance.attack)
+			reach = _base.reach  # вынос с оружием задан записью, по кисти не перемеряем
 	else:
 		_swap(library, "idle", _base.idle)
 		if _base.walk != null:
@@ -419,6 +424,10 @@ func set_stance(on: bool, animate := true) -> void:
 		hurt_anim = _base.hurt
 		defend_anim = _base.defend
 		run_ratio = _base.run_ratio
+		attack_anim = _base.attack
+		attack_from = _base.attack_from
+		impact = _base.impact
+		reach = _base.reach
 	if dead or walking:
 		return
 	var clip: String = stance.get("enter" if on else "exit", "")
