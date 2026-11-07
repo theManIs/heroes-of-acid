@@ -405,17 +405,19 @@ func set_stance(on: bool, animate := true) -> void:
 	var library := anim.get_animation_library(&"")
 	if on:
 		_base = {"idle": library.get_animation("idle"), "walk": library.get_animation("walk") if library.has_animation("walk") else null,
-			"hurt": hurt_anim, "run_ratio": run_ratio}
+			"hurt": hurt_anim, "defend": defend_anim, "run_ratio": run_ratio}
 		_swap(library, "idle", anim.get_animation(stance.idle))
 		if stance.has("walk") and anim.has_animation(stance.walk):
 			_swap(library, "walk", anim.get_animation(stance.walk))
 		hurt_anim = stance.get("hurt", hurt_anim)
+		defend_anim = stance.get("hurt", defend_anim)  # и «Защита» в стойке — удар в щит, щит не опускается
 		run_ratio = 0.0  # со щитом перед собой не бегает
 	else:
 		_swap(library, "idle", _base.idle)
 		if _base.walk != null:
 			_swap(library, "walk", _base.walk)
 		hurt_anim = _base.hurt
+		defend_anim = _base.defend
 		run_ratio = _base.run_ratio
 	if dead or walking:
 		return

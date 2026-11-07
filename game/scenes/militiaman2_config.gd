@@ -12,7 +12,8 @@ const UNIT := {
 	"attack": "attack", "attack_from": 0.0, "hurt": "hurt", "hurt_len": 0.0, "idle": "idle", "run": "run",
 	"defend": "defend", "defend_from": 0.0, "defend_len": 0.0, "defend_lead": 0.3,
 	"fidget": "fidget", "fidget_on_hover": true,
-	"size": 1.8, "walk_speed": 1.04,  # замер стопы в клипе шага
+	"size": 1.8, "walk_speed": 0.97,  # замер стопы в клипе шага (unarmed walk forward)
+	"reach": 1.0,  # кисть 0,28 + топор ≈ 0,67 при росте 1,8 (×рост/1,9); без него удар заходит в цель на 0,7 м
 	"in_battle": false,  # манекен: в бой — с моделью
 	# Отдельные топор и щит (weapon_grip.gd); пока заглушки, потом модели Tripo.
 	"props": [{"hand": "Right", "mode": "fist", "shape": "axe", "length": 0.42, "grip_at": 0.12},

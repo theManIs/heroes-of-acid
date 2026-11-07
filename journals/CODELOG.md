@@ -1905,3 +1905,9 @@ index 361adc9..55032f2 100644
 Также: creature_test.gd и battle_test.gd — props, configure_stance, _fill_reachable/_moves, кнопка альтернативы; creature_gallery_page.gd — props и клипы стойки; check_clips.gd — уклон и манекен.
 
 Проверки: check.sh militiaman2 — 0 провалов; check_clips hammerer/houndmaster/lantern-archer — как раньше; скрытый тест стойки (ход 3→1, shield_hurt, атака выходит из стойки).
+
+## 2026-11-07 — 184/186: правки после просмотра
+
+mannequin.py — поворот на +X; clips.json — u_idle/u_walk/u_run/u_look1 вместо боевых; militiaman2_config.gd — reach 1,0, walk_speed 0,97; arenas — cfg.reach; creature.gd — defend_anim в стойке = удар в щит.
+
+Замеры (тест существа): стойка 10° к цели, шаг 1° к ходу, удар без захода (0,03 м); стойка держится после удара и «Защиты».

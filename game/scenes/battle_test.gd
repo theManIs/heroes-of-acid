@@ -177,6 +177,8 @@ func _make(id: String) -> Creature:
 			grip.set(key, prop[key])
 		c.model.add_child(grip)
 	c.configure_stance(cfg.get("stance", {}))  # 186
+	if cfg.has("reach"):  # 184: вынос с отдельным оружием — кисть плюс топор; по кисти мерится только рука
+		c.reach = cfg.reach * c.height / 1.9
 	c.walk_rate = WALK_RATE
 	c.set_meta("move", MOVES[id])
 	c.move_range = MOVES[id]  # 118: дальше половины хода — бег

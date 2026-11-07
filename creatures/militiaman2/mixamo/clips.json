@@ -4,10 +4,7 @@
     "name": "a_idle",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0,
-    "aliases": [
-      "idle"
-    ]
+    "hip_scale": 0.0
   },
   "packs/Pro Melee Axe Pack/standing idle looking ver. 1.fbx": {
     "name": "a_idle_look1",
@@ -118,10 +115,7 @@
     "name": "a_taunt_thump",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0,
-    "aliases": [
-      "fidget"
-    ]
+    "hip_scale": 0.0
   },
   "packs/Sword And Shield Pack/sword and shield idle.fbx": {
     "name": "s_idle",
@@ -301,18 +295,12 @@
   "inplace/Standing Walk Forward.fbx": {
     "name": "a_walk_ip",
     "grip": 0,
-    "keep_left_fingers": false,
-    "aliases": [
-      "walk"
-    ]
+    "keep_left_fingers": false
   },
   "inplace/Standing Run Forward.fbx": {
     "name": "a_run_ip",
     "grip": 0,
-    "keep_left_fingers": false,
-    "aliases": [
-      "run"
-    ]
+    "keep_left_fingers": false
   },
   "inplace/Sword And Shield Walk.fbx": {
     "name": "s_walk_ip",
@@ -322,5 +310,47 @@
     "aliases": [
       "shield_walk"
     ]
+  },
+  "packs/Pro Melee Axe Pack/unarmed idle.fbx": {
+    "name": "u_idle",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0,
+    "aliases": [
+      "idle"
+    ]
+  },
+  "packs/Pro Melee Axe Pack/unarmed walk forward.fbx": {
+    "name": "u_walk",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0,
+    "aliases": [
+      "walk"
+    ]
+  },
+  "packs/Pro Melee Axe Pack/unarmed run forward.fbx": {
+    "name": "u_run",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0,
+    "aliases": [
+      "run"
+    ]
+  },
+  "packs/Pro Melee Axe Pack/unarmed idle looking ver. 1.fbx": {
+    "name": "u_look1",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0,
+    "aliases": [
+      "fidget"
+    ]
+  },
+  "packs/Pro Melee Axe Pack/unarmed idle looking ver. 2.fbx": {
+    "name": "u_look2",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "hip_scale": 0.0
   }
 }

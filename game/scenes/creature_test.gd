@@ -201,6 +201,8 @@ func _make() -> Creature:
 			grip.set(key, prop[key])
 		c.model.add_child(grip)
 	c.configure_stance(cfg.get("stance", {}))  # 186
+	if cfg.has("reach"):  # 184: вынос с отдельным оружием — кисть плюс топор; по кисти мерится только рука
+		c.reach = cfg.reach * c.height / 1.9
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
