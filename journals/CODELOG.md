@@ -1563,3 +1563,25 @@ index f001113..d362aff 100644
  		},
  	},
 ```
+
+## 2026-11-07 — 179: тетива фонарщика кодом
+
+Новые: `game/scenes/bow_string.gd`, `game/assets/creatures/lantern-archer/lantern-archer.tscn`.
+
+```diff
+diff --git a/game/scenes/creature_test.gd b/game/scenes/creature_test.gd
+index d362aff..6f04ca1 100644
+--- a/game/scenes/creature_test.gd
++++ b/game/scenes/creature_test.gd
+@@ -13,7 +13,7 @@ const CREATURES := {
+ 		# Генерации: цифры в этой сцене, для просмотра. Последняя — финальная, она идёт в сцену боя и на пиктограмму.
+ 		"variants": [{"title": "первая, зелёный плащ"}, {"title": "финальный концепт", "textures": {"albedo": "res://assets/creatures/lantern-archer/generations/final-v1/albedo.jpg", "normal": "res://assets/creatures/lantern-archer/generations/final-v1/normal.jpg", "orm": "res://assets/creatures/lantern-archer/generations/final-v1/orm.png", "emission": "res://assets/creatures/lantern-archer/generations/final-v1/emission.png"},
+ 			"glow": {"bone": "mixamorig_RightUpLeg", "point": Vector3(0.0741, 0.4916, 0.1013), "color": Color(1.0, 0.55, 0.15), "energy": 0.8, "range": 1.2}}],
+-		"scene": "res://assets/creatures/lantern-archer/lantern-archer.glb",  # риг Tripo со spec: mixamo, анимации Mixamo (пайплайн creature-tripo-mixamo)
++		"scene": "res://assets/creatures/lantern-archer/lantern-archer.tscn",  # 179: обёртка с тетивой; риг Tripo со spec: mixamo, анимации Mixamo (пайплайн creature-tripo-mixamo)
+ 		"extra": ["res://assets/creatures/lantern-archer/anims/idle.glb", "res://assets/creatures/lantern-archer/anims/walk.glb",
+ 			"res://assets/creatures/lantern-archer/anims/fall.glb", "res://assets/creatures/lantern-archer/anims/hurt.glb",
+ 			"res://assets/creatures/lantern-archer/anims/shoot.glb", "res://assets/creatures/lantern-archer/anims/throw.glb",
+```
+
+Проверка: кадры idle/shoot отрисованы скрытым Godot (screens/lantern-archer-bowstring.png).
