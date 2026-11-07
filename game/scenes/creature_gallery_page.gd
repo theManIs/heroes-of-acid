@@ -35,6 +35,12 @@ func _ready() -> void:
 		for shot: Dictionary in cfg.get("shots", {}).values():
 			if shot.anim != cfg.attack:
 				actions.append([shot.title, shot.anim, 0.0, 0.0])
+		var stance: Dictionary = cfg.get("stance", {})
+		if not stance.is_empty():  # 186: альтернативная стойка; пятое поле — играть из стойки
+			actions.append_array([["Стойка: поднять щит", stance.enter, 0.0, 0.0, false],
+				["Стойка: " + stance.title.to_lower(), stance.idle, 0.0, 0.0, true],
+				["Стойка: шаг", stance.walk, 0.0, 0.0, true], ["Стойка: удар в щит", stance.hurt, 0.0, 0.0, true],
+				["Стойка: опустить щит", stance.exit, 0.0, 0.0, true]])
 		for action in actions:
 			_make_action(cfg, action)
 	resized.connect(fit_cells)
@@ -72,8 +78,17 @@ func _make_action(cfg: Dictionary, action: Array) -> void:
 	if cfg.get("smoke", false):
 		unit.add_smoke()
 	unit.face(Vector3.BACK + Vector3.RIGHT)
+	for prop: Dictionary in cfg.get("props", []):  # 184: отдельные оружие и щит
+		var grip: Node3D = preload("res://scenes/weapon_grip.gd").new()
+		for key in prop:
+			grip.set(key, prop[key])
+		unit.model.add_child(grip)
+	var stance: Dictionary = cfg.get("stance", {})
+	if action.size() > 4 and action[4]:
+		unit.configure_stance(stance)
+		unit.set_stance(true, false)  # «idle» — стойка со щитом, к ней возвращаются повторы
 	_make_label(cell.frame).text = action[0]
-	if action[1] in ["idle", "walk", cfg.get("run", "")]:
+	if action[1] in ["idle", "walk", cfg.get("run", ""), stance.get("idle", "-"), stance.get("walk", "-")]:
 		unit.anim.get_animation(action[1]).loop_mode = Animation.LOOP_LINEAR
 		unit.anim.play(action[1])
 	else:

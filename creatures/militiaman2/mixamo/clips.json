@@ -4,7 +4,10 @@
     "name": "a_idle",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "idle"
+    ]
   },
   "packs/Pro Melee Axe Pack/standing idle looking ver. 1.fbx": {
     "name": "a_idle_look1",
@@ -34,7 +37,10 @@
     "name": "a_attack_down",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "attack"
+    ]
   },
   "packs/Pro Melee Axe Pack/standing melee attack horizontal.fbx": {
     "name": "a_attack_horiz",
@@ -70,7 +76,10 @@
     "name": "a_hurt_gut",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "hurt"
+    ]
   },
   "packs/Pro Melee Axe Pack/standing react large from left.fbx": {
     "name": "a_hurt_left",
@@ -94,7 +103,10 @@
     "name": "a_block_react",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "defend"
+    ]
   },
   "packs/Pro Melee Axe Pack/standing taunt battlecry.fbx": {
     "name": "a_taunt_cry",
@@ -106,7 +118,10 @@
     "name": "a_taunt_thump",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "fidget"
+    ]
   },
   "packs/Sword And Shield Pack/sword and shield idle.fbx": {
     "name": "s_idle",
@@ -214,7 +229,10 @@
     "name": "s_impact1",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "shield_hurt"
+    ]
   },
   "packs/Sword And Shield Pack/sword and shield impact (2).fbx": {
     "name": "s_impact2",
@@ -232,24 +250,36 @@
     "name": "s_block1",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "shield_up"
+    ]
   },
   "packs/Sword And Shield Pack/sword and shield block (2).fbx": {
     "name": "s_block2",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "shield_down"
+    ]
   },
   "packs/Sword And Shield Pack/sword and shield block idle.fbx": {
     "name": "s_block_idle",
     "grip": 0,
     "keep_left_fingers": false,
-    "hip_scale": 0.0
+    "hip_scale": 0.0,
+    "aliases": [
+      "shield_idle"
+    ]
   },
   "packs/Sword And Shield Pack/sword and shield death.fbx": {
     "name": "s_death1",
     "grip": 0,
-    "keep_left_fingers": false
+    "keep_left_fingers": false,
+    "aliases": [
+      "fall"
+    ]
   },
   "packs/Sword And Shield Pack/sword and shield death (2).fbx": {
     "name": "s_death2",
@@ -267,5 +297,30 @@
     "grip": 0,
     "keep_left_fingers": false,
     "hip_scale": 0.0
+  },
+  "inplace/Standing Walk Forward.fbx": {
+    "name": "a_walk_ip",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "aliases": [
+      "walk"
+    ]
+  },
+  "inplace/Standing Run Forward.fbx": {
+    "name": "a_run_ip",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "aliases": [
+      "run"
+    ]
+  },
+  "inplace/Sword And Shield Walk.fbx": {
+    "name": "s_walk_ip",
+    "grip": 0,
+    "keep_left_fingers": false,
+    "arms_from": "s_block_idle",
+    "aliases": [
+      "shield_walk"
+    ]
   }
 }

@@ -6,7 +6,8 @@ extends Node3D
 ## Снимок идущей игры: создать файл screens/.shot — игра запишет кадр в screens/current/arena.png и удалит файл.
 
 # Проверяемое существо: оба бойца — оно. Новое существо — добавить запись в CREATURES; выбор — пиктограммы слева.
-const HUB_BACK := preload("res://scenes/hub_back.gd")  # 180: кнопка «Назад» на главный экран
+const HUB_BACK := preload("res://scenes/hub_back.gd")
+const WEAPON_GRIP := preload("res://scenes/weapon_grip.gd")  # 180: кнопка «Назад» на главный экран
 const TESTED := "lantern-archer"  # с кого начинать
 const CREATURES := {
 	"lantern-archer": {
@@ -72,6 +73,7 @@ const CREATURES := {
 		"bone_turn": {"R_Forearm": 30.0, "R_Hand": Vector2(30.0, -30.0)},  # локоть и кисть подвёрнуты: лезвие смотрит на врага; кисть наклонена: рукоять круче
 		"size": 1.85,
 	},
+	"militiaman2": preload("res://scenes/militiaman2_config.gd").UNIT,  # 184: новый, пока на манекене
 	"flesh-golem": {
 		"name": "Голем", "icon": "res://assets/creatures/flesh-golem/icon.png",
 		"scene": "res://assets/creatures/flesh-golem/flesh-golem.glb",
@@ -193,6 +195,12 @@ func _make() -> Creature:
 	c.set_shot(c.shots.keys()[0] if c.ranged() else "")
 	c.configure_melee(cfg.get("melee_modes", {}))
 	c.fidget_anim = cfg.get("fidget", "") if cfg.get("fidget_on_hover", false) else ""
+	for prop: Dictionary in cfg.get("props", []):  # 184: отдельные оружие и щит
+		var grip: Node3D = WEAPON_GRIP.new()
+		for key in prop:
+			grip.set(key, prop[key])
+		c.model.add_child(grip)
+	c.configure_stance(cfg.get("stance", {}))  # 186
 	c.defend_pin = cfg.get("defend_pin", true)
 	c.scale_bones(cfg.defend, cfg.get("defend_calm", []), cfg.get("defend_calm_by", 1.0))
 	c.scale_bones(cfg.hurt, cfg.get("hurt_calm", []), cfg.get("hurt_calm_by", 1.0))
@@ -248,6 +256,11 @@ func _ranged() -> bool:
 
 ## Подпись кнопки — текущий режим огня.
 func _show_mode() -> void:
+	if not player.stance.is_empty():  # 186: альтернатива — стойка, а не режим боя
+		_mode_button.visible = true
+		_mode_button.text = "Стойка: " + (player.stance.title.to_lower() if player.in_stance else "обычная")
+		_mode_button.disabled = turn != Turn.PLAYER
+		return
 	_mode_button.visible = _ranged() or not player.melee_modes.is_empty()
 	if not player.melee_modes.is_empty():
 		_mode_button.text = "Атака: " + player.melee_title()
@@ -262,6 +275,12 @@ func _show_mode() -> void:
 
 
 func _switch_mode() -> void:
+	if turn == Turn.PLAYER and not player.stance.is_empty():  # 186: не тратит ход, меняет дальность
+		player.set_stance(not player.in_stance)
+		_fill_reachable()
+		_show_mode()
+		_paint()
+		return
 	if turn == Turn.PLAYER and not player.melee_modes.is_empty():
 		player.next_melee_mode()
 		_show_mode()
@@ -624,13 +643,18 @@ func _start_player_turn() -> void:
 	_show_mode()
 	enemy.set_outline(null)
 	player.set_outline(PLAYER_TURN)
+	_fill_reachable()
+	_raid_reachable = _dog_attack_paths(_hex_of(player), _hex_of(enemy)) if tested == "houndmaster-pair" else {}
+	_paint()
+
+
+## Куда игрок дойдёт за ход; в стойке со щитом (186) — вдвое ближе.
+func _fill_reachable() -> void:
 	reachable.clear()
 	var paths := _paths_from(_hex_of(player), _hex_of(enemy))
 	for h: Vector2i in paths:
-		if paths[h].size() <= MOVE:
+		if paths[h].size() <= player.moves(MOVE):
 			reachable[h] = paths[h]
-	_raid_reachable = _dog_attack_paths(_hex_of(player), _hex_of(enemy)) if tested == "houndmaster-pair" else {}
-	_paint()
 
 
 func _start_enemy_turn() -> void:
@@ -726,7 +750,7 @@ func _approach(who: Creature, target: Creature) -> Array[Vector2i]:
 		var chosen: Array[Vector2i] = []
 		var best_score := INF
 		for h: Vector2i in placements:
-			if placements[h].is_empty() or placements[h].size() > MOVE:
+			if placements[h].is_empty() or placements[h].size() > who.moves(MOVE):
 				continue
 			var can_raid := not _dog_attack_paths(h, goal).is_empty()
 			var score := float(placements[h].size()) if can_raid else 100.0 + _formation_distance(h, goal)
@@ -743,7 +767,7 @@ func _approach(who: Creature, target: Creature) -> Array[Vector2i]:
 		if _formation_distance(h, goal) == 1 and (not found or paths[h].size() < best.size()):
 			best = paths[h]
 			found = true
-	return best.slice(0, MOVE)
+	return best.slice(0, who.moves(MOVE))
 
 
 ## Пройти путь; если в конце стоим рядом с целью — ударить. Потом next.
@@ -996,7 +1020,7 @@ func _process(delta: float) -> void:
 	var text := ""
 	match turn:
 		Turn.PLAYER:
-			text = "Твой ход: гекс — идти (до %d), противник — стрелять (%s), «Защита» — ждать удара" % [MOVE, creatures[tested].shots[player.shot_mode].title] if _ranged() else "Твой ход: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % MOVE
+			text = "Твой ход: гекс — идти (до %d), противник — стрелять (%s), «Защита» — ждать удара" % [player.moves(MOVE), creatures[tested].shots[player.shot_mode].title] if _ranged() else "Твой ход: гекс — идти (до %d), противник — подойти и ударить, «Защита» — ждать удара" % player.moves(MOVE)
 		Turn.ENEMY, Turn.BUSY:
 			text = "Ход…" if turn == Turn.BUSY else "Ход противника"
 		Turn.OVER:

@@ -195,7 +195,9 @@ func _check_assets(cfg: Dictionary) -> void:
 		if mi.skin != null:
 			for s in mi.mesh.get_surface_count():
 				tris += mi.mesh.surface_get_array_index_len(s) / 3
-	if tris > 20000:
+	if String(cfg.scene).contains("mannequin"):
+		_report("ОК", "E02", "манекен (%d треугольников) — проверка сетки после модели" % tris)
+	elif tris > 20000:
 		_report("ПРОВАЛ", "E02", "треугольников тела %d > 20 000" % tris)
 	else:
 		_report("ОК", "E02", "треугольников тела %d" % tris)
@@ -303,7 +305,7 @@ func _check_clip(clip: String, cfg: Dictionary) -> void:
 	var dodge: bool = clip == cfg.get("defend", "") and not cfg.get("defend_pin", true)  # уклон уводит тело намеренно
 	if standing and not dodge and hip_travel > LIMITS.hip * k:
 		_report("ВНИМАНИЕ", "E05", "%s: таз уходит на %.2f м — клип таскает тело" % [tag, hip_travel])
-	if standing and slide > LIMITS.slide * k:
+	if standing and not dodge and slide > LIMITS.slide * k:
 		_report("ВНИМАНИЕ", "E06", "%s: опорная стопа проезжает %.2f м" % [tag, slide])
 	if below < -LIMITS.below * k and not clip.contains("fall"):
 		_report("ПРОВАЛ", "E07", "%s: стопа под землёй на %.2f м" % [tag, -below])

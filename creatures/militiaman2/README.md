@@ -16,3 +16,15 @@
 - У набора топора нет смерти; смешивать наборы нельзя (M02).
 - Витрина: `godot --path game res://scenes/mannequin_search.tscn -- --id=militiaman2`, 33 квадрата,
   заглушки топора (правая кисть) и щита (левое предплечье).
+
+## Набор утверждён (2026-11-07)
+
+Обычный режим (набор «топор»): idle ← `a_idle`, walk ← `inplace/Standing Walk Forward.fbx` (In Place), run ← `inplace/Standing Run Forward.fbx`,
+attack ← `a_attack_down`, hurt ← `a_hurt_gut`, defend ← `a_block_react`, fall ← `s_death1` (в наборе топора смерти нет), fidget ← `a_taunt_thump`.
+Стойка со щитом (186, набор «меч и щит»): shield_up ← `s_block1`, shield_idle ← `s_block_idle`, shield_walk ← `inplace/Sword And Shield Walk.fbx`
+с руками из `s_block_idle`, shield_hurt ← `s_impact1` (Blocked Impact), shield_down ← `s_block2`.
+Запись — `game/scenes/militiaman2_config.gd`; в бой не выходит, пока манекен (`in_battle: false`). walk_speed 1,04 по замеру стопы.
+Стопа уходила в землю на 8–10 см: `Creature._align_hips` подгонял высоту таза шага к низкой стойке с топором; для скелета Mixamo
+высота таза теперь не трогается. Автопроверка `check.sh militiaman2`: провалов 0.
+
+Дальше по пайплайну: концепт → модель → топор и щит отдельно → клипы на модели.

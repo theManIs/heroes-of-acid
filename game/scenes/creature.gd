@@ -67,6 +67,12 @@ var melee_modes := {}
 var melee_mode := ""
 var fidget_anim := ""  # декоративный отклик при наведении на бездействующее существо
 var _fidget_hovered := false
+## 186: альтернативная стойка (ополченец — щит перед собой). Свои стойка, шаг и реакция на удар,
+## ход короче; атака выводит из стойки. {"title", "enter", "idle", "walk", "hurt", "exit", "move"}
+var stance := {}
+var in_stance := false
+var _base := {}  # обычные стойка, шаг, реакция и бег на время стойки
+var _stance_walk_speed := 0.0
 
 var _model_base := Vector3.ZERO
 var _target := Vector3.ZERO
@@ -194,6 +200,10 @@ func _align_hips() -> void:
 				anchor += a.track_get_key_value(t, k)
 			anchor /= a.track_get_key_count(t)
 		var shift := home - anchor
+		if skeleton.get_bone_name(_hip()) == "mixamorig_Hips":
+			# 184: клипы Mixamo стоят на земле сами; высоту таза не трогаем, иначе низкая стойка
+			# (топор) опускает шаг на 8 см и стопа уходит в землю (E07).
+			shift.y = 0.0
 		for k in a.track_get_key_count(t):
 			a.track_set_key_value(t, k, a.track_get_key_value(t, k) + shift)
 
@@ -372,13 +382,66 @@ func walk_path(points: Array[Vector3]) -> void:
 	walk_to(_path.pop_front())
 
 
+## 186: стойка настраивается после setup: клипы стойки уже подмешаны из extra.
+func configure_stance(cfg: Dictionary) -> void:
+	stance = cfg if cfg.has("idle") and anim.has_animation(cfg.idle) else {}
+	if stance.has("walk") and anim.has_animation(stance.walk) and anim.has_animation("walk"):
+		var base := _measure_step_speed("walk")
+		_stance_walk_speed = walk_speed * _measure_step_speed(stance.walk) / base if base > 0.0 else walk_speed
+		anim.play("idle")
+		anim.advance(0.0)
+
+
+## Ход за ход с учётом стойки: в стойке — доля move от обычного, не меньше гекса.
+func moves(base: int) -> int:
+	return maxi(1, int(base * stance.get("move", 1.0))) if in_stance else base
+
+
+## Войти в стойку или выйти из неё. animate — сыграть подъём или опускание щита.
+func set_stance(on: bool, animate := true) -> void:
+	if stance.is_empty() or on == in_stance:
+		return
+	in_stance = on
+	var library := anim.get_animation_library(&"")
+	if on:
+		_base = {"idle": library.get_animation("idle"), "walk": library.get_animation("walk") if library.has_animation("walk") else null,
+			"hurt": hurt_anim, "run_ratio": run_ratio}
+		_swap(library, "idle", anim.get_animation(stance.idle))
+		if stance.has("walk") and anim.has_animation(stance.walk):
+			_swap(library, "walk", anim.get_animation(stance.walk))
+		hurt_anim = stance.get("hurt", hurt_anim)
+		run_ratio = 0.0  # со щитом перед собой не бегает
+	else:
+		_swap(library, "idle", _base.idle)
+		if _base.walk != null:
+			_swap(library, "walk", _base.walk)
+		hurt_anim = _base.hurt
+		run_ratio = _base.run_ratio
+	if dead or walking:
+		return
+	var clip: String = stance.get("enter" if on else "exit", "")
+	if animate and anim.has_animation(clip):
+		anim.play(clip, BLEND, 1.0)  # по окончании — новая стойка (_on_animation_finished)
+		anim.seek(0.0, true)
+	else:
+		anim.play("idle", BLEND)
+
+
+func _swap(library: AnimationLibrary, anim_name: String, source: Animation) -> void:
+	var copy := source.duplicate()
+	copy.loop_mode = Animation.LOOP_LINEAR
+	library.remove_animation(anim_name)
+	library.add_animation(anim_name, copy)
+
+
 ## Бежать ли по пути из steps гексов: дальше половины своего хода и есть клип бега.
 func wants_run(steps: int) -> bool:
 	return run_ratio > 0.0 and move_range > 0 and steps * 2 > move_range
 
 
 func gait_speed() -> float:
-	return walk_speed * (run_ratio if _gait == "run" else 1.0) * walk_rate
+	var step := _stance_walk_speed if in_stance and _stance_walk_speed > 0.0 else walk_speed
+	return step * (run_ratio if _gait == "run" else 1.0) * walk_rate
 
 
 ## Скорость стопы на опоре в клипе (без направления: клипы на месте), для отношения бег/шаг.
@@ -467,7 +530,7 @@ func play_once(anim_name: String) -> void:
 func set_fidget_hovered(hovered: bool) -> void:
 	var entered := hovered and not _fidget_hovered
 	_fidget_hovered = hovered
-	if not entered or dead or walking or defending or fidget_anim.is_empty():
+	if not entered or dead or walking or defending or in_stance or fidget_anim.is_empty():
 		return
 	if anim.current_animation != "idle" or not anim.has_animation(fidget_anim):
 		return
@@ -683,6 +746,7 @@ func melee_point(_from: Vector3) -> Vector3:
 
 ## Кулак не достаёт до выбранной части цели — выпад вперёд, затем возврат.
 func strike(target: Creature, _distance: float, overlap: float, collateral: Array[Creature] = []) -> void:
+	set_stance(false, false)  # 186: атака опускает щит, удар идёт из стойки со щитом
 	var contact := target.melee_point(position)
 	face(contact)
 	target.face_foe(position)
@@ -782,6 +846,7 @@ func die() -> void:
 
 func revive() -> void:
 	hits = 0
+	set_stance(false, false)
 	if dead:
 		dead = false
 		model.position = _model_base  # _pin_hip держал таз падающего над гексом и сдвинул модель

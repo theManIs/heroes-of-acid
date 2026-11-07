@@ -129,7 +129,8 @@ func _ready() -> void:
 			_shot = arg.trim_prefix("--shot=")
 	for side in sides:
 		for id: String in creatures:
-			side.append(_make(id))
+			if creatures[id].get("in_battle", true):  # 184: манекен в бой не выходит
+				side.append(_make(id))
 	add_child(board)
 	_build_world()
 	_build_board()
@@ -170,6 +171,12 @@ func _make(id: String) -> Creature:
 	c.set_shot(c.shots.keys()[0] if c.ranged() else "")
 	c.configure_melee(cfg.get("melee_modes", {}))
 	c.fidget_anim = cfg.get("fidget", "") if cfg.get("fidget_on_hover", false) else ""
+	for prop: Dictionary in cfg.get("props", []):  # 184: отдельные оружие и щит
+		var grip: Node3D = preload("res://scenes/weapon_grip.gd").new()
+		for key in prop:
+			grip.set(key, prop[key])
+		c.model.add_child(grip)
+	c.configure_stance(cfg.get("stance", {}))  # 186
 	c.walk_rate = WALK_RATE
 	c.set_meta("move", MOVES[id])
 	c.move_range = MOVES[id]  # 118: дальше половины хода — бег
@@ -726,8 +733,8 @@ func _round_order() -> Array[Creature]:
 	var out := _living(0)
 	out.append_array(_living(1))
 	out.sort_custom(func(a: Creature, b: Creature) -> bool:
-		if a.get_meta("move") != b.get_meta("move"):
-			return a.get_meta("move") > b.get_meta("move")
+		if _moves(a) != _moves(b):
+			return _moves(a) > _moves(b)
 		return sides[0].has(a) and not sides[0].has(b))
 	return out
 
@@ -770,7 +777,7 @@ func _ai_move(enemy_side: int) -> void:
 			if _formation_distance(active, e, h) == 1 and (target == null or paths[h].size() < best.size()):
 				best = paths[h]
 				target = e
-	_act(active, target, best.slice(0, active.get_meta("move")))
+	_act(active, target, best.slice(0, _moves(active)))
 
 
 ## Пройти путь; если есть цель и стоим рядом с ней — ударить. Потом следующий ход.
@@ -858,6 +865,8 @@ func _game_over() -> void:
 
 ## Что сейчас включено альтернативным огнём этого существа; пусто — альтернативы нет.
 func _alternative_text(unit: Creature) -> String:
+	if not unit.stance.is_empty():  # 186: стойка со щитом
+		return "стойка: " + ("%s, ход вдвое меньше" % unit.stance.title.to_lower() if unit.in_stance else "обычная")
 	if unit.melee_modes.size() > 1:
 		return "атака %s (%s)" % [unit.melee_title().to_lower(), "3 гекса, включая своих" if unit.wide_melee() else "только выбранная цель"]
 	if unit.ranged() and unit.allowed_shots(_enemy_adjacent(unit)).size() > 1:
@@ -867,6 +876,11 @@ func _alternative_text(unit: Creature) -> String:
 
 ## Смена режима огня: не тратит ход.
 func _switch_mode() -> void:
+	if turn == Turn.PLAYER and not active.stance.is_empty():  # 186: не тратит ход, меняет дальность
+		active.set_stance(not active.in_stance)
+		reachable = _range_of(active)
+		_paint()
+		return
 	if turn == Turn.PLAYER and not active.melee_modes.is_empty():
 		active.next_melee_mode()
 		_paint()
@@ -1045,12 +1059,17 @@ func _set_target(c: Creature) -> void:
 
 # --- Отрисовка состояния ---
 
+## Ход существа с учётом стойки со щитом (186).
+func _moves(c: Creature) -> int:
+	return c.moves(c.get_meta("move"))
+
+
 ## Куда существо может дойти за свой ход.
 func _range_of(c: Creature) -> Dictionary:
 	var out := {}
 	var paths := _paths_from(cells[c], c)
 	for h: Vector2i in paths:
-		if paths[h].size() <= c.get_meta("move"):
+		if paths[h].size() <= _moves(c):
 			out[h] = paths[h]
 	return out
 
@@ -1218,10 +1237,10 @@ func _status_text(unit: Creature, from: Vector2i) -> String:
 			if not active.melee_modes.is_empty():
 				return "%s: %s%s" % [active.get_meta("title"), active.melee_title(), " — задевает своих" if active.wide_melee() else " — только цель"]
 			if _is_pair(active):
-				return "Псарь с собакой: ход %d; атака на всё поле по свободному пути, собака возвращается" % active.get_meta("move")
+				return "Псарь с собакой: ход %d; атака на всё поле по свободному пути, собака возвращается" % _moves(active)
 			if active.ranged():
-				return "%s: ход %d, %s" % [active.get_meta("title"), active.get_meta("move"), active.shots[active.shot_mode].title]
-			return "%s: ход %d" % [active.get_meta("title"), active.get_meta("move")]
+				return "%s: ход %d, %s" % [active.get_meta("title"), _moves(active), active.shots[active.shot_mode].title]
+			return "%s: ход %d" % [active.get_meta("title"), _moves(active)]
 		Turn.OVER:
 			return "Победа!" if not _living(0).is_empty() else "Поражение."
 	return "Ходит: %s" % active.get_meta("title")
