@@ -8,7 +8,7 @@ extends "res://scenes/showcase.gd"
 ## Клипы — game/assets/creatures/<id>/anims/<клип>.glb (build_clips.py <id> на риге манекена).
 
 const GRIP := preload("res://scenes/weapon_grip.gd")
-const MANNEQUIN := "res://assets/creatures/hammerer/body.glb"  # тело прежнего молотобойца без молота, риг Mixamo
+const MANNEQUIN := "res://assets/mannequin/xbot.glb"  # 185: манекен Mixamo X Bot, родной скелет Mixamo
 const HOLD := 1.0
 
 var _id := ""
@@ -35,7 +35,7 @@ func _anims() -> String:
 
 func _make_candidate(grid: GridContainer, title: String, clip: String, endless: bool, idle: String) -> void:
 	var size: float = _set.get("size", 1.8)
-	var cell := _make_frame(grid, size * 1.4)
+	var cell := _make_frame(grid, size * 1.15)
 	var unit := Creature.new()
 	cell.view.add_child(unit)
 	var files := [_anims() + idle + ".glb"]

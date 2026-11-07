@@ -1769,3 +1769,7 @@ index 90de881..2272bcf 100644
 Новое: `creatures/militiaman2/` (риг манекена, наборы Mixamo, `clips.json` 45, `candidates.json` 33), `game/assets/creatures/militiaman2/anims/`. `mannequin_search.gd` — своя стойка у квадрата, `check_clips.gd` — то же.
 
 Команды: build_clips.py militiaman2; check_clips.gd --set=militiaman2.
+
+## 2026-11-07 — 185: манекен X Bot
+
+Новое: `pipelines/creature-mixamo-first/mannequin.py`, `game/assets/mannequin/xbot.glb`, `creatures/militiaman2/tripo/{xbot.fbx,rig.glb,rig-mannequin.glb}`. `mannequin_search.gd` и `check_clips.gd` — тело по умолчанию X Bot; кадр 1,15 роста. Кандидаты пересобраны build_clips.py militiaman2.

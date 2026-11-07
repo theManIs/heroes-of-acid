@@ -66,7 +66,7 @@ func _mannequin(id: String) -> Dictionary:
 	var idle: String = data.get("idle", "idle")
 	if not cells.has(idle):
 		extra.append("res://assets/creatures/%s/anims/%s.glb" % [id, idle])
-	return {"scene": data.get("body", "res://assets/creatures/hammerer/body.glb"), "extra": extra, "attack": cells[0],
+	return {"scene": data.get("body", "res://assets/mannequin/xbot.glb"), "extra": extra, "attack": cells[0],
 		"hurt": "", "size": data.get("size", 1.8), "attack_from": 0.0, "idle": idle, "props": data.get("props", []),
 		"cells": cells, "weapon_face": data.get("weapon_face", {})}
 

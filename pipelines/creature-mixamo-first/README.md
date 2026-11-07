@@ -15,8 +15,9 @@
 
 ## 2. Анимации на манекене (до концепта)
 
-1. Манекен — тело прежнего молотобойца без молота, риг Mixamo:
-   `creatures/<id>/tripo/rig.glb` ← копия `creatures/hammerer/tripo/rig.glb`; ещё одна копия — `tripo/rig-mannequin.glb`.
+1. Манекен — Mixamo X Bot (185): `game/assets/mannequin/xbot.glb`, родной скелет Mixamo, серый с тёмными суставами.
+   Собран `mannequin.py` из `X Bot.fbx` (есть в любом скачанном наборе Mixamo): без анимаций, масштаб FBX применён.
+   `creatures/<id>/tripo/rig.glb` ← копия `xbot.glb`; ещё одна — `tripo/rig-mannequin.glb`.
 2. Кандидаты по локальному каталогу `catalogs/mixamo` под оружие с листа (M01): на каждую роль 2–4 клипа.
    Роли: стойка, шаг, бег, удар (и второй режим, если есть), реакция, защита, смерть, отклик.
 3. Скачать с mixamo.com через Chrome: FBX Binary, `Without Skin`, 30 fps, шаг и бег — галка `In Place`

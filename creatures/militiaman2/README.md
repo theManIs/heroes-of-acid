@@ -5,7 +5,8 @@
 
 ## Шаг 2 — анимации на манекене (2026-11-07)
 
-- Манекен: риг прежнего молотобойца (`tripo/rig.glb` = `rig-mannequin.glb`), тело `res://assets/creatures/hammerer/body.glb`.
+- Манекен: Mixamo X Bot (185), `tripo/rig.glb` = `rig-mannequin.glb` = `game/assets/mannequin/xbot.glb`; исходник `tripo/xbot.fbx`.
+  Первый прогон был на теле молотобойца — пользователь попросил настоящий манекен; итог автопроверки тот же.
 - Наборы Mixamo (FBX, 30 fps, T-pose): `mixamo/packs/Pro Melee Axe Pack/` (47, топор в правой, левая свободна)
   и `mixamo/packs/Sword And Shield Pack/` (49, одноручное + щит). Собрано 45 кандидатов: `a_*` — топор, `s_*` — щит.
   У всех, кроме смертей, `hip_scale: 0`.
