@@ -2038,3 +2038,8 @@ weapon_grip.gd — общий для существа выбор сторон п
 
 Новое: pipelines/creature-mixamo-first/prepare_shield.py; game/assets/creatures/militiaman2/{body,axe,shield}.glb; weapon.py — состояние на предмет; weapon_grip.gd — модель щита равномерно, carry_tilt, точки по вершинам; militiaman2_config.gd — модель, топор/щит, walk_speed 0,9.
 Команды: stage2.py militiaman2; weapon.py militiaman2 …axe-reference.png axe.glb / …shield-reference.png shield.glb; prepare_weapon.py; prepare_shield.py; pack_model.py ×3; build_clips.py militiaman2; check.sh militiaman2.
+
+## 2026-11-07 — 195: щит не заходит в своё тело при ударе
+
+weapon_grip.gd — body_clear, clear_clips, _bake_clear, _clearance, _turned; militiaman2_config.gd — hurt_calm_by 0, SHIELD_LEG, body_clear 0,01.
+Замер (self_hit.gd): стойка +0,09; удар −0,09 → +0,02 (левое бедро).

@@ -25,6 +25,11 @@ extends Node3D
 ## по эталонной позе (первый кадр клипа calibrate) и дальше только следует за кистью. Крутить предмет по ходу
 ## клипа нельзя (153) — пользователь: «зачем ты его крутишь». Пусто — прежний расчёт каждый кадр.
 @export var calibrate := ""
+## 195: в этих клипах предмет не заходит в своё тело: заранее, покадрово, плечо отводит руку наружу ровно настолько,
+## чтобы до поверхности корпуса и ног оставалось body_clear (доля роста). Предмет относительно кисти не крутится.
+@export var body_clear := 0.0
+@export var clear_clips: Array = ["hurt"]
+const CLEAR_MAX := deg_to_rad(40.0)
 ## Сдвиг щита вдоль его длинной оси, доля высоты щита (минус — к острию): кулак за умбоном (184).
 @export var slide := 0.0
 var _offset := Transform3D()
@@ -64,6 +69,8 @@ func _attach() -> void:
 	_process(0.0)
 	if forward_limit > 0.0 and _unit:
 		_bake_limit()
+	if body_clear > 0.0 and _unit:
+		_bake_clear()
 
 
 ## Заглушка на манекене: размер и хват как у будущего оружия, без модели.
@@ -315,6 +322,94 @@ func _bake_limit() -> void:
 			a.track_set_key_value(t, k, q)
 	if was != "":
 		anim.play(was)
+
+
+func _segment_distance(p: Vector3, a: Vector3, b: Vector3) -> float:
+	var ab := b - a
+	return p.distance_to(a + ab * clampf((p - a).dot(ab) / maxf(ab.length_squared(), 1e-9), 0.0, 1.0))
+
+
+## Насколько точки предмета ближе всего к поверхности тела (минус — внутри): корпус и обе ноги капсулами.
+func _clearance(points: Array, body: Array) -> float:
+	var worst := INF
+	for p: Vector3 in points:
+		for c: Array in body:
+			worst = minf(worst, _segment_distance(p, c[0], c[1]) - c[2])
+	return worst
+
+
+## 195: покадрово отвести руку наружу (вокруг оси «вперёд» у плеча), чтобы предмет не заходил в тело.
+func _bake_clear() -> void:
+	var anim := _unit.anim
+	var arm := _skeleton.find_bone("mixamorig_" + hand + "Arm")
+	var parent := _skeleton.get_bone_parent(arm)
+	var k := _unit.height / 1.8
+	var margin := body_clear * _unit.height
+	var forward := _unit.model.global_basis.x.normalized()
+	var to_sk := _skeleton.global_basis.inverse()
+	var track_path := NodePath("%s:%s" % [anim.get_node(anim.root_node).get_path_to(_skeleton), _skeleton.get_bone_name(arm)])
+	var bone := func(n: String) -> Vector3: return (_skeleton.global_transform * _skeleton.get_bone_global_pose(_skeleton.find_bone("mixamorig_" + n))).origin
+	var was := anim.current_animation
+	for clip in clear_clips:
+		if not anim.has_animation(clip):
+			continue
+		var a := anim.get_animation(clip)
+		var t := a.find_track(track_path, Animation.TYPE_ROTATION_3D)
+		if t < 0:
+			continue
+		var frames := []
+		for key in a.track_get_key_count(t):
+			anim.play(clip)
+			anim.seek(a.track_get_key_time(t, key), true)
+			_skeleton.force_update_all_bone_transforms()
+			_process(0.0)
+			var body := [[bone.call("Hips"), bone.call("Spine2"), 0.14 * k], [bone.call("Spine2"), bone.call("Neck"), 0.13 * k],
+				[bone.call("LeftUpLeg"), bone.call("LeftLeg"), 0.09 * k], [bone.call("RightUpLeg"), bone.call("RightLeg"), 0.09 * k],
+				[bone.call("LeftLeg"), bone.call("LeftFoot"), 0.06 * k], [bone.call("RightLeg"), bone.call("RightFoot"), 0.06 * k]]
+			frames.append([bone.call(hand + "Arm"), _item_points(), body,
+				_skeleton.get_bone_global_pose(parent).basis.orthonormalized(), _skeleton.get_bone_global_pose(arm).basis.orthonormalized()])
+		# Сторона отвода одна на весь клип: та, где предмет в сумме дальше от тела.
+		var best_side := 1.0
+		var best_sum := -INF
+		for side in [1.0, -1.0]:
+			var sum := 0.0
+			for f: Array in frames:
+				sum += _clearance(_turned(f[0], f[1], forward, side * 0.2), f[2])
+			if sum > best_sum:
+				best_sum = sum
+				best_side = side
+		var angles: Array[float] = []
+		for f: Array in frames:
+			var angle := 0.0
+			if _clearance(f[1], f[2]) < margin:
+				for step in 30:
+					angle = CLEAR_MAX * (step + 1) / 30.0
+					if _clearance(_turned(f[0], f[1], forward, best_side * angle), f[2]) >= margin:
+						break
+			angles.append(angle)
+		var keys := angles.size()
+		for key in keys:
+			var peak := 0.0
+			var sum := 0.0
+			for j in range(maxi(0, key - SMOOTH), mini(keys, key + SMOOTH + 1)):
+				sum += angles[j]
+				peak = maxf(peak, angles[j])
+			var angle: float = (sum / float(mini(keys, key + SMOOTH + 1) - maxi(0, key - SMOOTH)) + peak) * 0.5
+			if angle <= 0.0:
+				continue
+			var turn_sk := Basis((to_sk * Basis(forward, best_side * angle) * to_sk.inverse()).get_rotation_quaternion())
+			var q: Quaternion = (frames[key][3].inverse() * turn_sk * frames[key][4]).get_rotation_quaternion()
+			var old: Quaternion = a.track_get_key_value(t, key)
+			if q.dot(old) < 0.0:
+				q = -q
+			a.track_set_key_value(t, key, q)
+	if was != "":
+		anim.play(was)
+
+
+func _turned(joint: Vector3, points: Array, axis: Vector3, angle: float) -> Array:
+	var rot := Basis(axis, angle)
+	return points.map(func(p): return joint + rot * (p - joint))
 
 
 ## Вынос предмета вперёд при повороте плеча turn (вертикаль, поперечная).
