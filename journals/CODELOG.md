@@ -1757,3 +1757,9 @@ index 90de881..2272bcf 100644
 ```
 
 Прогоны: check.sh hammerer — 0 провалов; lantern-archer — нет отклика (верно); houndmaster — бёдра 19° (верно); c_club_combo/shoulder_equip/old_attack — пойманы E05/E06/E09/E10.
+
+## 2026-11-07 — 181: пайплайн creature-mixamo-first
+
+Новые: `pipelines/creature-mixamo-first/README.md`, `game/scenes/weapon_grip.gd`, `game/scenes/mannequin_search.{gd,tscn}`; `check_clips.gd` — режим `--set`, `_moving`. Таблица пайплайнов: новая строка основной, `creature` и `creature-tripo-mixamo` — старые.
+
+Проверка: витрина манекена с заглушками топора и щита отрисована скрытым окном; check.sh hammerer — 0 провалов.

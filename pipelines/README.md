@@ -28,8 +28,9 @@
 
 | Папка | Задача | Модель | Риг | Анимации | Платим | Статус |
 |---|---|---|---|---|---|---|
-| [`creature`](creature/README.md) | существо-гуманоид | Tripo | Tripo, `spec: tripo` | пресеты Tripo, общая библиотека | кредиты Tripo | основной |
-| [`creature-tripo-mixamo`](creature-tripo-mixamo/README.md) | существо-гуманоид | Tripo, тело и при необходимости отдельное оружие | Tripo, `spec: mixamo` | Mixamo | кредиты Tripo | проба, задачи 54, 121 и 133; риг готовой модели, концепт через Chrome/CUA, двуручный хват отдельного молота; 136 — отдельный Downward Slash; 137 — союзный отклик; 138 — возврат молота |
+| [`creature-mixamo-first`](creature-mixamo-first/README.md) | существо-гуманоид | Tripo, тело; оружие и щит отдельными моделями | Tripo, `spec: mixamo` | Mixamo, подбор на манекене до концепта; автопроверка `check.sh` по [ERRORS.md](creature-mixamo-first/ERRORS.md) | кредиты Tripo | основной, задачи 181–182 |
+| [`creature`](creature/README.md) | существо-гуманоид | Tripo | Tripo, `spec: tripo` | пресеты Tripo, общая библиотека | кредиты Tripo | старый: заменён `creature-mixamo-first` (181); на нём упырь, котельщик, вампир, голем, ополченец |
+| [`creature-tripo-mixamo`](creature-tripo-mixamo/README.md) | существо-гуманоид | Tripo, тело и при необходимости отдельное оружие | Tripo, `spec: mixamo` | Mixamo | кредиты Tripo | старый: заменён `creature-mixamo-first` (181); скрипты вызываются оттуда |
 | [`creature-fal-mixamo`](creature-fal-mixamo/README.md) | существо-гуманоид | fal, Meshy | fal, Meshy | Mixamo | счёт fal | ждёт, задача 55 |
 | [`creature-recolor`](creature-recolor/README.md) | новая раскраска готового существа, модель и риг прежние | не меняется | не меняется | не меняются | кредиты Tripo, 20 за текстуру | основной |
 | [`ground-fal`](ground-fal/README.md) | текстура земли | gpt-image через fal | не нужен | не нужны | счёт fal | проба, задача 100 |

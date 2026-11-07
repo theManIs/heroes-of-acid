@@ -58,3 +58,6 @@
 
 Пара «конь + всадник» (задача 161): настоящий конь и макет всадника в седле, смерть — падают вместе:
 `godot --path game res://scenes/rider_pair.tscn`.
+
+Кандидаты Mixamo на манекене (пайплайн `creature-mixamo-first`, задача 181): квадраты из `creatures/<id>/mixamo/candidates.json`, заглушки оружия и щита:
+`godot --path game res://scenes/mannequin_search.tscn -- --id=<существо>`.

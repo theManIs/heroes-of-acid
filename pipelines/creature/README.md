@@ -1,5 +1,7 @@
 # Пайплайн: существо-гуманоид
 
+> **Старый пайплайн.** С 2026-11-07 гуманоидов делаем по [`creature-mixamo-first`](../creature-mixamo-first/README.md) (задача 181).
+
 **Где что лежит:**
 
 - `creatures/<id>/concept/` — описание, промпты, концепты, виды; `creatures/<id>/references/` — референсы существа; `creatures/<id>/tripo/` — модели и риги от Tripo, отчёт.

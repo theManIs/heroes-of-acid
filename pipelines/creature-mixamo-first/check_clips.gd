@@ -3,6 +3,7 @@ extends SceneTree
 ## замером костей, без окна и без пользователя. Запуск из корня репозитория:
 ##   /Applications/Godot.app/Contents/MacOS/Godot --headless --path game \
 ##     --script "$PWD/pipelines/creature-mixamo-first/check_clips.gd" -- --id=<существо> [--clips=a,b] [--extra=res://…glb,…] [--verbose=1]
+##   …или кандидаты на манекене: -- --set=<существо> (creatures/<id>/mixamo/candidates.json)
 ## Существо берётся из записей арены (CREATURES в creature_test.gd, конфиги молотобойца, псаря).
 ## Итог: строки «ОК / ПРОВАЛ / ВНИМАНИЕ» с номером ошибки из ERRORS.md; код выхода 1 при провале.
 
@@ -48,9 +49,32 @@ func _report(level: String, code: String, text: String) -> void:
 		_warns += 1
 
 
+## Режим манекена (--set=<id>): кандидаты из creatures/<id>/mixamo/candidates.json, тело манекена,
+## все собранные клипы и заглушки оружия — отсеять кандидатов до показа пользователю.
+func _mannequin(id: String) -> Dictionary:
+	var path := ProjectSettings.globalize_path("res://").path_join("../creatures/%s/mixamo/candidates.json" % id)
+	if not FileAccess.file_exists(path):
+		return {}
+	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
+	var extra := []
+	var cells := []
+	for cell: Array in data.get("cells", []):
+		extra.append("res://assets/creatures/%s/anims/%s.glb" % [id, cell[1]])
+		cells.append(cell[1])
+	var idle: String = data.get("idle", "idle")
+	if not cells.has(idle):
+		extra.append("res://assets/creatures/%s/anims/%s.glb" % [id, idle])
+	return {"scene": data.get("body", "res://assets/creatures/hammerer/body.glb"), "extra": extra, "attack": cells[0],
+		"hurt": "", "size": data.get("size", 1.8), "attack_from": 0.0, "idle": idle, "props": data.get("props", []),
+		"cells": cells, "weapon_face": data.get("weapon_face", {})}
+
+
 func _run() -> void:
 	var id := _arg("id")
 	var cfgs := _configs()
+	if _arg("set") != "":
+		id = _arg("set")
+		cfgs[id] = _mannequin(id)
 	if not cfgs.has(id):
 		print("нет существа ", id, "; есть: ", cfgs.keys())
 		quit(2)
@@ -64,6 +88,11 @@ func _run() -> void:
 	if _arg("extra") != "":
 		extra.append_array(_arg("extra").split(","))  # пробные клипы-кандидаты сверх записи
 	_c.setup(load(cfg.scene), extra, cfg.attack, cfg.hurt, cfg.size, cfg.attack_from, cfg.idle)
+	for prop: Dictionary in cfg.get("props", []):
+		var grip: Node3D = load("res://scenes/weapon_grip.gd").new()
+		for key in prop:
+			grip.set(key, prop[key])
+		_c.model.add_child(grip)
 	await process_frame
 	await process_frame
 	_h = _c.height
@@ -73,16 +102,19 @@ func _run() -> void:
 		_report("ПРОВАЛ", "E01", "скелет не Mixamo: проверка рассчитана на кости mixamorig_*")
 		quit(1)
 		return
-	_check_assets(cfg)
-	_check_required(cfg)
+	var mannequin := cfg.has("cells")
+	if not mannequin:
+		_check_assets(cfg)
+		_check_required(cfg)
 	_check_rest_legs()
 	var clips := _arg("clips")
-	var names: Array = Array(clips.split(",")) if clips != "" else _game_clips(cfg)
+	var names: Array = Array(clips.split(",")) if clips != "" else (cfg.cells if mannequin else _game_clips(cfg))
 	for clip: String in names:
 		if _c.anim.has_animation(clip):
 			_check_clip(clip, cfg)
 	_check_weapon_face(cfg)
-	_check_footprint()
+	if not mannequin:
+		_check_footprint()
 	print("== итог: провалов %d, внимания %d" % [_fails, _warns])
 	quit(1 if _fails > 0 else 0)
 
@@ -257,7 +289,7 @@ func _check_clip(clip: String, cfg: Dictionary) -> void:
 		last = snap
 	var jump := 0.0
 	for bone in first:
-		if not (bone == "Hips" and clip in LOCOMOTION):
+		if not (bone == "Hips" and _moving(clip)):
 			jump = maxf(jump, first[bone].distance_to(last[bone]))
 	var span_range: float = (spans.max() - spans.min()) if spans.size() > 2 else 0.0
 	var tag := "%s (%.2f с)" % [clip, len]
@@ -265,7 +297,7 @@ func _check_clip(clip: String, cfg: Dictionary) -> void:
 		print("      %s: таз %.2f, стопа %.2f, низ %.2f, кисть %d°, ладони %.2f (%d кадров), оружие %.2f, шов %.2f" % [
 			tag, hip_travel / k, slide / k, below / k, int(wrist), span_range / k, spans.size(), gap / k, jump / k])
 	var before := _fails + _warns
-	var standing := not clip in LOCOMOTION and not clip.contains("fall") and not clip.contains("death")
+	var standing := not _moving(clip) and not clip.contains("fall") and not clip.contains("death")
 	var dodge: bool = clip == cfg.get("defend", "") and not cfg.get("defend_pin", true)  # уклон уводит тело намеренно
 	if standing and not dodge and hip_travel > LIMITS.hip * k:
 		_report("ВНИМАНИЕ", "E05", "%s: таз уходит на %.2f м — клип таскает тело" % [tag, hip_travel])
@@ -279,7 +311,7 @@ func _check_clip(clip: String, cfg: Dictionary) -> void:
 		_report("ПРОВАЛ", "E09", "%s: обе руки на древке, расстояние между ладонями гуляет на %.2f м — оружие катается" % [tag, span_range])
 	if gap < LIMITS.gap * k and standing:
 		_report("ВНИМАНИЕ", "E10", "%s: оружие в %.2f м от оси корпуса или бедра в %.2f с — проходит сквозь тело" % [tag, gap, gap_t])
-	if clip in [cfg.get("idle", "idle"), "walk", "run"] and jump > LIMITS.seam * k:
+	if (clip == cfg.get("idle", "idle") or _moving(clip)) and jump > LIMITS.seam * k:
 		_report("ПРОВАЛ", "E11", "%s: шов цикла, скачок %.2f м" % [tag, jump])
 	if _fails + _warns == before:
 		print("ОК    [клип] ", tag)
@@ -309,6 +341,11 @@ func _check_weapon_face(cfg: Dictionary) -> void:
 		_report("ПРОВАЛ", "E13", "в стойке рабочая сторона оружия отклонена от «наружу» на %d° — поворот в кисти (HEAD_ROLL)" % int(angle))
 	else:
 		_report("ОК", "E13", "в стойке рабочая сторона оружия наружу, отклонение %d°" % int(angle))
+
+
+## Шаг и бег: в режиме манекена у кандидатов имена вида c_walk_*, c_run_*.
+func _moving(clip: String) -> bool:
+	return clip in LOCOMOTION or clip.contains("walk") or clip.contains("run")
 
 
 ## E12: фигура в стойке вписывается в свой гекс.

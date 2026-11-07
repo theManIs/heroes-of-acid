@@ -1,5 +1,7 @@
 # Пайплайн: существо, Tripo + скелет и анимации Mixamo (проба, задача 54)
 
+> **Старый пайплайн.** С 2026-11-07 гуманоидов делаем по [`creature-mixamo-first`](../creature-mixamo-first/README.md) (задача 181).
+
 Модель Tripo, риг Tripo со `spec: mixamo`, анимации Mixamo. Основной пайплайн `creature` и `game/assets/animations/` не трогает.
 
 1. **Концепт в ChatGPT через браузерный плагин/CUA:** вид спереди в T-позе, после подтверждения — виды `left`, `back`, `right` в `creatures/<id>/concept/views/`, в одном чате, к каждому запросу прикреплять `front.png`. Показать и дождаться подтверждения.
