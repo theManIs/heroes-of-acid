@@ -21,6 +21,12 @@ extends Node3D
 @export var roll := 0.0
 ## 184: в спокойных клипах (опущенная кисть) рукоять не вдоль костяшек, а наклонена вниз на carry_tilt градусов —
 ## иначе топор в опущенной руке торчит вперёд горизонтально (0,8 м). В бою и в стойке со щитом — хват кулаком.
+## 184: жёсткий хват. Предмет сидит в кисти неподвижно: его положение относительно кисти считается ОДИН раз
+## по эталонной позе (первый кадр клипа calibrate) и дальше только следует за кистью. Крутить предмет по ходу
+## клипа нельзя (153) — пользователь: «зачем ты его крутишь». Пусто — прежний расчёт каждый кадр.
+@export var calibrate := ""
+var _offset := Transform3D()
+var _rigid := false
 ## 184: из какого клипа взять пальцы этой кисти для всех клипов — кулак на рукояти (в спокойных клипах рука раскрыта,
 ## рукоять шла по ладони, топор «висел рядом с кистью»). Пусто — пальцы клипов как есть.
 @export var fingers_from := ""
@@ -51,6 +57,8 @@ func _attach() -> void:
 	_item.top_level = true
 	if fingers_from != "" and _unit and _unit.anim.has_animation(fingers_from):
 		_hold_fingers()
+	if calibrate != "" and _unit and _unit.anim.has_animation(calibrate):
+		_calibrate()
 	_process(0.0)
 	if forward_limit > 0.0 and _unit:
 		_bake_limit()
@@ -99,9 +107,38 @@ func _point(suffix: String) -> Vector3:
 	return (_skeleton.global_transform * _skeleton.get_bone_global_pose(_skeleton.find_bone("mixamorig_" + suffix))).origin
 
 
+func _hand_frame() -> Transform3D:
+	var t := _skeleton.global_transform * _skeleton.get_bone_global_pose(_skeleton.find_bone("mixamorig_" + hand + "Hand"))
+	return Transform3D(t.basis.orthonormalized(), t.origin)
+
+
+## Положение предмета относительно кисти по эталонной позе — один раз.
+func _calibrate() -> void:
+	var anim := _unit.anim
+	var was := anim.current_animation
+	anim.play(calibrate)
+	anim.seek(0.0, true)
+	_skeleton.force_update_all_bone_transforms()
+	_rigid = false
+	_place()
+	_offset = _hand_frame().affine_inverse() * _item.global_transform
+	_rigid = true
+	if was != "":
+		anim.play(was)
+
+
 func _process(_delta: float) -> void:
 	if not is_instance_valid(_item):
 		return
+	if _rigid:
+		_item.global_transform = _hand_frame() * _offset
+		return
+	_place()
+
+
+## Расчёт положения по кисти и предплечью (для эталона и без калибровки).
+func _place() -> void:
+	var _delta := 0.0
 	var height: float = _unit.height if _unit else 1.8
 	var palm := _point(hand + "Hand").lerp(_point(hand + "HandMiddle1"), 0.75)
 	var knuckles := (_point(hand + "HandIndex1") - _point(hand + "HandPinky1")).normalized()

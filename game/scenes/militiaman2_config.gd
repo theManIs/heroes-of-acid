@@ -24,8 +24,8 @@ const UNIT := {
 	"in_battle": false,  # манекен: в бой — с моделью
 	# Отдельные топор и щит (weapon_grip.gd); пока заглушки, потом модели Tripo.
 	"props": [{"hand": "Right", "mode": "fist", "model": "res://assets/creatures/militiaman2/axe.glb", "length": 0.42, "grip_at": 0.12,
-			"roll": 180.0, "carry_tilt": 55.0, "fingers_from": "a_idle"},  # лезвие модели в −Z; в опущенной руке топор висит вниз-вперёд
-		{"hand": "Left", "mode": "forearm", "model": "res://assets/creatures/militiaman2/shield.glb", "length": 0.34,
+			"roll": 180.0, "fingers_from": "a_idle", "calibrate": "a_idle"},  # лезвие модели в −Z; в опущенной руке топор висит вниз-вперёд
+		{"hand": "Left", "mode": "forearm", "model": "res://assets/creatures/militiaman2/shield.glb", "length": 0.34, "calibrate": "shield_idle",
 			"forward_limit": 0.29}],  # 189/193: щит не дальше края своего гекса (0,29 роста ≈ 0,52 м): два щита лицом к лицу не сходятся
 	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; после атаки снова в стойке.
 	"stance": {"title": "Щит перед собой", "enter": "shield_up", "idle": "shield_idle", "walk": "shield_walk",
