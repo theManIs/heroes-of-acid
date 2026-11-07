@@ -410,7 +410,7 @@ func set_stance(on: bool, animate := true) -> void:
 		if stance.has("walk") and anim.has_animation(stance.walk):
 			_swap(library, "walk", anim.get_animation(stance.walk))
 		hurt_anim = stance.get("hurt", hurt_anim)
-		defend_anim = stance.get("hurt", defend_anim)  # и «Защита» в стойке — удар в щит, щит не опускается
+		defend_anim = stance.get("defend", stance.get("hurt", defend_anim))  # «Защита» в стойке; "" — без клипа, только толчок
 		run_ratio = 0.0  # со щитом перед собой не бегает
 	else:
 		_swap(library, "idle", _base.idle)

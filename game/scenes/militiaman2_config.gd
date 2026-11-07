@@ -22,5 +22,6 @@ const UNIT := {
 		{"hand": "Left", "mode": "forearm", "shape": "shield", "length": 0.34, "width": 0.26}],
 	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; после атаки снова в стойке.
 	"stance": {"title": "Щит перед собой", "enter": "shield_up", "idle": "shield_idle", "walk": "shield_walk",
-		"hurt": "shield_hurt", "exit": "shield_down", "move": 0.5},
+		"hurt": "shield_hurt", "exit": "shield_down", "move": 0.5,
+		"defend": ""},  # «Защита» в стойке: щит неподвижен, от удара только толчок назад — не тот же клип, что получение удара
 }

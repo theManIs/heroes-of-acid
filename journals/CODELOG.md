@@ -1975,3 +1975,33 @@ index 5b2d51c..57dce83 100644
  	"reach": 1.0,  # кисть 0,28 + топор ≈ 0,67 при росте 1,8 (×рост/1,9); без него удар заходит в цель на 0,7 м
 ```
 Удалён anims/defend.glb; в clips.json у a_block_react снят alias.
+
+## 2026-11-07 — 188: защита в стойке без клипа
+
+```diff
+diff --git a/game/scenes/creature.gd b/game/scenes/creature.gd
+index 9c211d0..4f22d57 100644
+--- a/game/scenes/creature.gd
++++ b/game/scenes/creature.gd
+@@ -410,7 +410,7 @@ func set_stance(on: bool, animate := true) -> void:
+ 		if stance.has("walk") and anim.has_animation(stance.walk):
+ 			_swap(library, "walk", anim.get_animation(stance.walk))
+ 		hurt_anim = stance.get("hurt", hurt_anim)
+-		defend_anim = stance.get("hurt", defend_anim)  # и «Защита» в стойке — удар в щит, щит не опускается
++		defend_anim = stance.get("defend", stance.get("hurt", defend_anim))  # «Защита» в стойке; "" — без клипа, только толчок
+ 		run_ratio = 0.0  # со щитом перед собой не бегает
+ 	else:
+ 		_swap(library, "idle", _base.idle)
+diff --git a/game/scenes/militiaman2_config.gd b/game/scenes/militiaman2_config.gd
+index 57dce83..846121e 100644
+--- a/game/scenes/militiaman2_config.gd
++++ b/game/scenes/militiaman2_config.gd
+@@ -22,5 +22,6 @@ const UNIT := {
+ 		{"hand": "Left", "mode": "forearm", "shape": "shield", "length": 0.34, "width": 0.26}],
+ 	# 186: стойка со щитом — кнопка альтернативы; ход вдвое меньше; удар принимает в щит; после атаки снова в стойке.
+ 	"stance": {"title": "Щит перед собой", "enter": "shield_up", "idle": "shield_idle", "walk": "shield_walk",
+-		"hurt": "shield_hurt", "exit": "shield_down", "move": 0.5},
++		"hurt": "shield_hurt", "exit": "shield_down", "move": 0.5,
++		"defend": ""},  # «Защита» в стойке: щит неподвижен, от удара только толчок назад — не тот же клип, что получение удара
+ }
+```
